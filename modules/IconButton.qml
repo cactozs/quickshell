@@ -128,12 +128,27 @@ Item {
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton | Qt.MiddleButton
 
+        // Pending touchpad scroll, accumulated into discrete steps.
+        property real wheelAccum: 0
+
         onClicked: mouse => root.clicked(mouse.button)
-    }
 
-    WheelHandler {
-        acceptedModifiers: Qt.NoModifier
-
-        onWheel: event => root.wheeled(event.angleDelta.y)
+        // Wheel handling lives in the MouseArea rather than a sibling
+        // WheelHandler so the two cannot race for the same events.
+        // Mouse wheels arrive as discrete notches (±120 angleDelta) and make
+        // one step each; touchpads arrive as pixelDelta streams and are
+        // accumulated into a step per ~60 px of scrolling.
+        onWheel: wheel => {
+            if (wheel.angleDelta.y !== 0) {
+                wheelAccum = 0;
+                root.wheeled(wheel.angleDelta.y > 0 ? 1 : -1);
+            } else if (wheel.pixelDelta.y !== 0) {
+                wheelAccum += wheel.pixelDelta.y;
+                if (Math.abs(wheelAccum) >= 60) {
+                    root.wheeled(wheelAccum > 0 ? 1 : -1);
+                    wheelAccum = 0;
+                }
+            }
+        }
     }
 }

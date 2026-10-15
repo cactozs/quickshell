@@ -7,16 +7,19 @@ import QtQuick
 
 // Cross-window shell state. Currently: which screen shows the power menu,
 // which screen shows the app launcher and which one shows the clipboard
-// history (empty string = closed). The IPC targets let scripts toggle them:
+// history (empty string = closed), plus whether the bar is hidden. The IPC
+// targets let scripts toggle them:
 //   qs ipc call power toggle
 //   qs ipc call launcher toggle
 //   qs ipc call clipboard toggle
+//   qs ipc call bar toggle
 Singleton {
     id: root
 
     property string powerMenuScreen: ""
     property string launcherScreen: ""
     property string clipboardScreen: ""
+    property bool barHidden: false
 
     function togglePowerMenu(screenName: string): void {
         root.powerMenuScreen = root.powerMenuScreen === screenName ? "" : screenName;
@@ -42,6 +45,10 @@ Singleton {
         root.clipboardScreen = "";
     }
 
+    function toggleBar(): void {
+        root.barHidden = !root.barHidden;
+    }
+
     IpcHandler {
         target: "power"
 
@@ -61,6 +68,12 @@ Singleton {
             root.toggleLauncher(screens.length > 0 ? screens[0].name : "");
         }
 
+        // Toggles on a specific screen; niri keybinds pass the focused output.
+        function toggleOn(screenName: string): void {
+            const screens = Quickshell.screens;
+            root.toggleLauncher(screenName !== "" ? screenName : (screens.length > 0 ? screens[0].name : ""));
+        }
+
         function close(): void {
             root.closeLauncher();
         }
@@ -75,8 +88,23 @@ Singleton {
             root.toggleClipboard(screens.length > 0 ? screens[0].name : "");
         }
 
+        // Toggles on a specific screen; niri keybinds pass the focused output.
+        function toggleOn(screenName: string): void {
+            const screens = Quickshell.screens;
+            root.toggleClipboard(screenName !== "" ? screenName : (screens.length > 0 ? screens[0].name : ""));
+        }
+
         function close(): void {
             root.closeClipboard();
+        }
+    }
+
+    IpcHandler {
+        target: "bar"
+
+        // Mod+P: hides or shows the bar on every screen.
+        function toggle(): void {
+            root.toggleBar();
         }
     }
 }

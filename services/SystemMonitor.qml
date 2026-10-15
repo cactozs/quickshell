@@ -7,6 +7,8 @@ import QtQuick
 
 // Native port of ~/.config/waybar/scripts/waybar-system.sh:
 // CPU usage/temperature, GPU (nvidia-smi), memory, network rates.
+// Named SystemMonitor (not SystemStats) so that `import "../services"`
+// does not shadow the modules/SystemStats bar chip.
 Singleton {
     id: root
 

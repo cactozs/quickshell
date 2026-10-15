@@ -15,7 +15,7 @@ IconButton {
 
     Tip {
         target: root
-        text: SystemStats.tooltip
+        text: SystemMonitor.tooltip
         visible: root.hovered
     }
 }

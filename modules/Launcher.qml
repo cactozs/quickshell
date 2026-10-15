@@ -180,7 +180,7 @@ PanelWindow {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: Theme.durMedium
+                duration: Theme.durShort
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: Theme.curveEmphasizedDecelerate
             }
@@ -208,7 +208,7 @@ PanelWindow {
 
         Behavior on scale {
             NumberAnimation {
-                duration: Theme.durLong
+                duration: Theme.durShort
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: Theme.curveEmphasizedDecelerate
             }
@@ -216,7 +216,7 @@ PanelWindow {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: Theme.durMedium
+                duration: Theme.durShort
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: Theme.curveEmphasizedDecelerate
             }

@@ -5,7 +5,8 @@ import Quickshell.Services.Pipewire
 import QtQuick
 import "../style"
 
-// Pipewire default sink chip: click toggles mute, wheel steps the volume.
+// Pipewire default sink chip: click toggles mute, wheel steps the volume;
+// zero volume and a real mute both render as "muted".
 IconButton {
     id: root
 
@@ -14,6 +15,13 @@ IconButton {
     readonly property real volume: sink?.audio?.volume ?? 0
     readonly property int percent: Math.round(volume * 100)
     readonly property string sinkDescription: sink?.description ?? ""
+    readonly property bool effectiveMuted: root.muted || root.percent === 0
+
+    // audio.volume/muted are invalid until the node is bound, so keep the
+    // default sink tracked for as long as the chip is alive.
+    PwObjectTracker {
+        objects: [Pipewire.defaultAudioSink]
+    }
 
     function setVolume(v: real): void {
         if (sink?.ready && sink?.audio)
@@ -25,24 +33,31 @@ IconButton {
             sink.audio.muted = !sink.audio.muted;
     }
 
-    icon: root.muted
+    icon: root.effectiveMuted
         ? Theme.iconVolumeOff
         : (root.percent < 66 ? Theme.iconVolumeDown : Theme.iconVolumeUp)
-    label: root.percent + "%"
-    iconColor: root.muted ? Theme.surfaceVariantText : Theme.primary
+    label: root.effectiveMuted ? "muted" : root.percent + "%"
+    iconColor: root.effectiveMuted ? Theme.surfaceVariantText : Theme.primary
 
-    onClicked: root.toggleMute()
+    onClicked: button => {
+        if (button === Qt.LeftButton)
+            root.toggleMute();
+    }
 
     onWheeled: delta => {
-        if (delta > 0)
+        if (delta > 0) {
+            // raising the volume while muted unmutes, like GNOME does
+            if (root.muted)
+                root.toggleMute();
             root.setVolume(root.volume + 0.05);
-        else if (delta < 0)
+        } else if (delta < 0) {
             root.setVolume(root.volume - 0.05);
+        }
     }
 
     Tip {
         target: root
-        text: root.sinkDescription + "\nVolume: " + root.percent + "%"
+        text: root.sinkDescription + "\n" + (root.effectiveMuted ? "muted" : "Volume: " + root.percent + "%")
         visible: root.hovered
     }
 }

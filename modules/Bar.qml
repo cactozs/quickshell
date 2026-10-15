@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import Quickshell
 import QtQuick
+import "../services"
 import "../style"
 
 // M3 Expressive bar: a floating pill (surfaceContainer, corner-full, 6 px
@@ -30,6 +31,10 @@ PanelWindow {
     implicitHeight: Theme.barHeight
     color: "transparent"
 
+    // Mod+P (niri bind) through the `bar` IPC target hides the bar; unmapping also
+    // releases the exclusive zone, so windows reclaim the space.
+    visible: !ShellState.barHidden
+
     Rectangle {
         id: surface
 
@@ -53,14 +58,6 @@ PanelWindow {
             anchors.leftMargin: Theme.barPadding
             anchors.verticalCenter: parent.verticalCenter
             spacing: 2
-
-            LauncherButton {
-                screenName: root.modelData.name
-            }
-
-            ClipboardButton {
-                screenName: root.modelData.name
-            }
 
             Workspaces {
                 screenName: root.modelData.name
