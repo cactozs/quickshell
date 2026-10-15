@@ -1,0 +1,213 @@
+pragma Singleton
+pragma ComponentBehavior: Bound
+
+import Quickshell
+import Quickshell.Io
+import QtQuick
+
+// Native port of ~/.config/waybar/scripts/waybar-system.sh:
+// CPU usage/temperature, GPU (nvidia-smi), memory, network rates.
+Singleton {
+    id: root
+
+    property int cpuUsage: 0
+    property string cpuTemp: "N/A"
+
+    property string gpuTemp: "N/A"
+    property string gpuUsage: "N/A"
+
+    property string ramUsed: "0.0 GiB"
+    property string ramTotal: "0.0 GiB"
+    property int ramUsage: 0
+
+    property string rxSpeed: "0 B/s"
+    property string txSpeed: "0 B/s"
+
+    property bool hasNvidia: false
+
+    // Samples for delta calculations.
+    property real statTotal1: 0
+    property real statIdle1: 0
+    property real netRx1: 0
+    property real netTx1: 0
+
+    readonly property string tooltip:
+        "CPU\n" +
+        "Temperature: " + cpuTemp + "\n" +
+        "Usage: " + cpuUsage + "%\n" +
+        "\n" +
+        "GPU\n" +
+        "Temperature: " + gpuTemp + "\n" +
+        "Usage: " + gpuUsage + "\n" +
+        "\n" +
+        "Memory\n" +
+        "Used: " + ramUsed + " / " + ramTotal + "\n" +
+        "Usage: " + ramUsage + "%\n" +
+        "\n" +
+        "Network\n" +
+        "↓ " + rxSpeed + "\n" +
+        "↑ " + txSpeed
+
+    function formatSpeed(bytes: real): string {
+        if (bytes >= 1048576) return (bytes / 1048576).toFixed(1) + " MiB/s";
+        if (bytes >= 1024) return (bytes / 1024).toFixed(1) + " KiB/s";
+        return Math.round(bytes) + " B/s";
+    }
+
+    function refresh(): void {
+        if (!statProc.running) statProc.running = true;
+        if (!netProc.running) netProc.running = true;
+        if (!memProc.running) memProc.running = true;
+        if (!thermalProc.running) thermalProc.running = true;
+        if (hasNvidia && !gpuProc.running) gpuProc.running = true;
+    }
+
+    // CPU usage: two /proc/stat samples 100 ms apart.
+    Process {
+        id: statProc
+        command: ["head", "-n", "1", "/proc/stat"]
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const parts = text.trim().split(/\s+/).slice(1).map(Number);
+                if (parts.length < 5) return;
+                const idle = parts[3] + (parts[4] || 0);
+                const total = parts.slice(0, 8).reduce((a, b) => a + b, 0);
+                if (root.statTotal1 === 0) {
+                    root.statTotal1 = total;
+                    root.statIdle1 = idle;
+                    cpuDelay.restart();
+                } else {
+                    const dt = total - root.statTotal1;
+                    const di = idle - root.statIdle1;
+                    root.cpuUsage = dt > 0 ? Math.round(100 * (dt - di) / dt) : 0;
+                    root.statTotal1 = 0;
+                }
+            }
+        }
+    }
+
+    Timer {
+        id: cpuDelay
+        interval: 100
+        onTriggered: statProc.running = true
+    }
+
+    // Network rates: two /proc/net/dev samples 100 ms apart.
+    Process {
+        id: netProc
+        command: ["sh", "-c", "awk 'NR>2 {rx += $2; tx += $10} END {print rx, tx}' /proc/net/dev"]
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const parts = text.trim().split(/\s+/).map(Number);
+                if (parts.length < 2 || isNaN(parts[0])) return;
+                if (root.netRx1 === 0) {
+                    root.netRx1 = parts[0] || 1;
+                    root.netTx1 = parts[1];
+                    netDelay.restart();
+                } else {
+                    // Samples are 0.1 s apart -> bytes/s = delta * 10.
+                    root.rxSpeed = root.formatSpeed((parts[0] - root.netRx1) * 10);
+                    root.txSpeed = root.formatSpeed((parts[1] - root.netTx1) * 10);
+                    root.netRx1 = 0;
+                }
+            }
+        }
+    }
+
+    Timer {
+        id: netDelay
+        interval: 100
+        onTriggered: netProc.running = true
+    }
+
+    Process {
+        id: memProc
+        command: ["grep", "-E", "^(MemTotal|MemAvailable):", "/proc/meminfo"]
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                let total = 0, available = 0;
+                for (const line of text.split("\n")) {
+                    if (line.startsWith("MemTotal:")) total = parseInt(line.split(/\s+/)[1]);
+                    else if (line.startsWith("MemAvailable:")) available = parseInt(line.split(/\s+/)[1]);
+                }
+                if (total <= 0) return;
+                const used = total - available; // kB
+                root.ramUsage = Math.round(100 * used / total);
+                root.ramUsed = (used / 1024 / 1024).toFixed(1) + " GiB";
+                root.ramTotal = (total / 1024 / 1024).toFixed(1) + " GiB";
+            }
+        }
+    }
+
+    // First readable thermal zone in 20..110 C, same as the waybar script.
+    Process {
+        id: thermalProc
+        command: [
+            "sh", "-c",
+            "for z in /sys/class/thermal/thermal_zone*/temp; do " +
+            "[ -r \"$z\" ] || continue; " +
+            "t=$(cat \"$z\" 2>/dev/null); " +
+            "case \"$t\" in ''|*[!0-9]*) continue;; esac; " +
+            "if [ \"$t\" -gt 20000 ] && [ \"$t\" -lt 110000 ]; then echo $((t / 1000)); exit 0; fi; " +
+            "done"
+        ]
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const t = parseInt(text.trim());
+                if (isNaN(t)) {
+                    root.cpuTemp = "N/A";
+                    return;
+                }
+                root.cpuTemp = t + "°C";
+            }
+        }
+    }
+
+    Process {
+        id: gpuProbe
+        command: ["sh", "-c", "command -v nvidia-smi >/dev/null 2>&1 && nvidia-smi -L >/dev/null 2>&1 && echo yes"]
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                root.hasNvidia = text.trim() === "yes";
+                if (root.hasNvidia) root.refresh();
+            }
+        }
+    }
+
+    Process {
+        id: gpuProc
+        command: [
+            "nvidia-smi",
+            "--query-gpu=temperature.gpu,utilization.gpu",
+            "--format=csv,noheader,nounits"
+        ]
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const parts = text.trim().split(",").map(s => s.trim());
+                if (parts.length < 2) return;
+                const t = parseInt(parts[0]);
+                if (isNaN(t)) return;
+                root.gpuTemp = t + "°C";
+                root.gpuUsage = parts[1] + "%";
+            }
+        }
+    }
+
+    Timer {
+        interval: 2000
+        repeat: true
+        running: true
+        onTriggered: root.refresh()
+    }
+
+    Component.onCompleted: {
+        gpuProbe.running = true;
+        refresh();
+    }
+}
