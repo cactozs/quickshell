@@ -1,4 +1,5 @@
 {
+  "1": "LayoutBadge (keyboard-layout HUD)",
   "4": "PowerButton (tonal power toggle)",
   "8": "CalendarPopup.qml",
   "9": "OsdBadge.qml",
@@ -8,12 +9,15 @@
   "13": "NotificationCenter.qml",
   "14": "NotificationToast.qml",
   "15": "Notifications.qml",
-  "16": "handleLine() event dispatch",
+  "16": "SystemMonitor (CPU/GPU/RAM/network poller)",
   "17": "QuickSettings.qml",
   "18": "Brightness.qml",
   "19": "NightLight.qml",
   "20": "closePowerMenu",
   "21": "WeatherPopup.qml",
   "22": "Weather.qml",
-  "23": "AppUsage.qml"
+  "23": "AppUsage.qml",
+  "24": "QuickShell Config",
+  "25": "ShellState.barHidden",
+  "26": "SystemPopup.qml"
 }
