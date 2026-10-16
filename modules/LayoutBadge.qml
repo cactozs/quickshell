@@ -7,10 +7,9 @@ import "../services"
 import "../style"
 
 // macOS-style keyboard-layout HUD restyled for M3 Expressive: a segmented
-// pill near the top of the screen listing every configured layout, with the
-// targeted one highlighted on a lighter container. Shown briefly after the
-// active layout changes. The overlay is fully click- and keyboard-transparent
-// and only mapped while the badge is shown.
+// pill near the top of the screen. One shared highlight slides between the
+// layout codes with a rubber stretch. Shown briefly after the active layout
+// changes. Click- and keyboard-transparent, mapped only while shown.
 PanelWindow {
     id: root
 
@@ -30,9 +29,13 @@ PanelWindow {
     // Follows niri directly, so the highlight re-targets on rapid switches.
     property int activeIdx: Niri.keyboardLayouts.currentIdx
 
+    // Live segment behind the highlight; Row.children tracks the Repeater.
+    readonly property Item activeSeg: (root.activeIdx >= 0 && segments.children.length > root.activeIdx)
+        ? segments.children[root.activeIdx] : null
+
     function show(): void {
         // When already visible only the highlight and the timer change, so
-        // rapid switches swap without replaying the pop-in.
+        // rapid switches slide without replaying the pop-in.
         root.shown = true;
         hideTimer.restart();
     }
@@ -97,6 +100,19 @@ PanelWindow {
         opacity: root.shown ? 1 : 0
         scale: root.shown ? 1 : 0.85
 
+        // Entrance drops from above while fading in.
+        transform: Translate {
+            y: root.shown ? 0 : -8
+
+            Behavior on y {
+                NumberAnimation {
+                    duration: Theme.durShort
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curveEmphasizedDecelerate
+                }
+            }
+        }
+
         Behavior on opacity {
             NumberAnimation {
                 duration: Theme.durShort
@@ -108,9 +124,39 @@ PanelWindow {
         // Expressive pop-in; on hide the same spring reads as a light shrink.
         Behavior on scale {
             NumberAnimation {
-                duration: Theme.durMedium
+                duration: 100
                 easing.type: Easing.OutBack
                 easing.overshoot: Theme.springOvershoot
+            }
+        }
+
+        // Shared sliding highlight: x glides, width overshoots = stretch.
+        Rectangle {
+            id: slide
+
+            x: segments.x + (root.activeSeg !== null ? root.activeSeg.x : 0)
+            y: segments.y
+            width: root.activeSeg !== null ? root.activeSeg.width : 0
+            height: segments.height
+            visible: root.activeSeg !== null
+
+            radius: Theme.shapeFull
+            color: Theme.secondaryContainer
+
+            Behavior on x {
+                NumberAnimation {
+                    duration: 100
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curveEmphasizedDecelerate
+                }
+            }
+
+            Behavior on width {
+                NumberAnimation {
+                    duration: 100
+                    easing.type: Easing.OutBack
+                    easing.overshoot: Theme.springOvershoot
+                }
             }
         }
 
@@ -122,9 +168,8 @@ PanelWindow {
             Repeater {
                 model: root.layouts
 
-                // One layout segment: the code on a rounded highlight that
-                // lights up (secondary container, as in the M3 segmented
-                // button) when it is the active layout.
+                // One layout segment: the code centers on the shared
+                // highlight when it is the active layout.
                 delegate: Item {
                     id: segment
 
@@ -133,21 +178,8 @@ PanelWindow {
 
                     implicitWidth: label.implicitWidth + 28
                     implicitHeight: root.pillHeight - 8
-
-                    Rectangle {
-                        anchors.fill: parent
-                        radius: Theme.shapeFull
-                        color: segment.index === root.activeIdx
-                            ? Theme.secondaryContainer : "transparent"
-
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: Theme.durShort
-                                easing.type: Easing.BezierSpline
-                                easing.bezierCurve: Theme.curveEmphasized
-                            }
-                        }
-                    }
+                    width: implicitWidth
+                    height: implicitHeight
 
                     // 1 px rule between two neighbouring unselected segments,
                     // as in the M3 segmented button.

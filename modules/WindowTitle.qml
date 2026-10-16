@@ -7,6 +7,8 @@ import "../services"
 import "../style"
 
 // Focused niri window: app icon + title, muted until hovered.
+// Long titles scroll like a marquee on hover inside a fixed viewport, so the
+// bar island never stretches. Window switches get a quick fade.
 Item {
     id: root
 
@@ -15,6 +17,7 @@ Item {
     property var win: Niri.focusedWindow
     property string appId: win?.app_id ?? ""
     property string title: win?.title ?? ""
+    property int winId: win?.id ?? -1
 
     readonly property string iconName: {
         if (appId === "") return "";
@@ -22,10 +25,118 @@ Item {
         return entry?.icon ?? appId;
     }
 
+    readonly property real textStartX: 8 + (icon.visible ? icon.width + 6 : 0)
+    readonly property real viewportWidth: Math.max(0, root.width - textStartX - 4)
+    readonly property bool needsScroll: measurer.implicitWidth > root.viewportWidth + 1
+    readonly property bool scrolling: hover.hovered && root.needsScroll && root.win !== null
+
+    property real scrollX: 0
+    property real scrollDist: 0
+    property bool ready: false
+
     height: Theme.barHeight
     visible: root.win !== null
-    implicitWidth: !visible ? 0 : 8 + (icon.visible ? icon.width + 6 : 0) + titleText.implicitWidth + 4
+    implicitWidth: !visible ? 0 : 8 + (icon.visible ? icon.width + 6 : 0) + measurer.implicitWidth + 4
     width: Math.min(implicitWidth, maxWidth)
+
+    Behavior on width {
+        NumberAnimation {
+            duration: 100
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Theme.curveEmphasizedDecelerate
+        }
+    }
+
+    // Quick fade on window switch only (title edits scroll, they don't fade).
+    SequentialAnimation {
+        id: swap
+
+        NumberAnimation {
+            target: root
+            property: "opacity"
+            to: 0.25
+            duration: 40
+            easing.type: Easing.Linear
+        }
+
+        NumberAnimation {
+            target: root
+            property: "opacity"
+            to: 1
+            duration: 80
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Theme.curveEmphasized
+        }
+    }
+
+    // Marquee: pause, glide left, pause, glide back. Loops while hovered.
+    // Driven imperatively from onScrollingChanged; the distance is snapshotted
+    // at start so mid-run resizes apply on the next loop, not mid-glide.
+    SequentialAnimation {
+        id: marquee
+
+        loops: Animation.Infinite
+
+        PauseAnimation {
+            duration: 250
+        }
+
+        NumberAnimation {
+            target: root
+            property: "scrollX"
+            from: 0
+            to: -root.scrollDist
+            duration: Math.min(2000, Math.max(300, root.scrollDist * 12))
+            easing.type: Easing.Linear
+        }
+
+        PauseAnimation {
+            duration: 250
+        }
+
+        NumberAnimation {
+            target: root
+            property: "scrollX"
+            to: 0
+            duration: 160
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Theme.curveEmphasizedDecelerate
+        }
+    }
+
+    function startMarquee(): void {
+        root.scrollDist = Math.max(0, measurer.implicitWidth - root.viewportWidth);
+        root.scrollX = 0;
+        marquee.start();
+    }
+
+    function stopMarquee(): void {
+        marquee.stop();
+        root.scrollX = 0;
+    }
+
+    onScrollingChanged: {
+        if (root.scrolling)
+            root.startMarquee();
+        else
+            root.stopMarquee();
+    }
+    onTitleChanged: {
+        if (root.scrolling)
+            root.startMarquee();
+        else
+            root.scrollX = 0;
+    }
+    onWinIdChanged: {
+        if (root.ready)
+            swap.restart();
+        if (root.scrolling)
+            root.startMarquee();
+        else
+            root.scrollX = 0;
+    }
+
+    Component.onCompleted: root.ready = true
 
     IconImage {
         id: icon
@@ -37,26 +148,49 @@ Item {
         visible: source.toString() !== ""
     }
 
-    Text {
-        id: titleText
+    Item {
+        id: viewport
 
-        x: 8 + (icon.visible ? icon.width + 6 : 0)
+        x: root.textStartX
         anchors.verticalCenter: parent.verticalCenter
-        width: Math.max(0, root.width - x - 4)
+        width: root.viewportWidth
+        height: parent.height
+        clip: true
+
+        Text {
+            id: titleText
+
+            anchors.verticalCenter: parent.verticalCenter
+            x: root.scrolling ? root.scrollX : 0
+            width: root.scrolling ? implicitWidth : parent.width
+            text: root.title
+            elide: root.scrolling ? Text.ElideNone : Text.ElideRight
+            color: hover.hovered ? Theme.surfaceText : Theme.surfaceVariantText
+            font.family: Theme.fontFamily
+            font.pixelSize: Theme.fontSizeLabelLarge
+            font.weight: Font.Medium
+
+            Behavior on color {
+                ColorAnimation {
+                    duration: Theme.durShort
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curveEmphasized
+                }
+            }
+        }
+    }
+
+    // Hidden twin measuring the full title width. titleText switches width
+    // and elide mode while scrolling, so only this unconstrained copy can
+    // be trusted for the cut-off check and the scroll distance.
+    Text {
+        id: measurer
+
+        visible: false
         text: root.title
-        elide: Text.ElideRight
-        color: hover.hovered ? Theme.surfaceText : Theme.surfaceVariantText
         font.family: Theme.fontFamily
         font.pixelSize: Theme.fontSizeLabelLarge
         font.weight: Font.Medium
-
-        Behavior on color {
-            ColorAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasized
-            }
-        }
     }
 
     HoverHandler {
@@ -67,6 +201,6 @@ Item {
         target: root
         text: root.title
         // Only when the title is actually cut off.
-        shown: hover.hovered && titleText.truncated
+        shown: hover.hovered && root.needsScroll
     }
 }

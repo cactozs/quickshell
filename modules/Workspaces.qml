@@ -5,166 +5,165 @@ import QtQuick
 import "../services"
 import "../style"
 
-// niri workspaces as M3 navigation-bar indicators: the active workspace is a
-// secondaryContainer pill, the rest are plain labels with a state layer.
+// niri workspaces as M3 navigation-bar: one sliding secondaryContainer pill
+// stretches behind the active chip, neighbours part around it.
 // Click focuses, wheel steps through workspaces.
-Row {
+Item {
     id: root
 
     required property string screenName
 
-    spacing: 2
+    implicitWidth: row.implicitWidth
+    implicitHeight: Theme.barHeight
+    width: implicitWidth
+    height: implicitHeight
 
-    Repeater {
-        model: root.screenName !== "" ? Niri.workspacesFor(root.screenName) : []
+    readonly property var wsList: root.screenName !== "" ? Niri.workspacesFor(root.screenName) : []
+    readonly property int activeIndex: {
+        for (let i = 0; i < root.wsList.length; i++)
+            if (root.wsList[i].is_active === true) return i;
+        return -1;
+    }
+    // Live delegate behind the highlight. Row.children tracks rebuilds, so
+    // the pill animates from the old x to the new one instead of jumping.
+    // var (not Item): delegates carry a custom `pressed` property.
+    readonly property var activeCell: (root.activeIndex >= 0 && row.children.length > root.activeIndex)
+        ? row.children[root.activeIndex] : null
+    readonly property bool activePressed: root.activeCell !== null && root.activeCell.pressed === true
 
-        delegate: Item {
-            id: cell
+    onActiveIndexChanged: {
+        if (root.activeIndex >= 0 && root.wsList[root.activeIndex])
+            Niri.consumeWorkspacePop(root.wsList[root.activeIndex].id);
+    }
 
-            required property var modelData
+    // Shared sliding pill: x glides, width overshoots = the rubber stretch.
+    Rectangle {
+        id: slide
 
-            readonly property bool active: modelData.is_active === true
+        y: (parent.height - Theme.chipHeight) / 2
+        height: Theme.chipHeight
+        x: root.activeCell !== null ? root.activeCell.x : 0
+        width: root.activeCell !== null ? root.activeCell.width : 0
+        visible: root.activeCell !== null
 
-            implicitWidth: chip.implicitWidth
-            implicitHeight: Theme.barHeight
-            opacity: 1
+        radius: root.activePressed ? Theme.shapeMD : Theme.shapeFull
+        color: Theme.secondaryContainer
 
-            onActiveChanged: {
-                if (active && Niri.consumeWorkspacePop(cell.modelData.id))
-                    pop.restart();
+        Behavior on x {
+            NumberAnimation {
+                duration: 100
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Theme.curveEmphasizedDecelerate
             }
+        }
 
-            // First mount: fade + spring in. The Repeater rebuilds every chip
-            // whenever the workspace list is reassigned, so Niri remembers
-            // which ids have already appeared, and which activation still
-            // owes a pop (onActiveChanged never fires on a fresh delegate).
-            Component.onCompleted: {
-                const popping = active && Niri.consumeWorkspacePop(cell.modelData.id);
-                if (Niri.markWorkspaceSeen(cell.modelData.id))
-                    appear.start();
-                else if (popping)
-                    pop.restart();
+        Behavior on width {
+            NumberAnimation {
+                duration: 100
+                easing.type: Easing.OutBack
+                easing.overshoot: Theme.springOvershoot
             }
+        }
 
-            Rectangle {
-                id: chip
+        Behavior on radius {
+            NumberAnimation {
+                duration: Theme.durMorph
+                easing.type: Easing.OutBack
+                easing.overshoot: Theme.springOvershoot
+            }
+        }
+    }
 
-                anchors.centerIn: parent
+    Row {
+        id: row
 
-                // M3 nav indicator: active pill never narrower than 48.
-                implicitWidth: Math.max(label.implicitWidth + 24, cell.active ? 48 : 28)
-                implicitHeight: Theme.chipHeight
+        x: 0
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: 2
+
+        Repeater {
+            model: root.wsList
+
+            delegate: Item {
+                id: cell
+
+                required property var modelData
+                required property int index
+
+                readonly property bool active: modelData.is_active === true
+                readonly property bool pressed: clickArea.pressed
+
+                implicitWidth: Math.max(label.implicitWidth + 24, active ? 48 : 28)
+                implicitHeight: Theme.barHeight
                 width: implicitWidth
                 height: implicitHeight
 
-                // Full pill at rest; squares off while pressed, springs back.
-                radius: clickArea.pressed ? Theme.shapeMD : Theme.shapeFull
-                color: cell.active ? Theme.secondaryContainer : "transparent"
-                scale: popScale
-
-                property real popScale: 1
-
-                Behavior on radius {
-                    NumberAnimation {
-                        duration: Theme.durMorph
-                        easing.type: Easing.OutBack
-                        easing.overshoot: Theme.springOvershoot
-                    }
+                // First-mount entrance only: the Repeater rebuilds every chip
+                // on each workspace update, Niri remembers seen ids.
+                Component.onCompleted: {
+                    if (Niri.markWorkspaceSeen(cell.modelData.id))
+                        appear.start();
                 }
 
-                Behavior on color {
-                    ColorAnimation {
-                        duration: Theme.durMedium
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: Theme.curveEmphasized
-                    }
-                }
-
-                SequentialAnimation {
-                    id: pop
-
-                    NumberAnimation {
-                        target: chip
-                        property: "popScale"
-                        to: 1.12
-                        duration: Theme.durPop
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: Theme.curveEmphasizedDecelerate
-                    }
-
-                    NumberAnimation {
-                        target: chip
-                        property: "popScale"
-                        to: 1
-                        duration: Theme.durSettle
-                        easing.type: Easing.OutBack
-                        easing.overshoot: Theme.springOvershoot
-                    }
-                }
-
-                // First-mount entrance: fade under a springy scale-up.
-                ParallelAnimation {
+                NumberAnimation {
                     id: appear
-
-                    NumberAnimation {
-                        target: cell
-                        property: "opacity"
-                        from: 0
-                        to: 1
-                        duration: Theme.durShort
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: Theme.curveEmphasizedDecelerate
-                    }
-
-                    NumberAnimation {
-                        target: chip
-                        property: "popScale"
-                        from: 0.6
-                        to: 1
-                        duration: Theme.durMedium
-                        easing.type: Easing.OutBack
-                        easing.overshoot: Theme.springOvershoot
-                    }
+                    target: cell
+                    property: "opacity"
+                    from: 0
+                    to: 1
+                    duration: Theme.durShort
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curveEmphasizedDecelerate
                 }
 
-                StateLayer {
-                    hovered: hover.hovered
-                    pressed: clickArea.pressed
-                    color: cell.active ? Theme.secondaryContainerText : Theme.surfaceText
-                }
-
-                Text {
-                    id: label
+                Rectangle {
+                    id: box
 
                     anchors.centerIn: parent
-                    text: String(cell.modelData.name ?? cell.modelData.idx)
-                    color: cell.active ? Theme.secondaryContainerText : Theme.surfaceVariantText
-                    font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSizeLabelLarge
-                    font.weight: Font.Medium
+                    width: parent.width
+                    height: Theme.chipHeight
+                    radius: Theme.shapeFull
+                    color: "transparent"
 
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: Theme.durShort
-                            easing.type: Easing.BezierSpline
-                            easing.bezierCurve: Theme.curveEmphasized
+                    StateLayer {
+                        hovered: hover.hovered
+                        pressed: clickArea.pressed
+                        color: cell.active ? Theme.secondaryContainerText : Theme.surfaceText
+                    }
+
+                    Text {
+                        id: label
+
+                        anchors.centerIn: parent
+                        text: String(cell.modelData.name ?? cell.modelData.idx)
+                        color: cell.active ? Theme.secondaryContainerText : Theme.surfaceVariantText
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.fontSizeLabelLarge
+                        font.weight: Font.Medium
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: Theme.durShort
+                                easing.type: Easing.BezierSpline
+                                easing.bezierCurve: Theme.curveEmphasized
+                            }
                         }
                     }
                 }
-            }
 
-            HoverHandler {
-                id: hover
-            }
+                HoverHandler {
+                    id: hover
+                }
 
-            MouseArea {
-                id: clickArea
+                MouseArea {
+                    id: clickArea
 
-                anchors.fill: parent
-                acceptedButtons: Qt.LeftButton | Qt.MiddleButton
-                cursorShape: Qt.PointingHandCursor
+                    anchors.fill: parent
+                    acceptedButtons: Qt.LeftButton | Qt.MiddleButton
+                    cursorShape: Qt.PointingHandCursor
 
-                onClicked: Niri.focusWorkspace(cell.modelData.idx)
+                    onClicked: Niri.focusWorkspace(cell.modelData.idx)
+                }
             }
         }
     }

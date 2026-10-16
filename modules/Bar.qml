@@ -73,11 +73,19 @@ PanelWindow {
 
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
-            width: Math.min(leftRow.implicitWidth + 2 * Theme.barPadding, Math.floor(root.width * 0.4))
+            width: Math.min(leftRow.implicitWidth + 2 * Theme.barPadding, Math.floor(root.width * 0.3))
             height: Theme.barHeight
             radius: Theme.shapeFull
             color: Theme.surfaceContainer
             clip: true
+
+            Behavior on width {
+                NumberAnimation {
+                    duration: 100
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curveEmphasizedDecelerate
+                }
+            }
 
             Behavior on color {
                 ColorAnimation {
@@ -100,7 +108,7 @@ PanelWindow {
                 }
 
                 WindowTitle {
-                    maxWidth: Math.floor(root.width * 0.25)
+                    maxWidth: Math.floor(root.width * 0.18)
                 }
             }
         }
