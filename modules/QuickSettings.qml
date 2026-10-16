@@ -1,0 +1,1308 @@
+pragma ComponentBehavior: Bound
+
+import Quickshell
+import Quickshell.Networking
+import Quickshell.Services.Mpris
+import Quickshell.Services.Pipewire
+import Quickshell.Wayland
+import Quickshell.Widgets
+import QtQuick
+import "../services"
+import "../style"
+
+// Quick settings panel (GNOME/Android style): sliders for brightness and
+// volume, tiles for Wi-Fi / do-not-disturb / night light, a media player row
+// and a collapsed "power" list with the six session actions. Opened from the
+// bar's power button, dismissed by Esc or a click outside.
+PanelWindow {
+    id: root
+
+    required property ShellScreen modelData
+
+    readonly property bool shown: ShellState.quickSettingsScreen === root.modelData.name
+
+    readonly property int cardWidth: 400
+    readonly property int cardPadding: 12
+    readonly property int netRowHeight: 42
+    readonly property int netListMaxHeight: 5 * root.netRowHeight + 2 * 4
+
+    // ---- volume ----------------------------------------------------------------
+
+    readonly property PwNode sink: Pipewire.defaultAudioSink
+    readonly property bool muted: sink?.audio?.muted ?? false
+    readonly property real volume: sink?.audio?.volume ?? 0
+    readonly property int volumePercent: Math.round(root.volume * 100)
+    readonly property bool effectiveMuted: root.muted || root.volumePercent === 0
+    readonly property string volumeIcon: root.effectiveMuted
+        ? Theme.iconVolumeOff
+        : (root.volumePercent < 66 ? Theme.iconVolumeDown : Theme.iconVolumeUp)
+
+    PwObjectTracker {
+        objects: [root.sink]
+    }
+
+    function setVolume(v: real): void {
+        if (root.sink?.ready && root.sink?.audio)
+            root.sink.audio.volume = Math.max(0, Math.min(1.0, v));
+    }
+
+    function toggleMute(): void {
+        if (root.sink?.ready && root.sink?.audio)
+            root.sink.audio.muted = !root.sink.audio.muted;
+    }
+
+    function showVolumeOsd(): void {
+        Osd.show(root.volumeIcon, root.effectiveMuted ? 0 : root.volume);
+    }
+
+    // ---- Wi-Fi -----------------------------------------------------------------
+
+    readonly property var wifiDevice: {
+        for (const d of Networking.devices.values) {
+            if (d.type === DeviceType.Wifi)
+                return d;
+        }
+        return null;
+    }
+
+    readonly property bool wifiEnabled: root.wifiDevice !== null && Networking.wifiEnabled
+
+    // Sorted connected -> known -> strongest signal. Recomputed on open and on
+    // model changes, but not on every signal update, so rows don't jump.
+    readonly property var networkList: {
+        if (!root.shown)
+            return [];
+        const nets = root.wifiDevice ? root.wifiDevice.networks.values : [];
+        return nets.slice().sort((a, b) => {
+            if (a.connected !== b.connected)
+                return a.connected ? -1 : 1;
+            if (a.known !== b.known)
+                return a.known ? -1 : 1;
+            return b.signalStrength - a.signalStrength;
+        });
+    }
+
+    readonly property string wifiSubtitle: {
+        if (!root.wifiEnabled)
+            return "Выключен";
+        const conn = root.networkList.find(n => n.connected);
+        return conn ? conn.name : "Включён";
+    }
+
+    property bool wifiExpanded: false
+    property var pskTarget: null
+    property string wifiError: ""
+    property var forgetArmed: null
+
+    function failText(reason: var): string {
+        switch (reason) {
+        case ConnectionFailReason.NoSecrets:
+            return "нужен пароль";
+        case ConnectionFailReason.WifiAuthTimeout:
+            return "неверный пароль или таймаут";
+        case ConnectionFailReason.WifiClientFailed:
+            return "ошибка аутентификации";
+        case ConnectionFailReason.WifiClientDisconnected:
+            return "соединение разорвано";
+        case ConnectionFailReason.WifiNetworkLost:
+            return "сеть пропала";
+        default:
+            return "неизвестная ошибка";
+        }
+    }
+
+    function activateNetwork(net: var): void {
+        root.wifiError = "";
+        if (net.connected) {
+            net.disconnect();
+            return;
+        }
+        if (net.state === ConnectionState.Connecting)
+            return;
+        if (net.known || net.security === WifiSecurityType.Open) {
+            net.connect();
+            return;
+        }
+        root.pskTarget = net;
+        pskInput.text = "";
+        pskFocus.restart();
+    }
+
+    function submitPsk(): void {
+        if (root.pskTarget !== null && pskInput.text.length > 0) {
+            root.wifiError = "";
+            root.pskTarget.connectWithPsk(pskInput.text);
+        }
+    }
+
+    function forgetNetwork(net: var): void {
+        if (root.forgetArmed === net) {
+            net.forget();
+            root.forgetArmed = null;
+            forgetTimer.stop();
+        } else {
+            root.forgetArmed = net;
+            forgetTimer.restart();
+        }
+    }
+
+    // ---- media player (MPRIS) --------------------------------------------------
+
+    readonly property var player: {
+        const players = Mpris.players.values;
+        return players.find(p => p.isPlaying) ?? players[0] ?? null;
+    }
+
+    // ---- power actions (was the fullscreen PowerMenu) --------------------------
+
+    readonly property var powerActions: [
+        {
+            icon: Theme.iconPower,
+            label: "Выключение",
+            keys: ["s", "ы"],
+            command: ["systemctl", "poweroff"],
+            container: Theme.errorContainer,
+            content: Theme.errorContainerText
+        },
+        {
+            icon: Theme.iconRestart,
+            label: "Перезагрузка",
+            keys: ["r", "к"],
+            command: ["systemctl", "reboot"],
+            container: Theme.primaryContainer,
+            content: Theme.primaryContainerText
+        },
+        {
+            icon: Theme.iconLogout,
+            label: "Выход",
+            keys: ["e", "у"],
+            command: ["niri", "msg", "action", "quit", "--skip-confirmation"],
+            container: Theme.secondaryContainer,
+            content: Theme.secondaryContainerText
+        },
+        {
+            icon: Theme.iconHibernate,
+            label: "Гибернация",
+            keys: ["h", "р"],
+            command: ["systemctl", "hibernate"],
+            container: Theme.tertiaryContainer,
+            content: Theme.tertiaryContainerText
+        },
+        {
+            icon: Theme.iconLock,
+            label: "Блокировка",
+            keys: ["l", "д"],
+            command: ["hyprlock"],
+            container: Theme.surfaceContainerHighest,
+            content: Theme.surfaceText
+        },
+        {
+            icon: Theme.iconSuspend,
+            label: "Сон",
+            keys: ["u", "г"],
+            command: ["systemctl", "suspend"],
+            container: Theme.primary,
+            content: Theme.primaryText
+        }
+    ]
+
+    property bool powerExpanded: false
+
+    // Focus lands on Lock when the list expands: a stray Enter must not power
+    // the machine off.
+    readonly property int defaultPowerIndex: root.powerActions.findIndex(a => a.icon === Theme.iconLock)
+    property int currentPowerIndex: 0
+
+    function movePowerFocus(delta: int): void {
+        const n = root.powerActions.length;
+        root.currentPowerIndex = ((root.currentPowerIndex + delta) % n + n) % n;
+    }
+
+    function activatePower(index: int): void {
+        ShellState.closeQuickSettings();
+        Quickshell.execDetached(root.powerActions[index].command);
+    }
+
+    function activatePowerByLetter(ch: string): bool {
+        for (let i = 0; i < root.powerActions.length; i++) {
+            if (root.powerActions[i].keys.includes(ch)) {
+                root.activatePower(i);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // ---- panel window ----------------------------------------------------------
+
+    screen: modelData
+
+    anchors {
+        top: true
+        left: true
+        right: true
+        bottom: true
+    }
+
+    exclusionMode: ExclusionMode.Ignore
+    color: "transparent"
+    visible: root.shown || card.opacity > 0.001
+
+    WlrLayershell.layer: WlrLayer.Overlay
+    WlrLayershell.namespace: "quickshell:quicksettings"
+    WlrLayershell.keyboardFocus: root.shown ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+
+    onShownChanged: {
+        if (root.wifiDevice)
+            root.wifiDevice.scannerEnabled = root.shown;
+        if (root.shown) {
+            NightLight.recheck();
+            focusKick.restart();
+        } else {
+            root.powerExpanded = false;
+            root.wifiExpanded = false;
+            root.pskTarget = null;
+            root.wifiError = "";
+            root.forgetArmed = null;
+            forgetTimer.stop();
+        }
+    }
+
+    onWifiDeviceChanged: {
+        if (root.wifiDevice)
+            root.wifiDevice.scannerEnabled = root.shown;
+    }
+
+    onWifiEnabledChanged: {
+        if (!root.wifiEnabled)
+            root.pskTarget = null;
+    }
+
+    // Layer surfaces take a moment to gain keyboard focus; make sure the key
+    // catcher ends up active either way.
+    Timer {
+        id: focusKick
+        interval: 50
+        onTriggered: keyCatcher.forceActiveFocus()
+    }
+
+    Timer {
+        id: pskFocus
+        interval: 50
+        onTriggered: pskInput.forceActiveFocus()
+    }
+
+    Timer {
+        id: forgetTimer
+        interval: 3000
+        onTriggered: root.forgetArmed = null
+    }
+
+    // click outside the card dismisses the panel
+    MouseArea {
+        anchors.fill: parent
+        onClicked: ShellState.closeQuickSettings()
+    }
+
+    Item {
+        id: keyCatcher
+
+        anchors.fill: parent
+        focus: root.shown
+
+        Keys.onPressed: event => {
+            if (event.key === Qt.Key_Escape) {
+                if (root.pskTarget !== null)
+                    root.pskTarget = null;
+                else
+                    ShellState.closeQuickSettings();
+                event.accepted = true;
+                return;
+            }
+            if (!root.powerExpanded)
+                return;
+            switch (event.key) {
+            case Qt.Key_Up:
+                root.movePowerFocus(-1);
+                break;
+            case Qt.Key_Down:
+                root.movePowerFocus(1);
+                break;
+            case Qt.Key_Return:
+            case Qt.Key_Enter:
+            case Qt.Key_Space:
+                root.activatePower(root.currentPowerIndex);
+                break;
+            default: {
+                // In a cyrillic layout the letter arrives as Qt.Key_Cyrillic_*,
+                // so also match event.text against the action's `keys`.
+                const ch = event.text.toLowerCase();
+                if (ch.length === 1)
+                    root.activatePowerByLetter(ch);
+            }
+            }
+            event.accepted = true;
+        }
+    }
+
+    Rectangle {
+        id: card
+
+        anchors.top: parent.top
+        anchors.right: parent.right
+        anchors.topMargin: Theme.barHeight + 2 * Theme.barMargin
+        anchors.rightMargin: Theme.barMargin
+
+        width: root.cardWidth
+        height: column.implicitHeight + 2 * root.cardPadding
+        radius: Theme.shapeXL
+        color: Theme.surfaceContainerHigh
+
+        scale: root.shown ? 1 : 0.95
+        opacity: root.shown ? 1 : 0
+
+        Behavior on scale {
+            NumberAnimation {
+                duration: Theme.durShort
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Theme.curveEmphasizedDecelerate
+            }
+        }
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Theme.durShort
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Theme.curveEmphasizedDecelerate
+            }
+        }
+
+        // Swallow clicks on the card so they don't reach the dismiss area.
+        MouseArea {
+            anchors.fill: parent
+        }
+
+        Column {
+            id: column
+
+            anchors {
+                top: parent.top
+                left: parent.left
+                right: parent.right
+                margins: root.cardPadding
+            }
+
+            spacing: 8
+
+            // ---- brightness slider ----------------------------------------------
+
+            Row {
+                id: brightnessRow
+
+                width: parent.width
+                spacing: 10
+                visible: Brightness.deviceFound
+
+                Item {
+                    width: 32
+                    height: 32
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: Brightness.icon
+                        color: Theme.tertiary
+                        font.family: Theme.iconFont
+                        font.pixelSize: 20
+                    }
+                }
+
+                QsSlider {
+                    id: brightnessSlider
+
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: brightnessRow.width - 32 - 40 - 20
+
+                    property real dragValue: -1
+
+                    value: dragValue >= 0 ? dragValue : Brightness.percent / 100
+
+                    onMoved: v => dragValue = v
+                    onCommitted: v => {
+                        dragValue = -1;
+                        Brightness.setPercent(v * 100);
+                    }
+                }
+
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 40
+                    text: Math.round(brightnessSlider.value * 100) + "%"
+                    color: Theme.surfaceText
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeLabelLarge
+                    font.weight: Font.Medium
+                    horizontalAlignment: Text.AlignRight
+                }
+            }
+
+            // ---- volume slider ---------------------------------------------------
+
+            Row {
+                id: volumeRow
+
+                width: parent.width
+                spacing: 10
+                visible: root.sink !== null
+
+                Item {
+                    width: 32
+                    height: 32
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: root.volumeIcon
+                        color: root.effectiveMuted ? Theme.surfaceVariantText : Theme.primary
+                        font.family: Theme.iconFont
+                        font.pixelSize: 20
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            root.toggleMute();
+                            root.showVolumeOsd();
+                        }
+                    }
+                }
+
+                QsSlider {
+                    id: volumeSlider
+
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: volumeRow.width - 32 - 40 - 20
+
+                    value: root.effectiveMuted ? 0 : root.volume
+                    handleColor: root.effectiveMuted ? Theme.surfaceVariantText : Theme.primary
+
+                    onMoved: v => {
+                        if (root.sink?.ready && root.sink?.audio) {
+                            root.sink.audio.muted = false;
+                            root.sink.audio.volume = v;
+                        }
+                    }
+                    onCommitted: v => {
+                        root.setVolume(v);
+                        root.showVolumeOsd();
+                    }
+                }
+
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 40
+                    text: Math.round(volumeSlider.value * 100) + "%"
+                    color: Theme.surfaceText
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeLabelLarge
+                    font.weight: Font.Medium
+                    horizontalAlignment: Text.AlignRight
+                }
+            }
+
+            // ---- tiles -------------------------------------------------------------
+
+            Grid {
+                id: tileGrid
+
+                width: parent.width
+                columns: 2
+                columnSpacing: 8
+                rowSpacing: 8
+
+                readonly property real tileWidth: (width - columnSpacing) / 2
+
+                QsTile {
+                    width: tileGrid.tileWidth
+                    visible: root.wifiDevice !== null
+                    icon: root.wifiEnabled ? Theme.iconWifi : Theme.iconWifiOff
+                    title: "Wi-Fi"
+                    subtitle: root.wifiSubtitle
+                    active: root.wifiEnabled
+                    hasDetails: true
+                    detailsExpanded: root.wifiExpanded
+
+                    onActivated: Networking.wifiEnabled = !root.wifiEnabled
+                    onDetailsToggled: root.wifiExpanded = !root.wifiExpanded
+                }
+
+                QsTile {
+                    width: tileGrid.tileWidth
+                    icon: Theme.iconDnd
+                    title: "Не беспокоить"
+                    active: Notifications.dnd
+
+                    onActivated: Notifications.toggleDnd()
+                }
+
+                QsTile {
+                    width: tileGrid.tileWidth
+                    visible: NightLight.available
+                    icon: Theme.iconNightlight
+                    title: "Ночной свет"
+                    active: NightLight.enabled
+
+                    onActivated: NightLight.toggle()
+                }
+            }
+
+            // ---- wi-fi network list -------------------------------------------------
+
+            Rectangle {
+                id: wifiListBox
+
+                width: parent.width
+                visible: root.wifiExpanded || height > 0.5
+                height: root.wifiExpanded ? wifiColumn.implicitHeight + 16 : 0
+                radius: Theme.shapeLG
+                color: Theme.surfaceContainerLow
+                clip: true
+
+                Behavior on height {
+                    NumberAnimation {
+                        duration: Theme.durMedium
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curveEmphasizedDecelerate
+                    }
+                }
+
+                Column {
+                    id: wifiColumn
+
+                    anchors {
+                        top: parent.top
+                        left: parent.left
+                        right: parent.right
+                        margins: 8
+                    }
+
+                    spacing: 2
+
+                    Text {
+                        width: parent.width
+                        visible: !root.wifiEnabled
+                        text: "Wi-Fi выключен"
+                        color: Theme.surfaceVariantText
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.fontSizeLabelLarge
+                    }
+
+                    Text {
+                        width: parent.width
+                        visible: root.wifiEnabled && root.networkList.length === 0
+                        text: "Поиск сетей…"
+                        color: Theme.surfaceVariantText
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.fontSizeLabelLarge
+                    }
+
+                    ListView {
+                        id: netList
+
+                        width: parent.width
+                        visible: root.wifiEnabled
+                        implicitHeight: root.networkList.length * (root.netRowHeight + 2) - 2
+                        height: Math.min(implicitHeight, root.netListMaxHeight)
+                        clip: true
+                        model: root.networkList
+                        spacing: 2
+
+                        delegate: NetworkRow {}
+                    }
+
+                    // password prompt for a new secured network
+                    Item {
+                        width: parent.width
+                        visible: root.pskTarget !== null
+                        implicitHeight: visible ? 40 : 0
+
+                        Rectangle {
+                            id: pskField
+
+                            anchors.left: parent.left
+                            anchors.leftMargin: 4
+                            anchors.right: pskConnect.left
+                            anchors.rightMargin: 8
+                            anchors.verticalCenter: parent.verticalCenter
+                            height: 32
+                            radius: Theme.shapeFull
+                            color: Theme.surfaceContainerHighest
+
+                            Text {
+                                anchors.left: parent.left
+                                anchors.leftMargin: 12
+                                anchors.verticalCenter: parent.verticalCenter
+                                visible: pskInput.text.length === 0
+                                text: "Пароль"
+                                color: Theme.surfaceVariantText
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Theme.fontSizeLabelLarge
+                            }
+
+                            TextInput {
+                                id: pskInput
+
+                                anchors.fill: parent
+                                anchors.leftMargin: 12
+                                anchors.rightMargin: 12
+                                verticalAlignment: TextInput.AlignVCenter
+                                clip: true
+                                echoMode: TextInput.Password
+                                color: Theme.surfaceText
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Theme.fontSizeLabelLarge
+                                selectByMouse: true
+                                selectionColor: Theme.primary
+                                selectedTextColor: Theme.primaryText
+
+                                onAccepted: root.submitPsk()
+                            }
+                        }
+
+                        Text {
+                            id: pskConnect
+
+                            anchors.right: parent.right
+                            anchors.rightMargin: 10
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: "Подключить"
+                            color: Theme.primary
+                            font.family: Theme.fontFamily
+                            font.pixelSize: Theme.fontSizeLabelLarge
+                            font.weight: Font.Medium
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: root.submitPsk()
+                            }
+                        }
+                    }
+
+                    Text {
+                        width: parent.width
+                        visible: text !== ""
+                        text: root.wifiError
+                        color: Theme.error
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.fontSizeLabelMedium
+                        wrapMode: Text.WordWrap
+                    }
+                }
+            }
+
+            // ---- media player -------------------------------------------------------
+
+            Rectangle {
+                id: mediaRow
+
+                width: parent.width
+                visible: root.player !== null
+                height: visible ? 52 : 0
+                radius: Theme.shapeLG
+                color: Theme.surfaceContainerHighest
+
+                Item {
+                    anchors.fill: parent
+                    anchors.margins: 6
+
+                    ClippingRectangle {
+                        id: art
+
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: 40
+                        height: 40
+                        radius: Theme.shapeSM
+                        color: Theme.surfaceContainerHigh
+
+                        Image {
+                            id: artImage
+
+                            anchors.fill: parent
+                            source: root.player?.trackArtUrl ?? ""
+                            visible: status === Image.Ready
+                            fillMode: Image.PreserveAspectCrop
+                            sourceSize.width: 80
+                            sourceSize.height: 80
+                        }
+
+                        Text {
+                            anchors.centerIn: parent
+                            visible: !artImage.visible
+                            text: Theme.iconMusic
+                            color: Theme.surfaceVariantText
+                            font.family: Theme.iconFont
+                            font.pixelSize: 20
+                        }
+                    }
+
+                    Row {
+                        id: mediaButtons
+
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 2
+
+                        MiniIconButton {
+                            icon: Theme.iconPrevious
+                            opacity: root.player?.canGoPrevious ? 1 : 0.35
+                            onClicked: {
+                                if (root.player?.canGoPrevious)
+                                    root.player.previous();
+                            }
+                        }
+
+                        MiniIconButton {
+                            icon: root.player?.isPlaying ? Theme.iconPause : Theme.iconPlay
+                            opacity: root.player?.canTogglePlaying ? 1 : 0.35
+                            onClicked: {
+                                if (root.player?.canTogglePlaying)
+                                    root.player.togglePlaying();
+                            }
+                        }
+
+                        MiniIconButton {
+                            icon: Theme.iconNext
+                            opacity: root.player?.canGoNext ? 1 : 0.35
+                            onClicked: {
+                                if (root.player?.canGoNext)
+                                    root.player.next();
+                            }
+                        }
+                    }
+
+                    Column {
+                        anchors.left: art.right
+                        anchors.leftMargin: 10
+                        anchors.right: mediaButtons.left
+                        anchors.rightMargin: 8
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 1
+
+                        Text {
+                            width: parent.width
+                            text: root.player?.trackTitle ?? ""
+                            color: Theme.surfaceText
+                            font.family: Theme.fontFamily
+                            font.pixelSize: Theme.fontSizeLabelLarge
+                            font.weight: Font.Medium
+                            elide: Text.ElideRight
+                        }
+
+                        Text {
+                            width: parent.width
+                            text: root.player?.trackArtist ?? ""
+                            color: Theme.surfaceVariantText
+                            font.family: Theme.fontFamily
+                            font.pixelSize: Theme.fontSizeLabelMedium
+                            elide: Text.ElideRight
+                        }
+                    }
+                }
+            }
+
+            // ---- power section (collapsed by default) --------------------------------
+
+            Rectangle {
+                id: powerHeader
+
+                width: parent.width
+                height: 40
+                radius: Theme.shapeMD
+                color: "transparent"
+
+                StateLayer {
+                    hovered: powerHover.hovered
+                    pressed: powerTap.pressed
+                    color: Theme.surfaceText
+                }
+
+                Text {
+                    anchors.left: parent.left
+                    anchors.leftMargin: 10
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "Питание"
+                    color: Theme.surfaceText
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeLabelLarge
+                    font.weight: Font.Medium
+                }
+
+                Text {
+                    anchors.right: parent.right
+                    anchors.rightMargin: 10
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: Theme.iconExpandMore
+                    color: Theme.surfaceVariantText
+                    font.family: Theme.iconFont
+                    font.pixelSize: 20
+                    rotation: root.powerExpanded ? 180 : 0
+
+                    Behavior on rotation {
+                        NumberAnimation {
+                            duration: Theme.durMedium
+                            easing.type: Easing.BezierSpline
+                            easing.bezierCurve: Theme.curveEmphasized
+                        }
+                    }
+                }
+
+                MouseArea {
+                    id: powerTap
+
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        root.powerExpanded = !root.powerExpanded;
+                        if (root.powerExpanded)
+                            root.currentPowerIndex = root.defaultPowerIndex;
+                    }
+                }
+
+                HoverHandler {
+                    id: powerHover
+                }
+            }
+
+            Column {
+                id: powerList
+
+                width: parent.width
+                spacing: 4
+                height: root.powerExpanded ? implicitHeight : 0
+                clip: true
+
+                Behavior on height {
+                    NumberAnimation {
+                        duration: Theme.durMedium
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curveEmphasizedDecelerate
+                    }
+                }
+
+                Repeater {
+                    model: root.powerActions
+
+                    PowerRow {
+                        focused: root.currentPowerIndex === index
+
+                        onActivated: root.activatePower(index)
+                    }
+                }
+            }
+        }
+    }
+
+    // ---- inline components -----------------------------------------------------------
+
+    // M3 slider: track, active portion and a handle; `moved` fires while
+    // dragging, `committed` on release.
+    component QsSlider: Item {
+        id: slider
+
+        property real value: 0
+        property color handleColor: Theme.primary
+
+        signal moved(real position)
+        signal committed(real position)
+
+        implicitHeight: 32
+
+        function valueAt(x: real): real {
+            const inset = 9;
+            return Math.max(0, Math.min(1, (x - inset) / Math.max(1, slider.width - 2 * inset)));
+        }
+
+        Rectangle {
+            id: track
+
+            anchors.verticalCenter: parent.verticalCenter
+            width: parent.width
+            height: 4
+            radius: height / 2
+            color: Theme.surfaceContainerHighest
+
+            Rectangle {
+                x: 9
+                width: Math.max(0, slider.value * (parent.width - 18))
+                height: parent.height
+                radius: parent.radius
+                color: slider.handleColor
+            }
+        }
+
+        Rectangle {
+            width: dragArea.pressed || dragArea.containsMouse ? 12 : 10
+            height: width
+            radius: width / 2
+            x: 9 + slider.value * (parent.width - 18) - width / 2
+            anchors.verticalCenter: parent.verticalCenter
+            color: slider.handleColor
+
+            Behavior on width {
+                NumberAnimation {
+                    duration: Theme.durShort
+                }
+            }
+        }
+
+        MouseArea {
+            id: dragArea
+
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            preventStealing: true
+
+            onPressed: mouse => slider.moved(slider.valueAt(mouse.x))
+            onPositionChanged: mouse => {
+                if (dragArea.pressed)
+                    slider.moved(slider.valueAt(mouse.x));
+            }
+            onReleased: mouse => slider.committed(slider.valueAt(mouse.x))
+        }
+    }
+
+    // Large toggle tile: icon + title (+ subtitle), tonal when active; an
+    // optional right-side chevron toggles a details section.
+    component QsTile: Rectangle {
+        id: tile
+
+        property string icon: ""
+        property string title: ""
+        property string subtitle: ""
+        property bool active: false
+        property bool hasDetails: false
+        property bool detailsExpanded: false
+
+        signal activated
+        signal detailsToggled
+
+        implicitHeight: 64
+        radius: Theme.shapeLG
+        color: tile.active ? Theme.primaryContainer : Theme.surfaceContainerHighest
+
+        Behavior on color {
+            ColorAnimation {
+                duration: Theme.durMedium
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Theme.curveEmphasized
+            }
+        }
+
+        StateLayer {
+            hovered: tileHover.hovered
+            pressed: tileTap.pressed
+            color: tile.active ? Theme.primaryContainerText : Theme.surfaceText
+        }
+
+        Item {
+            anchors.fill: parent
+            anchors.margins: 12
+
+            Text {
+                id: tileIcon
+
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                text: tile.icon
+                color: tile.active ? Theme.primaryContainerText : Theme.surfaceVariantText
+                font.family: Theme.iconFont
+                font.pixelSize: 22
+
+                Behavior on color {
+                    ColorAnimation {
+                        duration: Theme.durShort
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curveEmphasized
+                    }
+                }
+            }
+
+            Column {
+                anchors.left: tileIcon.right
+                anchors.leftMargin: 10
+                anchors.right: parent.right
+                anchors.rightMargin: tile.hasDetails ? 28 : 0
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 0
+
+                Text {
+                    width: parent.width
+                    text: tile.title
+                    color: tile.active ? Theme.primaryContainerText : Theme.surfaceText
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeLabelLarge
+                    font.weight: Font.Medium
+                    elide: Text.ElideRight
+                }
+
+                Text {
+                    width: parent.width
+                    visible: text !== ""
+                    text: tile.subtitle
+                    color: tile.active ? Theme.primaryContainerText : Theme.surfaceVariantText
+                    opacity: 0.75
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeLabelMedium
+                    elide: Text.ElideRight
+                }
+            }
+        }
+
+        MouseArea {
+            id: tileTap
+
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onClicked: tile.activated()
+        }
+
+        MouseArea {
+            id: detailsTap
+
+            visible: tile.hasDetails
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            width: 40
+            cursorShape: Qt.PointingHandCursor
+            onClicked: tile.detailsToggled()
+
+            Text {
+                anchors.centerIn: parent
+                text: tile.detailsExpanded ? Theme.iconExpandLess : Theme.iconExpandMore
+                color: tile.active ? Theme.primaryContainerText : Theme.surfaceVariantText
+                font.family: Theme.iconFont
+                font.pixelSize: 20
+            }
+        }
+
+        HoverHandler {
+            id: tileHover
+        }
+    }
+
+    // One available Wi-Fi network: name, lock, signal/status, forget button.
+    component NetworkRow: Rectangle {
+        id: row
+
+        required property var modelData
+
+        readonly property var net: modelData
+        readonly property bool hovered: rowHover.hovered
+        readonly property bool connecting: row.net.state === ConnectionState.Connecting
+        readonly property bool armed: root.forgetArmed === row.net
+        readonly property bool secured: row.net.security !== WifiSecurityType.Open
+
+        width: ListView.view ? ListView.view.width : 0
+        height: root.netRowHeight
+        radius: Theme.shapeMD
+        color: "transparent"
+
+        StateLayer {
+            hovered: row.hovered
+            pressed: rowTap.pressed
+            color: Theme.surfaceText
+        }
+
+        Text {
+            id: rowIcon
+
+            anchors.left: parent.left
+            anchors.leftMargin: 8
+            anchors.verticalCenter: parent.verticalCenter
+            text: Theme.iconWifi
+            color: row.net.connected ? Theme.primary : Theme.surfaceVariantText
+            font.family: Theme.iconFont
+            font.pixelSize: 18
+        }
+
+        Text {
+            id: rowStatus
+
+            anchors.right: forgetButton.visible ? forgetButton.left : parent.right
+            anchors.rightMargin: 8
+            anchors.verticalCenter: parent.verticalCenter
+            text: row.connecting ? "Подключение…" : (row.net.connected ? "Подключено" : Math.round(row.net.signalStrength * 100) + "%")
+            color: row.connecting || row.net.connected ? Theme.primary : Theme.surfaceVariantText
+            font.family: Theme.fontFamily
+            font.pixelSize: Theme.fontSizeLabelMedium
+        }
+
+        Text {
+            id: rowLock
+
+            anchors.right: rowStatus.left
+            anchors.rightMargin: 8
+            anchors.verticalCenter: parent.verticalCenter
+            visible: row.secured && !row.connecting
+            text: Theme.iconLock
+            color: Theme.surfaceVariantText
+            font.family: Theme.iconFont
+            font.pixelSize: 14
+        }
+
+        Text {
+            id: rowName
+
+            anchors.left: rowIcon.right
+            anchors.leftMargin: 8
+            anchors.right: rowLock.visible ? rowLock.left : rowStatus.left
+            anchors.rightMargin: 8
+            anchors.verticalCenter: parent.verticalCenter
+            text: row.armed ? "Забыть сеть?" : row.net.name
+            color: row.armed ? Theme.error : Theme.surfaceText
+            font.family: Theme.fontFamily
+            font.pixelSize: Theme.fontSizeLabelLarge
+            font.weight: row.net.connected ? Font.Medium : Font.Normal
+            elide: Text.ElideRight
+        }
+
+        MiniIconButton {
+            id: forgetButton
+
+            visible: (row.hovered || row.armed) && row.net.known && !row.connecting
+            anchors.right: parent.right
+            anchors.rightMargin: 4
+            anchors.verticalCenter: parent.verticalCenter
+            icon: Theme.iconDelete
+            contentColor: row.armed ? Theme.error : Theme.surfaceVariantText
+
+            onClicked: root.forgetNetwork(row.net)
+        }
+
+        MouseArea {
+            id: rowTap
+
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onClicked: root.activateNetwork(row.net)
+        }
+
+        Connections {
+            target: row.net
+
+            function onConnectedChanged(): void {
+                if (row.net.connected && root.pskTarget === row.net)
+                    root.pskTarget = null;
+            }
+
+            function onConnectionFailed(reason): void {
+                root.wifiError = "Не удалось подключиться: " + root.failText(reason);
+            }
+        }
+
+        HoverHandler {
+            id: rowHover
+        }
+    }
+
+    // Power action row, same palette as the old fullscreen PowerMenu.
+    component PowerRow: Rectangle {
+        id: row
+
+        required property int index
+        required property var modelData
+
+        property bool focused: false
+
+        readonly property bool pressed: rowTap.pressed
+        readonly property bool hovered: rowHover.hovered
+
+        signal activated
+
+        width: parent ? parent.width : 0
+        height: 44
+        radius: Theme.shapeLG
+        color: row.modelData.container
+        scale: row.pressed ? 0.98 : 1
+
+        Behavior on scale {
+            NumberAnimation {
+                duration: Theme.durShort
+                easing.type: Easing.OutBack
+                easing.overshoot: 1.4
+            }
+        }
+
+        StateLayer {
+            hovered: row.hovered
+            pressed: row.pressed
+            color: row.modelData.content
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            radius: parent.radius
+            color: "transparent"
+            border.width: 2
+            border.color: row.modelData.content
+            opacity: row.focused ? 1 : 0
+
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: Theme.durShort
+                }
+            }
+        }
+
+        Text {
+            id: rowIcon
+
+            anchors.left: parent.left
+            anchors.leftMargin: 12
+            anchors.verticalCenter: parent.verticalCenter
+            text: row.modelData.icon
+            color: row.modelData.content
+            font.family: Theme.iconFont
+            font.pixelSize: 20
+        }
+
+        Text {
+            id: rowLabel
+
+            anchors.left: rowIcon.right
+            anchors.leftMargin: 10
+            anchors.verticalCenter: parent.verticalCenter
+            text: row.modelData.label
+            color: row.modelData.content
+            font.family: Theme.fontFamily
+            font.pixelSize: Theme.fontSizeLabelLarge
+            font.weight: Font.Medium
+        }
+
+        Text {
+            anchors.right: parent.right
+            anchors.rightMargin: 12
+            anchors.verticalCenter: parent.verticalCenter
+            text: row.modelData.keys[0].toUpperCase()
+            color: row.modelData.content
+            opacity: 0.55
+            font.family: Theme.fontFamily
+            font.pixelSize: Theme.fontSizeLabelMedium
+            font.weight: Font.Medium
+        }
+
+        MouseArea {
+            id: rowTap
+
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onClicked: row.activated()
+        }
+
+        HoverHandler {
+            id: rowHover
+        }
+    }
+}

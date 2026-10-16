@@ -201,4 +201,15 @@ Singleton {
     readonly property var iconBatteryBars: [ // battery_0_bar .. battery_6_bar
         "\uEBDC", "\uEBD9", "\uEBE0", "\uEBDD", "\uEBE2", "\uEBD4", "\uEBD2"
     ]
+    readonly property string iconWifi: "\uE63E" // wifi
+    readonly property string iconWifiOff: "\uE648" // wifi_off
+    readonly property string iconDnd: "\uE612" // do_not_disturb
+    readonly property string iconNightlight: "\uEF5E" // nightlight
+    readonly property string iconExpandMore: "\uE5CF" // expand_more
+    readonly property string iconExpandLess: "\uE5CE" // expand_less
+    readonly property string iconPlay: "\uE037" // play_arrow
+    readonly property string iconPause: "\uE034" // pause
+    readonly property string iconNext: "\uE044" // skip_next
+    readonly property string iconPrevious: "\uE045" // skip_previous
+    readonly property string iconMusic: "\uE3A1" // music_note
 }

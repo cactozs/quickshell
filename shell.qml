@@ -11,7 +11,7 @@ ShellRoot {
     Variants {
         model: Quickshell.screens
 
-        PowerMenu {}
+        QuickSettings {}
     }
 
     Variants {

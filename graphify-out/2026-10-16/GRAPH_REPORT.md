@@ -1,17 +1,17 @@
 # Graph Report - quickshell  (2026-10-16)
 
 ## Corpus Check
-- 28 files · ~10,848 words
+- 33 files · ~13,592 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 2 file(s) not represented in the graph (top: (none) 2)
 
 ## Summary
-- 84 nodes · 119 edges · 11 communities (7 shown, 4 thin omitted)
+- 89 nodes · 119 edges · 16 communities (7 shown, 9 thin omitted)
 - Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 7 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `0773659e`
+- Built from commit: `af4617e1`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -57,7 +57,7 @@
 - **niri IPC integration (event stream + action bridge)** — services_niri_niri, services_niri_handleline, services_niri_layoutswitched, modules_workspaces_workspaces, modules_windowtitle_windowtitle, modules_keyboardlayout_keyboardlayout, modules_layoutbadge_layoutbadge [EXTRACTED 1.00]
 - **Cross-window overlay open/close flow via ShellState** — services_shellstate_shellstate, modules_bar_bar, modules_powerbutton_powerbutton, modules_powermenu_powermenu, modules_launcher_launcher, modules_clipboardlauncher_clipboardlauncher [INFERRED 0.95]
 
-## Communities (11 total, 4 thin omitted)
+## Communities (16 total, 9 thin omitted)
 
 ### Community 0 - "Bar Status Chips"
 Cohesion: 0.16
@@ -89,19 +89,19 @@ Nodes (3): Workspaces (niri workspace chips), Niri.workspaces state, workspacesF
 
 ## Knowledge Gaps
 - **4 isolated node(s):** `TimeClock (clock chip)`, `IPC target: bar`, `ShellState (cross-window state singleton)`, `IPC target: power`
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 23 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **4 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 28 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **9 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Bar (M3 floating pill panel)` connect `Bar Status Chips` to `Niri IPC Integration`, `Power Menu & Shell Root`, `M3 Theme & Controls`, `Niri Workspaces`?**
-  _High betweenness centrality (0.269) - this node is a cross-community bridge._
+  _High betweenness centrality (0.239) - this node is a cross-community bridge._
 - **Are the 2 inferred relationships involving `IconButton (M3 chip control base)` (e.g. with `PowerAction (inline action tile)` and `Material 3 Expressive design language`) actually correct?**
   _`IconButton (M3 chip control base)` has 2 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `TimeClock (clock chip)`, `IPC target: bar`, `ShellState (cross-window state singleton)` to the rest of the system?**
   _4 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Why does `ShellRoot (per-screen shell entry point)` connect `Power Menu & Shell Root` to `Bar Status Chips`, `Niri IPC Integration`, `Clipboard Overlay`, `App Launcher Overlay`?**
-  _High betweenness centrality (0.234) - this node is a cross-community bridge._
+  _High betweenness centrality (0.208) - this node is a cross-community bridge._
 - **Why does `Launcher (app launcher overlay, wofi replacement)` connect `App Launcher Overlay` to `Niri IPC Integration`, `Clipboard Overlay`, `Power Menu & Shell Root`, `M3 Theme & Controls`?**
-  _High betweenness centrality (0.225) - this node is a cross-community bridge._
+  _High betweenness centrality (0.200) - this node is a cross-community bridge._

@@ -1,4 +1,5 @@
 {
+  "4": "PowerButton (tonal power toggle)",
   "8": "CalendarPopup.qml",
   "9": "OsdBadge.qml",
   "10": "Osd.qml",
@@ -6,5 +7,10 @@
   "12": "NotificationBell.qml",
   "13": "NotificationCenter.qml",
   "14": "NotificationToast.qml",
-  "15": "Notifications.qml"
+  "15": "Notifications.qml",
+  "16": "handleLine() event dispatch",
+  "17": "QuickSettings.qml",
+  "18": "Brightness.qml",
+  "19": "NightLight.qml",
+  "20": "closePowerMenu"
 }

@@ -5,7 +5,7 @@ import QtQuick
 import "../services"
 import "../style"
 
-// Filled tonal icon button (primaryContainer); toggles the power menu.
+// Filled tonal icon button (primaryContainer); toggles the quick settings panel.
 IconButton {
     id: root
 
@@ -16,5 +16,5 @@ IconButton {
     containerColor: Theme.primaryContainer
     contentColor: Theme.primaryContainerText
 
-    onClicked: ShellState.togglePowerMenu(root.screenName)
+    onClicked: ShellState.toggleQuickSettings(root.screenName)
 }
