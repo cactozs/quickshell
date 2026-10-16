@@ -1,5 +1,10 @@
 {
   "8": "CalendarPopup.qml",
   "9": "OsdBadge.qml",
-  "10": "Osd.qml"
+  "10": "Osd.qml",
+  "11": "MiniIconButton.qml",
+  "12": "NotificationBell.qml",
+  "13": "NotificationCenter.qml",
+  "14": "NotificationToast.qml",
+  "15": "Notifications.qml"
 }

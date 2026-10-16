@@ -185,6 +185,8 @@ Singleton {
     readonly property string iconSuspend: "\uE1A2" // pause_circle
     readonly property string iconHibernate: "\uF159" // bedtime
     readonly property string iconCalendar: "\uE935" // calendar_today
+    readonly property string iconNotifications: "\uE7F5" // notifications
+    readonly property string iconNotificationsOff: "\uE7F6" // notifications_off
     readonly property string iconClock: "\uE8B5" // schedule
     readonly property string iconMonitoring: "\uF190" // monitoring
     readonly property string iconApps: "\uE5C3" // apps

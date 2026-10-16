@@ -6,12 +6,13 @@ import Quickshell.Io
 import QtQuick
 
 // Cross-window shell state. Currently: which screen shows the power menu,
-// which screen shows the app launcher and which one shows the clipboard
-// history (empty string = closed), plus whether the bar is hidden. The IPC
-// targets let scripts toggle them:
+// which screen shows the app launcher, which one shows the clipboard history
+// and which one shows the notification center (empty string = closed), plus
+// whether the bar is hidden. The IPC targets let scripts toggle them:
 //   qs ipc call power toggle
 //   qs ipc call launcher toggle
 //   qs ipc call clipboard toggle
+//   qs ipc call center toggle
 //   qs ipc call bar toggle
 Singleton {
     id: root
@@ -19,6 +20,7 @@ Singleton {
     property string powerMenuScreen: ""
     property string launcherScreen: ""
     property string clipboardScreen: ""
+    property string notificationScreen: ""
 
     // Carried in-memory across config reloads, so a hidden bar stays hidden
     // while editing the shell.
@@ -52,6 +54,14 @@ Singleton {
 
     function closeClipboard(): void {
         root.clipboardScreen = "";
+    }
+
+    function toggleNotificationCenter(screenName: string): void {
+        root.notificationScreen = root.notificationScreen === screenName ? "" : screenName;
+    }
+
+    function closeNotificationCenter(): void {
+        root.notificationScreen = "";
     }
 
     function toggleBar(): void {
@@ -105,6 +115,26 @@ Singleton {
 
         function close(): void {
             root.closeClipboard();
+        }
+    }
+
+    IpcHandler {
+        target: "center"
+
+        // Opens on the first screen; useful for testing and scripted use.
+        function toggle(): void {
+            const screens = Quickshell.screens;
+            root.toggleNotificationCenter(screens.length > 0 ? screens[0].name : "");
+        }
+
+        // Toggles on a specific screen; niri keybinds pass the focused output.
+        function toggleOn(screenName: string): void {
+            const screens = Quickshell.screens;
+            root.toggleNotificationCenter(screenName !== "" ? screenName : (screens.length > 0 ? screens[0].name : ""));
+        }
+
+        function close(): void {
+            root.closeNotificationCenter();
         }
     }
 

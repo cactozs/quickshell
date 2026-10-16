@@ -37,4 +37,16 @@ ShellRoot {
 
         ClipboardLauncher {}
     }
+
+    Variants {
+        model: Quickshell.screens
+
+        NotificationToast {}
+    }
+
+    Variants {
+        model: Quickshell.screens
+
+        NotificationCenter {}
+    }
 }

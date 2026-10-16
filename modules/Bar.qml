@@ -93,6 +93,10 @@ PanelWindow {
             Volume {}
             Battery {}
 
+            NotificationBell {
+                screenName: root.modelData.name
+            }
+
             PowerButton {
                 screenName: root.modelData.name
             }
