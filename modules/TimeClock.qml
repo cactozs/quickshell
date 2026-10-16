@@ -5,7 +5,7 @@ import QtQuick
 import QtQuick.Layouts
 import "../style"
 
-// Clock with an M3 schedule glyph; tooltip disabled, like the waybar module.
+// Clock with an M3 schedule glyph; click toggles the weather popup.
 Item {
     id: root
 
@@ -28,7 +28,7 @@ Item {
             text: Theme.iconClock
             color: Theme.surfaceVariantText
             font.family: Theme.iconFont
-            font.pixelSize: Theme.iconSizeSmall
+            font.pixelSize: Theme.iconSize
         }
 
         Text {
@@ -39,5 +39,17 @@ Item {
             font.pixelSize: Theme.fontSizeLabelLarge
             font.weight: Font.Medium
         }
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.LeftButton
+        cursorShape: Qt.PointingHandCursor
+        onClicked: popup.shown = !popup.shown
+    }
+
+    WeatherPopup {
+        id: popup
+        target: root
     }
 }

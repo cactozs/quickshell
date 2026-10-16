@@ -28,7 +28,7 @@ PanelWindow {
     readonly property int cardWidth: 560
     readonly property int cardPadding: 20
     readonly property int listMaxHeight: Math.floor(root.height * 0.5)
-    readonly property int rowHeight: 52
+    readonly property int rowHeight: 56
     readonly property int rowSpacing: 2
 
     // ---- state -----------------------------------------------------------------
@@ -37,8 +37,8 @@ PanelWindow {
     readonly property string query: input.text
     property int currentIndex: 0
 
-    // All entries alphabetically while the query is empty, otherwise scored
-    // matches. Only the visible instance bothers computing anything.
+    // Most-launched first while the query is empty (alphabetical on ties),
+    // scored matches otherwise. Only the visible instance bothers computing
     readonly property var results: {
         if (!root.visible)
             return [];
@@ -46,7 +46,8 @@ PanelWindow {
         const entries = root.allEntries;
         const q = root.query.toLowerCase().trim();
         if (q === "")
-            return entries.slice().sort((a, b) => a.name.localeCompare(b.name));
+            // Most launched first, alphabetical on ties.
+            return entries.slice().sort((a, b) => (AppUsage.launchCount(b) - AppUsage.launchCount(a)) || a.name.localeCompare(b.name));
 
         const scored = [];
         for (let i = 0; i < entries.length; i++) {
@@ -128,6 +129,7 @@ PanelWindow {
         if (!entry)
             return;
 
+        AppUsage.recordLaunch(entry);
         ShellState.closeLauncher();
         if (entry.runInTerminal)
             Quickshell.execDetached({
@@ -180,7 +182,7 @@ PanelWindow {
 
         anchors.fill: parent
         color: Theme.scrim
-        opacity: root.shown ? 0.5 : 0
+        opacity: root.shown ? Theme.scrimOpacity : 0
 
         Behavior on opacity {
             NumberAnimation {
@@ -207,14 +209,15 @@ PanelWindow {
         radius: Theme.shapeXL
         color: Theme.surfaceContainerHigh
 
-        scale: root.shown ? 1 : 0.85
+        scale: root.shown ? 1 : 0.9
         opacity: root.shown ? 1 : 0
 
+        // M3E card entrance: springy scale under a faster fade.
         Behavior on scale {
             NumberAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasizedDecelerate
+                duration: Theme.durMedium
+                easing.type: Easing.OutBack
+                easing.overshoot: Theme.springOvershoot
             }
         }
 
@@ -250,7 +253,7 @@ PanelWindow {
                 id: searchBar
 
                 width: parent.width
-                implicitHeight: 48
+                implicitHeight: 56
                 height: implicitHeight
                 radius: Theme.shapeFull
                 color: Theme.surfaceContainerHighest
@@ -264,7 +267,7 @@ PanelWindow {
                     text: Theme.iconSearch
                     color: input.activeFocus ? Theme.primary : Theme.surfaceVariantText
                     font.family: Theme.iconFont
-                    font.pixelSize: Theme.iconSize
+                    font.pixelSize: Theme.iconSizeMedium
 
                     Behavior on color {
                         ColorAnimation {
@@ -284,7 +287,7 @@ PanelWindow {
                     text: "Поиск приложений…"
                     color: Theme.surfaceVariantText
                     font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSizeLabelLarge
+                    font.pixelSize: Theme.fontSizeTitleMedium
                     elide: Text.ElideRight
                     visible: input.text.length === 0
                 }
@@ -301,7 +304,7 @@ PanelWindow {
 
                     color: Theme.surfaceText
                     font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSizeLabelLarge
+                    font.pixelSize: Theme.fontSizeTitleMedium
                     selectByMouse: true
                     selectionColor: Theme.primary
                     selectedTextColor: Theme.primaryText
@@ -335,13 +338,12 @@ PanelWindow {
                     id: clearButton
 
                     anchors.right: parent.right
-                    anchors.rightMargin: 6
+                    anchors.rightMargin: 8
                     anchors.verticalCenter: parent.verticalCenter
                     visible: input.text.length > 0
 
                     round: true
                     icon: Theme.iconClose
-                    hPadding: 9
 
                     onClicked: {
                         input.text = "";
@@ -360,6 +362,16 @@ PanelWindow {
                     ? root.results.length * (root.rowHeight + root.rowSpacing) - root.rowSpacing
                     : 72
                 height: Math.min(implicitHeight, root.listMaxHeight)
+
+                // Re-scoring on each keystroke changes the row count; animate
+                // the height so the card flows instead of jumping.
+                Behavior on height {
+                    NumberAnimation {
+                        duration: Theme.durMedium
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curveEmphasizedDecelerate
+                    }
+                }
 
                 ListView {
                     id: list
@@ -445,7 +457,7 @@ PanelWindow {
 
         width: resultsArea.width
         height: root.rowHeight
-        radius: Theme.shapeMD
+        radius: Theme.shapeLG
         color: item.selected ? Theme.secondaryContainer : "transparent"
 
         Behavior on color {
@@ -468,12 +480,12 @@ PanelWindow {
             anchors.left: parent.left
             anchors.leftMargin: 8
             anchors.verticalCenter: parent.verticalCenter
-            width: 36
-            height: 36
+            width: 40
+            height: 40
 
             Rectangle {
                 anchors.fill: parent
-                radius: width / 2
+                radius: Theme.shapeFull
                 color: Theme.surfaceContainerHighest
                 visible: iconImage.status !== Image.Ready
 

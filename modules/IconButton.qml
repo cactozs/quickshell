@@ -17,7 +17,7 @@ Item {
     property color contentColor: Theme.surfaceText
     property color iconColor: root.contentColor
     property color labelColor: root.contentColor
-    property int hPadding: 10
+    property int hPadding: 12
 
     readonly property alias hovered: hover.hovered
     readonly property alias pressed: clickArea.pressed
@@ -34,7 +34,7 @@ Item {
         NumberAnimation {
             duration: Theme.durShort
             easing.type: Easing.OutBack
-            easing.overshoot: 1.4
+            easing.overshoot: Theme.springOvershoot
         }
     }
 
@@ -45,19 +45,22 @@ Item {
 
         implicitWidth: content.implicitWidth + 2 * root.hPadding
         implicitHeight: root.round ? Theme.iconButtonSize : Theme.chipHeight
-        width: implicitWidth
+        // Round buttons are square by construction; hPadding only widens chips.
+        width: root.round ? implicitHeight : implicitWidth
         height: implicitHeight
 
+        // M3E shape morph: full pill at rest; the press pulls the corners
+        // inward (round button -> large, chip -> medium) and springs back.
         radius: clickArea.pressed
-            ? (root.round ? Theme.shapeLG : Theme.shapeSM)
-            : (root.round ? height / 2 : Theme.shapeMD)
+            ? (root.round ? Theme.shapeLG : Theme.shapeMD)
+            : Theme.shapeFull
         color: root.containerColor
 
         Behavior on radius {
             NumberAnimation {
-                duration: 240
+                duration: Theme.durMorph
                 easing.type: Easing.OutBack
-                easing.overshoot: 1.3
+                easing.overshoot: Theme.springOvershoot
             }
         }
 

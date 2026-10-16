@@ -50,7 +50,20 @@ Singleton {
         "inverse_on_surface": "#322f35",
         "inverse_primary": "#6750a4",
         "scrim": "#000000",
-        "shadow": "#000000"
+        "shadow": "#000000",
+        "surface_tint": "#d0bcff",
+        "primary_fixed": "#eaddff",
+        "primary_fixed_dim": "#d0bcff",
+        "on_primary_fixed": "#21005d",
+        "on_primary_fixed_variant": "#4f378b",
+        "secondary_fixed": "#e8def8",
+        "secondary_fixed_dim": "#ccc2dc",
+        "on_secondary_fixed": "#1d192b",
+        "on_secondary_fixed_variant": "#4a4458",
+        "tertiary_fixed": "#ffd8e4",
+        "tertiary_fixed_dim": "#efb8c8",
+        "on_tertiary_fixed": "#31111d",
+        "on_tertiary_fixed_variant": "#633b48"
     })
 
     property var scheme: baselineScheme
@@ -110,6 +123,20 @@ Singleton {
     readonly property color surfaceVariant: scheme.surface_variant
     readonly property color surfaceVariantText: scheme.on_surface_variant
     readonly property color surfaceDim: scheme.surface_dim
+    readonly property color surfaceBright: scheme.surface_bright
+    readonly property color surfaceTint: scheme.surface_tint
+    readonly property color primaryFixed: scheme.primary_fixed
+    readonly property color primaryFixedDim: scheme.primary_fixed_dim
+    readonly property color primaryFixedText: scheme.on_primary_fixed
+    readonly property color primaryFixedVariantText: scheme.on_primary_fixed_variant
+    readonly property color secondaryFixed: scheme.secondary_fixed
+    readonly property color secondaryFixedDim: scheme.secondary_fixed_dim
+    readonly property color secondaryFixedText: scheme.on_secondary_fixed
+    readonly property color secondaryFixedVariantText: scheme.on_secondary_fixed_variant
+    readonly property color tertiaryFixed: scheme.tertiary_fixed
+    readonly property color tertiaryFixedDim: scheme.tertiary_fixed_dim
+    readonly property color tertiaryFixedText: scheme.on_tertiary_fixed
+    readonly property color tertiaryFixedVariantText: scheme.on_tertiary_fixed_variant
     readonly property color surfaceContainerLowest: scheme.surface_container_lowest
     readonly property color surfaceContainerLow: scheme.surface_container_low
     readonly property color surfaceContainer: scheme.surface_container
@@ -121,28 +148,56 @@ Singleton {
     readonly property color inverseOnSurface: scheme.inverse_on_surface
     readonly property color inversePrimary: scheme.inverse_primary
     readonly property color scrim: scheme.scrim
+    readonly property color shadow: scheme.shadow
 
     // ---- state layers ----------------------------------------------------------
 
     readonly property real stateHover: 0.08
-    readonly property real statePressed: 0.10
+    readonly property real stateFocus: 0.12
+    readonly property real statePressed: 0.12
+    readonly property real stateDragged: 0.16
+    readonly property real disabledContent: 0.38
+    readonly property real disabledContainer: 0.12
+    readonly property real scrimOpacity: 0.32
 
-    // ---- shape scale (M3) ------------------------------------------------------
+    // ---- shape scale (M3 Expressive: 4/8/12/16/20/28/32/48/full) ---------------
 
     readonly property int shapeXS: 4
     readonly property int shapeSM: 8
     readonly property int shapeMD: 12
     readonly property int shapeLG: 16
+    readonly property int shapeLGI: 20 // large increased
     readonly property int shapeXL: 28
+    readonly property int shapeXLI: 32 // extra large increased
+    readonly property int shapeXXL: 48 // extra extra large (hero surfaces)
     readonly property int shapeFull: 9999
 
     // ---- motion ----------------------------------------------------------------
     // Emphasized-family easing curves from the M3 motion spec, as cubic bezier
     // control points for `easing.bezierCurve`.
 
-    readonly property int durShort: 150
+    readonly property int durShort: 150 // state feedback, tooltips
+    readonly property int durPop: 130 // expressive pop-out
+    readonly property int durSettle: 220 // spring-back
+    readonly property int durMorph: 240 // shape morphs (press)
     readonly property int durMedium: 250
+    readonly property int durMedium3: 350 // M3E container morph
     readonly property int durLong: 400
+    readonly property int durLong2: 500 // M3E shared-axis
+    readonly property int durExtraLong: 700 // M3E container transform
+
+    // ---- elevation (M3 levels; surfaces carry depth via container tones) -------
+
+    readonly property int elevation0: 0
+    readonly property int elevation1: 1
+    readonly property int elevation2: 2
+    readonly property int elevation3: 3
+    readonly property int elevation4: 4
+    readonly property int elevation5: 5
+
+    // Overshoot for the spatial springs; QML has no real spring easing, so
+    // Easing.OutBack with this factor stands in for the M3E spring curves.
+    readonly property real springOvershoot: 1.3
 
     readonly property var curveEmphasized: [0.2, 0.0, 0.0, 1.0]
     readonly property var curveEmphasizedDecelerate: [0.05, 0.7, 0.1, 1.0]
@@ -150,20 +205,33 @@ Singleton {
 
     // ---- typography ------------------------------------------------------------
 
-    readonly property string fontFamily: "Noto Sans"
+    readonly property string fontFamily: "Google Sans"
     readonly property string iconFont: "Material Symbols Rounded"
+    readonly property int fontSizeDisplayLarge: 57
+    readonly property int fontSizeDisplayMedium: 45
+    readonly property int fontSizeDisplaySmall: 36
+    readonly property int fontSizeHeadlineLarge: 32
+    readonly property int fontSizeHeadlineMedium: 28
+    readonly property int fontSizeHeadlineSmall: 24
     readonly property int fontSizeTitleLarge: 22
+    readonly property int fontSizeTitleMedium: 16
+    readonly property int fontSizeTitleSmall: 14
+    readonly property int fontSizeBodyLarge: 16
+    readonly property int fontSizeBodyMedium: 14
+    readonly property int fontSizeBodySmall: 12
     readonly property int fontSizeLabelLarge: 14
     readonly property int fontSizeLabelMedium: 12
+    readonly property int fontSizeLabelSmall: 11
 
     // ---- bar metrics -----------------------------------------------------------
 
-    readonly property int barHeight: 40
-    readonly property int barMargin: 6
+    readonly property int barHeight: 36
+    readonly property int barMargin: 4
     readonly property int barPadding: 8
-    readonly property int chipHeight: 30
-    readonly property int iconButtonSize: 36
-    readonly property int iconSize: 18
+    readonly property int chipHeight: 28
+    readonly property int iconButtonSize: 32
+    readonly property int iconSize: 20
+    readonly property int iconSizeMedium: 24
     readonly property int iconSizeSmall: 16
     readonly property int iconSizeLarge: 30
 
@@ -212,4 +280,15 @@ Singleton {
     readonly property string iconNext: "\uE044" // skip_next
     readonly property string iconPrevious: "\uE045" // skip_previous
     readonly property string iconMusic: "\uE3A1" // music_note
+
+    // Weather: classic codepoints, glyphs verified by render against the
+    // installed MaterialSymbolsRounded font.
+    readonly property string iconSunny: "\uE430" // wb_sunny
+    readonly property string iconPartlyCloudy: "\uE42D" // wb_cloudy
+    readonly property string iconCloud: "\uE2BD" // cloud
+    readonly property string iconRain: "\uE798" // water_drop
+    readonly property string iconSnow: "\uEB3B" // ac_unit
+    readonly property string iconStorm: "\uE3E7" // flash_on
+    readonly property string iconWind: "\uEFD8" // air
+    readonly property string iconFog: "\uE3C7" // dehaze
 }

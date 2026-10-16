@@ -12,7 +12,11 @@ PopupWindow {
     required property Item target
     property string text: ""
 
-    visible: false
+    // Open state, driven by the owner; the window stays mapped while the
+    // fade-out plays.
+    property bool shown: false
+
+    visible: shown || surface.opacity > 0.001
     color: "transparent"
 
     anchor.item: target
@@ -28,10 +32,29 @@ PopupWindow {
         anchors.fill: parent
         radius: Theme.shapeXS
         color: Theme.surfaceContainerHighest
-        opacity: 0
+
+        opacity: root.shown ? 1 : 0
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Theme.durShort
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Theme.curveEmphasized
+            }
+        }
 
         transform: Translate {
             id: drift
+
+            y: root.shown ? 0 : 6
+
+            Behavior on y {
+                NumberAnimation {
+                    duration: Theme.durShort
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curveEmphasizedDecelerate
+                }
+            }
         }
 
         Text {
@@ -46,36 +69,4 @@ PopupWindow {
         }
     }
 
-    ParallelAnimation {
-        id: showAnim
-
-        NumberAnimation {
-            target: surface
-            property: "opacity"
-            from: 0
-            to: 1
-            duration: Theme.durShort
-            easing.type: Easing.BezierSpline
-            easing.bezierCurve: Theme.curveEmphasized
-        }
-
-        NumberAnimation {
-            target: drift
-            property: "y"
-            from: 6
-            to: 0
-            duration: Theme.durShort
-            easing.type: Easing.BezierSpline
-            easing.bezierCurve: Theme.curveEmphasizedDecelerate
-        }
-    }
-
-    onVisibleChanged: {
-        if (visible) {
-            showAnim.restart();
-        } else {
-            surface.opacity = 0;
-            drift.y = 6;
-        }
-    }
 }

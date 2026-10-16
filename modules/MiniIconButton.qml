@@ -3,8 +3,9 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import "../style"
 
-// Compact circular icon control for dense surfaces (notification cards and
-// history rows), where IconButton's bar-sized chip does not fit.
+// Compact icon control for dense surfaces (notification cards and history
+// rows) where IconButton's bar-sized chip does not fit. M3E shape morph:
+// round at rest, squarer while pressed.
 Item {
     id: root
 
@@ -15,17 +16,34 @@ Item {
 
     signal clicked
 
-    implicitWidth: 28
-    implicitHeight: 28
+    implicitWidth: 32
+    implicitHeight: 32
 
     Rectangle {
         id: circle
 
         anchors.centerIn: parent
-        width: 26
-        height: 26
-        radius: width / 2
+        width: 32
+        height: 32
+        radius: tap.pressed ? Theme.shapeMD : Theme.shapeFull
         color: "transparent"
+        scale: tap.pressed ? 0.94 : 1
+
+        Behavior on radius {
+            NumberAnimation {
+                duration: Theme.durMorph
+                easing.type: Easing.OutBack
+                easing.overshoot: Theme.springOvershoot
+            }
+        }
+
+        Behavior on scale {
+            NumberAnimation {
+                duration: Theme.durShort
+                easing.type: Easing.OutBack
+                easing.overshoot: Theme.springOvershoot
+            }
+        }
 
         StateLayer {
             hovered: hover.hovered
@@ -38,7 +56,7 @@ Item {
             text: root.icon
             color: root.contentColor
             font.family: Theme.iconFont
-            font.pixelSize: Theme.iconSizeSmall
+            font.pixelSize: Theme.iconSize
         }
     }
 

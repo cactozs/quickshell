@@ -31,7 +31,7 @@ Item {
 
         x: 8
         anchors.verticalCenter: parent.verticalCenter
-        implicitSize: Theme.iconSizeSmall
+        implicitSize: Theme.iconSize
         source: root.iconName !== "" ? Quickshell.iconPath(root.iconName) : ""
         visible: source.toString() !== ""
     }
@@ -66,6 +66,6 @@ Item {
         target: root
         text: root.title
         // Only when the title is actually cut off.
-        visible: hover.hovered && titleText.truncated
+        shown: hover.hovered && titleText.truncated
     }
 }

@@ -19,8 +19,8 @@ PanelWindow {
     readonly property bool shown: ShellState.notificationScreen === root.modelData.name
 
     readonly property int cardWidth: 380
-    readonly property int cardPadding: 12
-    readonly property int rowHeight: 62
+    readonly property int cardPadding: 16
+    readonly property int rowHeight: 64
     readonly property int rowSpacing: 2
     readonly property int maxListHeight: Math.floor(root.height * 0.55)
 
@@ -98,14 +98,15 @@ PanelWindow {
         radius: Theme.shapeXL
         color: Theme.surfaceContainerHigh
 
-        scale: root.shown ? 1 : 0.95
+        scale: root.shown ? 1 : 0.92
         opacity: root.shown ? 1 : 0
 
+        // M3E card entrance: springy scale under a faster fade.
         Behavior on scale {
             NumberAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasizedDecelerate
+                duration: Theme.durMedium
+                easing.type: Easing.OutBack
+                easing.overshoot: Theme.springOvershoot
             }
         }
 
@@ -138,16 +139,16 @@ PanelWindow {
 
             Item {
                 width: parent.width
-                implicitHeight: Theme.iconButtonSize
+                implicitHeight: Theme.barHeight
 
                 Text {
                     anchors.left: parent.left
-                    anchors.leftMargin: 10
+                    anchors.leftMargin: 12
                     anchors.verticalCenter: parent.verticalCenter
                     text: "Уведомления"
                     color: Theme.surfaceText
                     font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSizeLabelLarge
+                    font.pixelSize: Theme.fontSizeTitleMedium
                     font.weight: Font.Medium
                 }
 
@@ -197,6 +198,16 @@ PanelWindow {
                     : 72
                 height: Math.min(implicitHeight, root.maxListHeight)
 
+                // Arrivals and dismissals resize the list; animate the height
+                // so the card grows and shrinks smoothly.
+                Behavior on height {
+                    NumberAnimation {
+                        duration: Theme.durMedium
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curveEmphasizedDecelerate
+                    }
+                }
+
                 ListView {
                     id: list
 
@@ -237,7 +248,7 @@ PanelWindow {
 
         width: listArea.width
         height: root.rowHeight
-        radius: Theme.shapeMD
+        radius: Theme.shapeLG
         color: "transparent"
 
         StateLayer {
@@ -252,9 +263,9 @@ PanelWindow {
             anchors.left: parent.left
             anchors.leftMargin: 8
             anchors.verticalCenter: parent.verticalCenter
-            width: 36
-            height: 36
-            radius: width / 2
+            width: 40
+            height: 40
+            radius: Theme.shapeFull
             color: Theme.surfaceContainerHighest
 
             IconImage {
@@ -270,7 +281,7 @@ PanelWindow {
                 text: Theme.iconNotifications
                 color: Theme.surfaceVariantText
                 font.family: Theme.iconFont
-                font.pixelSize: Theme.iconSize
+                font.pixelSize: Theme.iconSizeMedium
             }
         }
 
@@ -301,7 +312,7 @@ PanelWindow {
                 text: row.entry.summary
                 color: Theme.surfaceText
                 font.family: Theme.fontFamily
-                font.pixelSize: Theme.fontSizeLabelLarge
+                font.pixelSize: Theme.fontSizeTitleMedium
                 font.weight: Font.Medium
                 elide: Text.ElideRight
             }

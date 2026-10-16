@@ -30,7 +30,10 @@ PanelWindow {
 
     exclusionMode: ExclusionMode.Ignore
     color: "transparent"
-    visible: Notifications.popupScreen === root.modelData.name && Notifications.popups.length > 0
+    // Height-aware: while the last toast fades out the column collapses and
+    // the surface unmaps instead of lingering at zero size.
+    visible: Notifications.popupScreen === root.modelData.name
+        && Notifications.popups.length > 0 && column.implicitHeight > 0.001
 
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "quickshell:notifications"
@@ -62,15 +65,45 @@ PanelWindow {
         required property var modelData
 
         readonly property Notification notification: modelData
-        readonly property bool critical: notification.urgency === NotificationUrgency.Critical
-        readonly property string iconSource: notification.image !== "" ? notification.image : notification.appIcon
-        readonly property var buttons: notification.actions.filter(a => a.identifier !== "default")
+
+        // Captured while the object is guaranteed alive; the stack hands this
+        // to the service when the notification closes.
+        readonly property int notifId: {
+            try {
+                return toast.notification.id;
+            } catch (e) {
+                return -1;
+            }
+        }
+
+        // Display fields are snapshotted at creation: the server frees the
+        // notification object once it closes (the history watcher drops the
+        // last reference) while the card lives on to play its exit animation.
+        property string appName: ""
+        property string summary: ""
+        property string body: ""
+        property string iconSource: ""
+        property bool critical: false
+        property var buttons: []
 
         width: column.width
-        implicitHeight: layout.implicitHeight + 28
-        height: implicitHeight
-        radius: Theme.shapeLG
+        implicitHeight: layout.implicitHeight + 32
+        height: implicitHeight * collapse
+        radius: Theme.shapeXL
         color: Theme.surfaceContainerHigh
+        clip: true
+
+        // Exit-animation progress: 1 at rest, 0 once the card has collapsed.
+        property real collapse: 1
+
+        readonly property bool leaving: {
+            try {
+                return Notifications.leavingIds[toast.notification.id] === true;
+            } catch (e) {
+                // A freed object can only mean a card that is already exiting.
+                return true;
+            }
+        }
 
         opacity: 0
 
@@ -81,11 +114,41 @@ PanelWindow {
         }
 
         Component.onCompleted: {
-            if (Notifications.markAnimated(toast.notification))
+            toast.snapContent();
+
+            if (toast.leaving) {
+                // Rebuilt mid-exit (the stack re-creates every card on each
+                // change): skip straight to the collapsed state.
+                toast.collapse = 0;
+            } else if (Notifications.markAnimated(toast.notification)) {
                 enterAnim.start();
-            else {
+            } else {
                 toast.opacity = 1;
+                toast.scale = 1;
                 drift.x = 0;
+            }
+        }
+
+        // Copy what the card shows while the object is still readable, so the
+        // exit animation renders even after the server frees it.
+        function snapContent(): void {
+            try {
+                const notif = toast.notification;
+                toast.appName = notif.appName;
+                toast.summary = notif.summary;
+                toast.body = notif.body;
+                toast.iconSource = notif.image !== "" ? notif.image : notif.appIcon;
+                toast.critical = notif.urgency === NotificationUrgency.Critical;
+                toast.buttons = notif.actions.filter(a => a.identifier !== "default");
+            } catch (e) {
+                // Rebuilt after the object was freed: snapshots stay empty.
+            }
+        }
+
+        onLeavingChanged: {
+            if (toast.leaving) {
+                enterAnim.stop();
+                exitAnim.start();
             }
         }
 
@@ -102,6 +165,16 @@ PanelWindow {
             }
 
             NumberAnimation {
+                target: toast
+                property: "scale"
+                from: 0.95
+                to: 1
+                duration: Theme.durMedium
+                easing.type: Easing.OutBack
+                easing.overshoot: Theme.springOvershoot
+            }
+
+            NumberAnimation {
                 target: drift
                 property: "x"
                 to: 0
@@ -111,18 +184,53 @@ PanelWindow {
             }
         }
 
+        // Exit: fade + collapse, so the cards below flow up instead of
+        // jumping once the toast is dropped from the stack.
+        ParallelAnimation {
+            id: exitAnim
+
+            NumberAnimation {
+                target: toast
+                property: "opacity"
+                to: 0
+                duration: Theme.durShort
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Theme.curveEmphasizedAccelerate
+            }
+
+            NumberAnimation {
+                target: toast
+                property: "collapse"
+                to: 0
+                duration: Theme.durMedium
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Theme.curveEmphasizedAccelerate
+            }
+
+            NumberAnimation {
+                target: drift
+                property: "x"
+                to: 24
+                duration: Theme.durMedium
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Theme.curveEmphasizedAccelerate
+            }
+        }
+
         Connections {
             target: toast.notification
 
             function onClosed(): void {
-                Notifications.removePopup(toast.notification);
+                Notifications.removePopupById(toast.notifId);
             }
         }
 
         // Card click: default action when there is one, plain dismiss
-        // otherwise. Buttons above draw over this area.
+        // otherwise. Buttons above draw over this area. Disabled while the
+        // card is already on its way out.
         MouseArea {
             anchors.fill: parent
+            enabled: !toast.leaving
             cursorShape: Qt.PointingHandCursor
             onClicked: {
                 const action = Notifications.defaultAction(toast.notification);
@@ -140,7 +248,7 @@ PanelWindow {
                 top: parent.top
                 left: parent.left
                 right: parent.right
-                margins: 14
+                margins: 16
             }
 
             spacing: 8
@@ -152,9 +260,9 @@ PanelWindow {
                 Rectangle {
                     id: iconBox
 
-                    width: 36
-                    height: 36
-                    radius: width / 2
+                    width: 40
+                    height: 40
+                    radius: Theme.shapeFull
                     color: Theme.surfaceContainerHighest
 
                     IconImage {
@@ -170,7 +278,7 @@ PanelWindow {
                         text: Theme.iconNotifications
                         color: toast.critical ? Theme.error : Theme.primary
                         font.family: Theme.iconFont
-                        font.pixelSize: Theme.iconSize
+                        font.pixelSize: Theme.iconSizeMedium
                     }
                 }
 
@@ -181,7 +289,7 @@ PanelWindow {
                     Text {
                         width: parent.width
                         visible: text !== ""
-                        text: toast.notification.appName
+                        text: toast.appName
                         color: toast.critical ? Theme.error : Theme.surfaceVariantText
                         font.family: Theme.fontFamily
                         font.pixelSize: Theme.fontSizeLabelMedium
@@ -190,10 +298,10 @@ PanelWindow {
 
                     Text {
                         width: parent.width
-                        text: toast.notification.summary
+                        text: toast.summary
                         color: Theme.surfaceText
                         font.family: Theme.fontFamily
-                        font.pixelSize: Theme.fontSizeLabelLarge
+                        font.pixelSize: Theme.fontSizeTitleMedium
                         font.weight: Font.Medium
                         wrapMode: Text.WordWrap
                         maximumLineCount: 2
@@ -203,7 +311,7 @@ PanelWindow {
                     Text {
                         width: parent.width
                         visible: text !== ""
-                        text: toast.notification.body
+                        text: toast.body
                         color: Theme.surfaceVariantText
                         font.family: Theme.fontFamily
                         font.pixelSize: Theme.fontSizeLabelMedium
@@ -216,6 +324,7 @@ PanelWindow {
                 MiniIconButton {
                     id: closeButton
 
+                    enabled: !toast.leaving
                     icon: Theme.iconClose
                     onClicked: toast.notification.dismiss()
                 }
@@ -258,8 +367,8 @@ PanelWindow {
 
         signal clicked
 
-        implicitWidth: label.implicitWidth + 24
-        implicitHeight: 32
+        implicitWidth: label.implicitWidth + 28
+        implicitHeight: 40
 
         Rectangle {
             anchors.fill: parent

@@ -27,9 +27,22 @@ Row {
 
             implicitWidth: chip.implicitWidth
             implicitHeight: Theme.barHeight
+            opacity: 1
 
             onActiveChanged: {
-                if (active)
+                if (active && Niri.consumeWorkspacePop(cell.modelData.id))
+                    pop.restart();
+            }
+
+            // First mount: fade + spring in. The Repeater rebuilds every chip
+            // whenever the workspace list is reassigned, so Niri remembers
+            // which ids have already appeared, and which activation still
+            // owes a pop (onActiveChanged never fires on a fresh delegate).
+            Component.onCompleted: {
+                const popping = active && Niri.consumeWorkspacePop(cell.modelData.id);
+                if (Niri.markWorkspaceSeen(cell.modelData.id))
+                    appear.start();
+                else if (popping)
                     pop.restart();
             }
 
@@ -44,7 +57,7 @@ Row {
                 height: implicitHeight
 
                 // Full pill at rest; squares off while pressed, springs back.
-                radius: clickArea.pressed ? Theme.shapeSM : Theme.shapeFull
+                radius: clickArea.pressed ? Theme.shapeMD : Theme.shapeFull
                 color: cell.active ? Theme.secondaryContainer : "transparent"
                 scale: popScale
 
@@ -52,9 +65,9 @@ Row {
 
                 Behavior on radius {
                     NumberAnimation {
-                        duration: 240
+                        duration: Theme.durMorph
                         easing.type: Easing.OutBack
-                        easing.overshoot: 1.3
+                        easing.overshoot: Theme.springOvershoot
                     }
                 }
 
@@ -73,7 +86,7 @@ Row {
                         target: chip
                         property: "popScale"
                         to: 1.12
-                        duration: 130
+                        duration: Theme.durPop
                         easing.type: Easing.BezierSpline
                         easing.bezierCurve: Theme.curveEmphasizedDecelerate
                     }
@@ -82,9 +95,34 @@ Row {
                         target: chip
                         property: "popScale"
                         to: 1
-                        duration: 220
+                        duration: Theme.durSettle
                         easing.type: Easing.OutBack
-                        easing.overshoot: 1.3
+                        easing.overshoot: Theme.springOvershoot
+                    }
+                }
+
+                // First-mount entrance: fade under a springy scale-up.
+                ParallelAnimation {
+                    id: appear
+
+                    NumberAnimation {
+                        target: cell
+                        property: "opacity"
+                        from: 0
+                        to: 1
+                        duration: Theme.durShort
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curveEmphasizedDecelerate
+                    }
+
+                    NumberAnimation {
+                        target: chip
+                        property: "popScale"
+                        from: 0.6
+                        to: 1
+                        duration: Theme.durMedium
+                        easing.type: Easing.OutBack
+                        easing.overshoot: Theme.springOvershoot
                     }
                 }
 

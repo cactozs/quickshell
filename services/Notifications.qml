@@ -73,6 +73,13 @@ Singleton {
     // app cannot cover the screen.
     property list<Notification> popups: []
 
+    // Ids of notifications whose toast is playing its exit animation.
+    // removePopupById marks an id, leaveTimer commits the removal, so the
+    // card gets to fade and collapse instead of vanishing. Keyed by id, not
+    // by reference: a closed notification's object is freed by the server
+    // while the toast still has to render for another instant.
+    property var leavingIds: ({})
+
     // Which screen hosts the current stack; pinned while non-empty so a
     // burst that spans a focus change stays on one monitor.
     property string popupScreen: ""
@@ -158,16 +165,36 @@ Singleton {
         }
         if (root.popups.length === 0)
             root.popupScreen = root.focusedOutputName();
-        root.popups = [notif, ...root.popups].slice(0, 5);
+        // Freed entries read as -1; drop them as a safety net (a cap-evicted
+        // toast never reports its close).
+        root.popups = [notif, ...root.popups.filter(n => root.liveId(n) >= 0)].slice(0, 5);
 
         const timeout = root.popupTimeout(notif);
         if (timeout > 0)
             root.pendingExpiry = [...root.pendingExpiry, { notif: notif, remaining: timeout, since: Date.now() }];
     }
 
-    function removePopup(notif: Notification): void {
-        root.pendingExpiry = root.pendingExpiry.filter(e => e.notif !== notif);
-        root.popups = root.popups.filter(n => n !== notif);
+    // Id of a stack entry, or -1 when the underlying object is already freed.
+    // A closed notification's object is released before its card is gone, so
+    // property access on it throws; ids are plain values and survive that.
+    function liveId(entry: var): int {
+        try {
+            return entry.id !== undefined ? entry.id : -1;
+        } catch (e) {
+            return -1;
+        }
+    }
+
+    // The toast calls this with the id it captured while the object was alive;
+    // the actual removal happens in leaveTimer, so the card gets to animate
+    // out before it is dropped from the stack.
+    function removePopupById(id: int): void {
+        root.pendingExpiry = root.pendingExpiry.filter(e => root.liveId(e.notif) !== id);
+
+        const next = Object.assign({}, root.leavingIds);
+        next[id] = true;
+        root.leavingIds = next;
+        leaveTimer.restart();
     }
 
     // Hovering a toast pauses its countdown; the remaining time is kept.
@@ -191,7 +218,7 @@ Singleton {
                 continue;
             }
             if (entry.since && Date.now() - entry.since >= entry.remaining)
-                entry.notif.expire(); // closed -> removePopup drops the entry
+                entry.notif.expire(); // closed -> the toast reports the id
         }
     }
 
@@ -308,6 +335,22 @@ Singleton {
         repeat: true
         running: root.pendingExpiry.length > 0
         onTriggered: root.checkPopupExpiry()
+    }
+
+    // Commits toast removals after the exit animation (fade durShort +
+    // collapse durMedium) has had time to play, plus a small margin.
+    Timer {
+        id: leaveTimer
+
+        interval: 400
+        onTriggered: {
+            const gone = root.leavingIds;
+            root.leavingIds = ({});
+            root.popups = root.popups.filter(n => {
+                const id = root.liveId(n);
+                return id >= 0 && gone[id] !== true;
+            });
+        }
     }
 
     // ---- IPC ---------------------------------------------------------------

@@ -20,12 +20,16 @@ PopupWindow {
     ]
     readonly property var dayNames: ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
 
-    readonly property int cell: 30
+    readonly property int cell: 34
     readonly property int cellSpacing: 2
     readonly property int pad: 14
     readonly property int gridWidth: cell * 7 + cellSpacing * 6
 
-    visible: false
+    // Open state, driven by the owner (DateClock); the popup stays mapped
+    // while the exit animation plays.
+    property bool shown: false
+
+    visible: shown || surface.opacity > 0.001
     color: "transparent"
 
     anchor.item: target
@@ -48,14 +52,9 @@ PopupWindow {
         };
     }
 
-    onVisibleChanged: {
-        if (visible) {
+    onShownChanged: {
+        if (root.shown)
             root.build();
-            showAnim.restart();
-        } else {
-            surface.opacity = 0;
-            drift.y = 6;
-        }
     }
 
     Rectangle {
@@ -64,10 +63,38 @@ PopupWindow {
         anchors.fill: parent
         radius: Theme.shapeLG
         color: Theme.surfaceContainerHighest
-        opacity: 0
+
+        opacity: root.shown ? 1 : 0
+        scale: root.shown ? 1 : 0.92
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Theme.durShort
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Theme.curveEmphasized
+            }
+        }
+
+        Behavior on scale {
+            NumberAnimation {
+                duration: Theme.durMedium
+                easing.type: Easing.OutBack
+                easing.overshoot: Theme.springOvershoot
+            }
+        }
 
         transform: Translate {
             id: drift
+
+            y: root.shown ? 0 : 6
+
+            Behavior on y {
+                NumberAnimation {
+                    duration: Theme.durShort
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curveEmphasizedDecelerate
+                }
+            }
         }
 
         Column {
@@ -81,7 +108,7 @@ PopupWindow {
                 text: root.cal ? root.cal.title : ""
                 color: Theme.surfaceText
                 font.family: Theme.fontFamily
-                font.pixelSize: Theme.fontSizeLabelLarge
+                font.pixelSize: Theme.fontSizeTitleMedium
                 font.weight: Font.Medium
                 horizontalAlignment: Text.AlignHCenter
             }
@@ -138,19 +165,22 @@ PopupWindow {
 
                         Rectangle {
                             anchors.centerIn: parent
-                            width: 26
-                            height: 26
-                            radius: width / 2
-                            color: dayCell.isToday ? Theme.primary : "transparent"
+                            width: 32
+                            height: 32
+                            radius: Theme.shapeFull
+                            color: "transparent"
+                            // M3 date picker: today is outlined, not filled.
+                            border.width: dayCell.isToday ? 1 : 0
+                            border.color: dayCell.isToday ? Theme.primary : "transparent"
                         }
 
                         Text {
                             anchors.centerIn: parent
                             text: dayCell.day
-                            color: dayCell.isToday ? Theme.primaryText : Theme.surfaceText
+                            color: dayCell.isToday ? Theme.primary : Theme.surfaceText
                             font.family: Theme.fontFamily
                             font.pixelSize: Theme.fontSizeLabelMedium
-                            font.weight: dayCell.isToday ? Font.Bold : Font.Normal
+                            font.weight: dayCell.isToday ? Font.Medium : Font.Normal
                         }
                     }
                 }
@@ -158,27 +188,4 @@ PopupWindow {
         }
     }
 
-    ParallelAnimation {
-        id: showAnim
-
-        NumberAnimation {
-            target: surface
-            property: "opacity"
-            from: 0
-            to: 1
-            duration: Theme.durShort
-            easing.type: Easing.BezierSpline
-            easing.bezierCurve: Theme.curveEmphasized
-        }
-
-        NumberAnimation {
-            target: drift
-            property: "y"
-            from: 6
-            to: 0
-            duration: Theme.durShort
-            easing.type: Easing.BezierSpline
-            easing.bezierCurve: Theme.curveEmphasizedDecelerate
-        }
-    }
 }

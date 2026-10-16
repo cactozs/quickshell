@@ -34,9 +34,12 @@ PanelWindow {
 
     WlrLayershell.namespace: "quickshell:bar"
 
+    readonly property bool shown: !ShellState.barHidden
+
     // Mod+P (niri bind) through the `bar` IPC target hides the bar; unmapping also
-    // releases the exclusive zone, so windows reclaim the space.
-    visible: !ShellState.barHidden
+    // releases the exclusive zone, so windows reclaim the space. The window stays
+    // mapped while the fade-out plays.
+    visible: root.shown || surface.opacity > 0.001
 
     Rectangle {
         id: surface
@@ -44,6 +47,28 @@ PanelWindow {
         anchors.fill: parent
         radius: Theme.shapeFull
         color: Theme.surfaceContainer
+
+        opacity: root.shown ? 1 : 0
+
+        transform: Translate {
+            y: root.shown ? 0 : -Theme.barHeight
+
+            Behavior on y {
+                NumberAnimation {
+                    duration: Theme.durMedium
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curveEmphasizedDecelerate
+                }
+            }
+        }
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Theme.durShort
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Theme.curveEmphasizedDecelerate
+            }
+        }
 
         Behavior on color {
             ColorAnimation {

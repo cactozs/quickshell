@@ -18,7 +18,7 @@ PanelWindow {
 
     // How long the badge stays on screen after a switch.
     readonly property int showDuration: 1000
-    // Distance from the top of the screen (the bar ends around 46 px).
+    // Distance from the top of the screen (the bar pill ends around 50 px).
     readonly property int topMargin: 72
     readonly property int pillHeight: 52
 
@@ -110,7 +110,7 @@ PanelWindow {
             NumberAnimation {
                 duration: Theme.durMedium
                 easing.type: Easing.OutBack
-                easing.overshoot: 1.2
+                easing.overshoot: Theme.springOvershoot
             }
         }
 
@@ -123,7 +123,8 @@ PanelWindow {
                 model: root.layouts
 
                 // One layout segment: the code on a rounded highlight that
-                // lights up (lighter container) when it is the active layout.
+                // lights up (secondary container, as in the M3 segmented
+                // button) when it is the active layout.
                 delegate: Item {
                     id: segment
 
@@ -137,7 +138,7 @@ PanelWindow {
                         anchors.fill: parent
                         radius: Theme.shapeFull
                         color: segment.index === root.activeIdx
-                            ? Theme.surfaceContainerHighest : "transparent"
+                            ? Theme.secondaryContainer : "transparent"
 
                         Behavior on color {
                             ColorAnimation {
@@ -176,7 +177,7 @@ PanelWindow {
                         anchors.centerIn: parent
                         text: segment.modelData
                         color: segment.index === root.activeIdx
-                            ? Theme.surfaceText : Theme.surfaceVariantText
+                            ? Theme.secondaryContainerText : Theme.surfaceVariantText
                         font.family: Theme.fontFamily
                         font.pixelSize: Theme.fontSizeTitleLarge
                         font.weight: Font.Medium

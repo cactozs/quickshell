@@ -23,7 +23,7 @@ PanelWindow {
     readonly property int cardWidth: 560
     readonly property int cardPadding: 20
     readonly property int listMaxHeight: Math.floor(root.height * 0.5)
-    readonly property int rowHeight: 48
+    readonly property int rowHeight: 56
     readonly property int rowSpacing: 2
 
     // ---- state -----------------------------------------------------------------
@@ -218,7 +218,7 @@ PanelWindow {
 
         anchors.fill: parent
         color: Theme.scrim
-        opacity: root.shown ? 0.5 : 0
+        opacity: root.shown ? Theme.scrimOpacity : 0
 
         Behavior on opacity {
             NumberAnimation {
@@ -245,14 +245,15 @@ PanelWindow {
         radius: Theme.shapeXL
         color: Theme.surfaceContainerHigh
 
-        scale: root.shown ? 1 : 0.85
+        scale: root.shown ? 1 : 0.9
         opacity: root.shown ? 1 : 0
 
+        // M3E card entrance: springy scale under a faster fade.
         Behavior on scale {
             NumberAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasizedDecelerate
+                duration: Theme.durMedium
+                easing.type: Easing.OutBack
+                easing.overshoot: Theme.springOvershoot
             }
         }
 
@@ -288,7 +289,7 @@ PanelWindow {
                 id: searchBar
 
                 width: parent.width
-                implicitHeight: 48
+                implicitHeight: 56
                 height: implicitHeight
                 radius: Theme.shapeFull
                 color: Theme.surfaceContainerHighest
@@ -302,7 +303,7 @@ PanelWindow {
                     text: Theme.iconSearch
                     color: input.activeFocus ? Theme.primary : Theme.surfaceVariantText
                     font.family: Theme.iconFont
-                    font.pixelSize: Theme.iconSize
+                    font.pixelSize: Theme.iconSizeMedium
 
                     Behavior on color {
                         ColorAnimation {
@@ -322,7 +323,7 @@ PanelWindow {
                     text: "Поиск в буфере обмена…"
                     color: Theme.surfaceVariantText
                     font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSizeLabelLarge
+                    font.pixelSize: Theme.fontSizeTitleMedium
                     elide: Text.ElideRight
                     visible: input.text.length === 0
                 }
@@ -339,7 +340,7 @@ PanelWindow {
 
                     color: Theme.surfaceText
                     font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSizeLabelLarge
+                    font.pixelSize: Theme.fontSizeTitleMedium
                     selectByMouse: true
                     selectionColor: Theme.primary
                     selectedTextColor: Theme.primaryText
@@ -389,13 +390,12 @@ PanelWindow {
                     id: clearButton
 
                     anchors.right: parent.right
-                    anchors.rightMargin: 6
+                    anchors.rightMargin: 8
                     anchors.verticalCenter: parent.verticalCenter
                     visible: input.text.length > 0
 
                     round: true
                     icon: Theme.iconClose
-                    hPadding: 9
 
                     onClicked: {
                         input.text = "";
@@ -414,6 +414,16 @@ PanelWindow {
                     ? root.results.length * (root.rowHeight + root.rowSpacing) - root.rowSpacing
                     : 72
                 height: Math.min(implicitHeight, root.listMaxHeight)
+
+                // Re-scoring on each keystroke changes the entry count;
+                // animate the height so the card flows instead of jumping.
+                Behavior on height {
+                    NumberAnimation {
+                        duration: Theme.durMedium
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curveEmphasizedDecelerate
+                    }
+                }
 
                 ListView {
                     id: list
@@ -464,7 +474,7 @@ PanelWindow {
 
                     width: 240
                     height: menuColumn.implicitHeight + 12
-                    radius: Theme.shapeMD
+                    radius: Theme.shapeLG
                     color: Theme.surfaceContainerHighest
                     transformOrigin: Item.BottomRight
 
@@ -482,9 +492,9 @@ PanelWindow {
 
                     Behavior on scale {
                         NumberAnimation {
-                            duration: Theme.durShort
-                            easing.type: Easing.BezierSpline
-                            easing.bezierCurve: Theme.curveEmphasizedDecelerate
+                            duration: Theme.durMedium
+                            easing.type: Easing.OutBack
+                            easing.overshoot: Theme.springOvershoot
                         }
                     }
 
@@ -554,7 +564,7 @@ PanelWindow {
 
         width: resultsArea.width
         height: root.rowHeight
-        radius: Theme.shapeMD
+        radius: Theme.shapeLG
         color: item.selected ? Theme.secondaryContainer : "transparent"
 
         Behavior on color {
@@ -577,9 +587,9 @@ PanelWindow {
             anchors.left: parent.left
             anchors.leftMargin: 8
             anchors.verticalCenter: parent.verticalCenter
-            width: 36
-            height: 36
-            radius: width / 2
+            width: 40
+            height: 40
+            radius: Theme.shapeFull
             color: Theme.surfaceContainerHighest
 
             Text {
@@ -587,7 +597,7 @@ PanelWindow {
                 text: item.modelData.binary ? Theme.iconImage : Theme.iconClipboard
                 color: Theme.surfaceVariantText
                 font.family: Theme.iconFont
-                font.pixelSize: Theme.iconSize
+                font.pixelSize: Theme.iconSizeMedium
             }
         }
 
@@ -644,11 +654,11 @@ PanelWindow {
 
         width: menuColumn.width
         height: 40
-        radius: Theme.shapeSM
+        radius: Theme.shapeMD
         color: menuItem.highlighted && menuItem.modelData.enabled
             ? (menuItem.destructive ? Theme.errorContainer : Theme.secondaryContainer)
             : "transparent"
-        opacity: menuItem.modelData.enabled ? 1 : 0.45
+        opacity: menuItem.modelData.enabled ? 1 : Theme.disabledContent
 
         Behavior on color {
             ColorAnimation {
@@ -684,6 +694,7 @@ PanelWindow {
             color: menuItem.fgColor
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSizeLabelLarge
+            font.weight: Font.Medium
         }
 
         HoverHandler {

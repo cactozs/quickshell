@@ -17,6 +17,30 @@ Singleton {
     property var windows: []
     property var keyboardLayouts: ({ names: [], currentIdx: 0 })
 
+    // Bar workspace chips: the Repeater rebuilds every delegate whenever the
+    // workspace list is reassigned, so "new chip" and "just activated" cannot
+    // be told apart on the delegate side. The service arms the activation pop
+    // here (consumed once by the chip that reacts) and remembers first-seen
+    // ids for the entrance animation.
+    property int poppingWorkspaceId: -1
+    property var seenWorkspaceIds: ({})
+
+    function consumeWorkspacePop(id: int): bool {
+        if (root.poppingWorkspaceId !== id)
+            return false;
+        root.poppingWorkspaceId = -1;
+        return true;
+    }
+
+    function markWorkspaceSeen(id: int): bool {
+        if (root.seenWorkspaceIds[id] === true)
+            return false;
+        const next = Object.assign({}, root.seenWorkspaceIds);
+        next[id] = true;
+        root.seenWorkspaceIds = next;
+        return true;
+    }
+
     readonly property var focusedWindow: {
         for (const w of windows)
             if (w.is_focused) return w;
@@ -93,6 +117,7 @@ Singleton {
             if (changed && root.keyboardLayouts.names.length > 0)
                 root.layoutSwitched();
         } else if (ev.WorkspaceActivated) {
+            root.poppingWorkspaceId = ev.WorkspaceActivated.id;
             refreshWorkspaces();
         } else if (ev.WindowFocusChanged) {
             const id = ev.WindowFocusChanged.id;

@@ -29,13 +29,13 @@ Item {
             text: Theme.iconCalendar
             color: Theme.surfaceVariantText
             font.family: Theme.iconFont
-            font.pixelSize: Theme.iconSizeSmall
+            font.pixelSize: Theme.iconSize
         }
 
         Text {
             Layout.alignment: Qt.AlignVCenter
             text: Qt.formatDateTime(clock.date, "ddd, dd MMM")
-            color: Theme.surfaceVariantText
+            color: Theme.surfaceText
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSizeLabelLarge
             font.weight: Font.Medium
@@ -45,7 +45,7 @@ Item {
     HoverHandler {
         id: hover
 
-        onHoveredChanged: calendar.visible = hovered
+        onHoveredChanged: calendar.shown = hovered
     }
 
     CalendarPopup {

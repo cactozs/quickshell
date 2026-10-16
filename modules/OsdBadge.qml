@@ -16,7 +16,8 @@ PanelWindow {
     required property ShellScreen modelData
 
     readonly property int bottomMargin: 96
-    readonly property int pillHeight: 52
+    // M3E hero surface: taller tile, extra-extra-large corners.
+    readonly property int pillHeight: 64
 
     screen: modelData
 
@@ -46,12 +47,12 @@ PanelWindow {
         anchors.bottom: parent.bottom
         anchors.bottomMargin: root.bottomMargin
 
-        implicitWidth: row.implicitWidth + 32
+        implicitWidth: row.implicitWidth + 40
         implicitHeight: root.pillHeight
         width: implicitWidth
         height: implicitHeight
 
-        radius: Theme.shapeFull
+        radius: Theme.shapeXXL
         color: Theme.surfaceContainerHigh
 
         opacity: Osd.shown ? 1 : 0
@@ -70,7 +71,7 @@ PanelWindow {
             NumberAnimation {
                 duration: Theme.durMedium
                 easing.type: Easing.OutBack
-                easing.overshoot: 1.2
+                easing.overshoot: Theme.springOvershoot
             }
         }
 
@@ -78,14 +79,14 @@ PanelWindow {
             id: row
 
             anchors.centerIn: parent
-            spacing: 12
+            spacing: 14
 
             Text {
                 Layout.alignment: Qt.AlignVCenter
                 text: Osd.icon
                 color: Theme.primary
                 font.family: Theme.iconFont
-                font.pixelSize: 24
+                font.pixelSize: Theme.iconSizeLarge
 
                 Behavior on color {
                     ColorAnimation {
@@ -98,10 +99,10 @@ PanelWindow {
 
             Rectangle {
                 Layout.alignment: Qt.AlignVCenter
-                Layout.preferredWidth: 150
-                Layout.preferredHeight: 8
+                Layout.preferredWidth: 160
+                Layout.preferredHeight: 12
 
-                radius: height / 2
+                radius: Theme.shapeFull
                 color: Theme.surfaceContainerHighest
 
                 Rectangle {
@@ -122,11 +123,11 @@ PanelWindow {
 
             Text {
                 Layout.alignment: Qt.AlignVCenter
-                Layout.preferredWidth: 40
+                Layout.preferredWidth: 44
                 text: Math.round(Osd.value * 100) + "%"
                 color: Theme.surfaceText
                 font.family: Theme.fontFamily
-                font.pixelSize: Theme.fontSizeLabelLarge
+                font.pixelSize: Theme.fontSizeTitleMedium
                 font.weight: Font.Medium
                 horizontalAlignment: Text.AlignRight
 

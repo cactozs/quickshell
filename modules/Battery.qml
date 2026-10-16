@@ -45,6 +45,6 @@ IconButton {
     Tip {
         target: root
         text: (root.remaining !== "" ? root.remaining + " remaining\n" : "") + root.percent + "%"
-        visible: root.hovered
+        shown: root.hovered
     }
 }

@@ -22,8 +22,8 @@ PanelWindow {
     readonly property bool shown: ShellState.quickSettingsScreen === root.modelData.name
 
     readonly property int cardWidth: 400
-    readonly property int cardPadding: 12
-    readonly property int netRowHeight: 42
+    readonly property int cardPadding: 16
+    readonly property int netRowHeight: 48
     readonly property int netListMaxHeight: 5 * root.netRowHeight + 2 * 4
 
     // ---- volume ----------------------------------------------------------------
@@ -358,14 +358,15 @@ PanelWindow {
         radius: Theme.shapeXL
         color: Theme.surfaceContainerHigh
 
-        scale: root.shown ? 1 : 0.95
+        scale: root.shown ? 1 : 0.92
         opacity: root.shown ? 1 : 0
 
+        // M3E panel entrance: springy scale under a faster fade.
         Behavior on scale {
             NumberAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasizedDecelerate
+                duration: Theme.durMedium
+                easing.type: Easing.OutBack
+                easing.overshoot: Theme.springOvershoot
             }
         }
 
@@ -412,7 +413,7 @@ PanelWindow {
                         text: Brightness.icon
                         color: Theme.tertiary
                         font.family: Theme.iconFont
-                        font.pixelSize: 20
+                        font.pixelSize: Theme.iconSizeMedium
                     }
                 }
 
@@ -463,7 +464,7 @@ PanelWindow {
                         text: root.volumeIcon
                         color: root.effectiveMuted ? Theme.surfaceVariantText : Theme.primary
                         font.family: Theme.iconFont
-                        font.pixelSize: 20
+                        font.pixelSize: Theme.iconSizeMedium
                     }
 
                     MouseArea {
@@ -622,8 +623,26 @@ PanelWindow {
                     // password prompt for a new secured network
                     Item {
                         width: parent.width
-                        visible: root.pskTarget !== null
-                        implicitHeight: visible ? 40 : 0
+                        visible: root.pskTarget !== null || implicitHeight > 0.5
+                        implicitHeight: root.pskTarget !== null ? 40 : 0
+                        opacity: root.pskTarget !== null ? 1 : 0
+                        clip: true
+
+                        Behavior on implicitHeight {
+                            NumberAnimation {
+                                duration: Theme.durMedium
+                                easing.type: Easing.BezierSpline
+                                easing.bezierCurve: Theme.curveEmphasizedDecelerate
+                            }
+                        }
+
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: Theme.durShort
+                                easing.type: Easing.BezierSpline
+                                easing.bezierCurve: Theme.curveEmphasizedDecelerate
+                            }
+                        }
 
                         Rectangle {
                             id: pskField
@@ -688,14 +707,39 @@ PanelWindow {
                         }
                     }
 
-                    Text {
+                    Item {
                         width: parent.width
-                        visible: text !== ""
-                        text: root.wifiError
-                        color: Theme.error
-                        font.family: Theme.fontFamily
-                        font.pixelSize: Theme.fontSizeLabelMedium
-                        wrapMode: Text.WordWrap
+                        visible: root.wifiError !== "" || implicitHeight > 0.5
+                        implicitHeight: root.wifiError !== "" ? errorText.implicitHeight : 0
+                        opacity: root.wifiError !== "" ? 1 : 0
+                        clip: true
+
+                        Behavior on implicitHeight {
+                            NumberAnimation {
+                                duration: Theme.durMedium
+                                easing.type: Easing.BezierSpline
+                                easing.bezierCurve: Theme.curveEmphasizedDecelerate
+                            }
+                        }
+
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: Theme.durShort
+                                easing.type: Easing.BezierSpline
+                                easing.bezierCurve: Theme.curveEmphasizedDecelerate
+                            }
+                        }
+
+                        Text {
+                            id: errorText
+
+                            width: parent.width
+                            text: root.wifiError
+                            color: Theme.error
+                            font.family: Theme.fontFamily
+                            font.pixelSize: Theme.fontSizeLabelMedium
+                            wrapMode: Text.WordWrap
+                        }
                     }
                 }
             }
@@ -706,10 +750,29 @@ PanelWindow {
                 id: mediaRow
 
                 width: parent.width
-                visible: root.player !== null
-                height: visible ? 52 : 0
+                // Collapses smoothly when the player goes away; stays mapped
+                // while the height animates (same pattern as wifiListBox).
+                visible: root.player !== null || height > 0.5
+                height: root.player !== null ? 56 : 0
+                opacity: root.player !== null ? 1 : 0
                 radius: Theme.shapeLG
                 color: Theme.surfaceContainerHighest
+
+                Behavior on height {
+                    NumberAnimation {
+                        duration: Theme.durMedium
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curveEmphasizedDecelerate
+                    }
+                }
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: Theme.durShort
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curveEmphasizedDecelerate
+                    }
+                }
 
                 Item {
                     anchors.fill: parent
@@ -721,7 +784,7 @@ PanelWindow {
                         anchors.verticalCenter: parent.verticalCenter
                         width: 40
                         height: 40
-                        radius: Theme.shapeSM
+                        radius: Theme.shapeMD
                         color: Theme.surfaceContainerHigh
 
                         Image {
@@ -741,7 +804,7 @@ PanelWindow {
                             text: Theme.iconMusic
                             color: Theme.surfaceVariantText
                             font.family: Theme.iconFont
-                            font.pixelSize: 20
+                            font.pixelSize: Theme.iconSizeMedium
                         }
                     }
 
@@ -754,7 +817,7 @@ PanelWindow {
 
                         MiniIconButton {
                             icon: Theme.iconPrevious
-                            opacity: root.player?.canGoPrevious ? 1 : 0.35
+                            opacity: root.player?.canGoPrevious ? 1 : Theme.disabledContent
                             onClicked: {
                                 if (root.player?.canGoPrevious)
                                     root.player.previous();
@@ -763,7 +826,7 @@ PanelWindow {
 
                         MiniIconButton {
                             icon: root.player?.isPlaying ? Theme.iconPause : Theme.iconPlay
-                            opacity: root.player?.canTogglePlaying ? 1 : 0.35
+                            opacity: root.player?.canTogglePlaying ? 1 : Theme.disabledContent
                             onClicked: {
                                 if (root.player?.canTogglePlaying)
                                     root.player.togglePlaying();
@@ -772,7 +835,7 @@ PanelWindow {
 
                         MiniIconButton {
                             icon: Theme.iconNext
-                            opacity: root.player?.canGoNext ? 1 : 0.35
+                            opacity: root.player?.canGoNext ? 1 : Theme.disabledContent
                             onClicked: {
                                 if (root.player?.canGoNext)
                                     root.player.next();
@@ -793,7 +856,7 @@ PanelWindow {
                             text: root.player?.trackTitle ?? ""
                             color: Theme.surfaceText
                             font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontSizeLabelLarge
+                            font.pixelSize: Theme.fontSizeTitleMedium
                             font.weight: Font.Medium
                             elide: Text.ElideRight
                         }
@@ -816,7 +879,7 @@ PanelWindow {
                 id: powerHeader
 
                 width: parent.width
-                height: 40
+                height: 48
                 radius: Theme.shapeMD
                 color: "transparent"
 
@@ -828,23 +891,23 @@ PanelWindow {
 
                 Text {
                     anchors.left: parent.left
-                    anchors.leftMargin: 10
+                    anchors.leftMargin: 12
                     anchors.verticalCenter: parent.verticalCenter
                     text: "Питание"
                     color: Theme.surfaceText
                     font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSizeLabelLarge
+                    font.pixelSize: Theme.fontSizeTitleMedium
                     font.weight: Font.Medium
                 }
 
                 Text {
                     anchors.right: parent.right
-                    anchors.rightMargin: 10
+                    anchors.rightMargin: 12
                     anchors.verticalCenter: parent.verticalCenter
                     text: Theme.iconExpandMore
                     color: Theme.surfaceVariantText
                     font.family: Theme.iconFont
-                    font.pixelSize: 20
+                    font.pixelSize: Theme.iconSize
                     rotation: root.powerExpanded ? 180 : 0
 
                     Behavior on rotation {
@@ -904,8 +967,8 @@ PanelWindow {
 
     // ---- inline components -----------------------------------------------------------
 
-    // M3 slider: track, active portion and a handle; `moved` fires while
-    // dragging, `committed` on release.
+    // M3 slider: 16 dp track, pill handle that swells on interaction;
+    // `moved` fires while dragging, `committed` on release.
     component QsSlider: Item {
         id: slider
 
@@ -915,11 +978,14 @@ PanelWindow {
         signal moved(real position)
         signal committed(real position)
 
-        implicitHeight: 32
+        implicitHeight: 40
+
+        // Thumb center inset: the handle travels over the track minus its half.
+        readonly property real inset: 8
+        readonly property real thumbWidth: dragArea.pressed || dragArea.containsMouse ? 14 : 12
 
         function valueAt(x: real): real {
-            const inset = 9;
-            return Math.max(0, Math.min(1, (x - inset) / Math.max(1, slider.width - 2 * inset)));
+            return Math.max(0, Math.min(1, (x - slider.inset) / Math.max(1, slider.width - 2 * slider.inset)));
         }
 
         Rectangle {
@@ -927,30 +993,54 @@ PanelWindow {
 
             anchors.verticalCenter: parent.verticalCenter
             width: parent.width
-            height: 4
-            radius: height / 2
+            height: 16
+            radius: Theme.shapeFull
             color: Theme.surfaceContainerHighest
 
             Rectangle {
-                x: 9
-                width: Math.max(0, slider.value * (parent.width - 18))
+                x: slider.inset
+                width: Math.max(0, slider.value * (parent.width - 2 * slider.inset))
                 height: parent.height
                 radius: parent.radius
                 color: slider.handleColor
             }
-        }
 
-        Rectangle {
-            width: dragArea.pressed || dragArea.containsMouse ? 12 : 10
-            height: width
-            radius: width / 2
-            x: 9 + slider.value * (parent.width - 18) - width / 2
-            anchors.verticalCenter: parent.verticalCenter
-            color: slider.handleColor
+            // 10% halo on the active side, as in the M3 slider.
+            Rectangle {
+                x: Math.max(0, Math.min(parent.width - width,
+                    slider.inset + slider.value * (parent.width - 2 * slider.inset) - width / 2))
+                anchors.verticalCenter: parent.verticalCenter
+                width: 40
+                height: 40
+                radius: Theme.shapeFull
+                color: slider.handleColor
+                opacity: dragArea.pressed ? Theme.statePressed : (dragArea.containsMouse ? Theme.stateHover : 0)
 
-            Behavior on width {
-                NumberAnimation {
-                    duration: Theme.durShort
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: Theme.durShort
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curveEmphasized
+                    }
+                }
+            }
+
+            Rectangle {
+                id: thumb
+
+                width: slider.thumbWidth
+                height: 32
+                radius: Theme.shapeFull
+                x: slider.inset + slider.value * (parent.width - 2 * slider.inset) - width / 2
+                anchors.verticalCenter: parent.verticalCenter
+                color: slider.handleColor
+
+                Behavior on width {
+                    NumberAnimation {
+                        duration: Theme.durShort
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curveEmphasized
+                    }
                 }
             }
         }
@@ -973,7 +1063,8 @@ PanelWindow {
     }
 
     // Large toggle tile: icon + title (+ subtitle), tonal when active; an
-    // optional right-side chevron toggles a details section.
+    // M3E shape morph on press and an optional right-side chevron toggling a
+    // details section.
     component QsTile: Rectangle {
         id: tile
 
@@ -988,8 +1079,25 @@ PanelWindow {
         signal detailsToggled
 
         implicitHeight: 64
-        radius: Theme.shapeLG
+        radius: tileTap.pressed ? Theme.shapeLGI : Theme.shapeXL
         color: tile.active ? Theme.primaryContainer : Theme.surfaceContainerHighest
+        scale: tileTap.pressed ? 0.98 : 1
+
+        Behavior on radius {
+            NumberAnimation {
+                duration: Theme.durMorph
+                easing.type: Easing.OutBack
+                easing.overshoot: Theme.springOvershoot
+            }
+        }
+
+        Behavior on scale {
+            NumberAnimation {
+                duration: Theme.durShort
+                easing.type: Easing.OutBack
+                easing.overshoot: Theme.springOvershoot
+            }
+        }
 
         Behavior on color {
             ColorAnimation {
@@ -1017,7 +1125,7 @@ PanelWindow {
                 text: tile.icon
                 color: tile.active ? Theme.primaryContainerText : Theme.surfaceVariantText
                 font.family: Theme.iconFont
-                font.pixelSize: 22
+                font.pixelSize: Theme.iconSizeMedium
 
                 Behavior on color {
                     ColorAnimation {
@@ -1041,7 +1149,7 @@ PanelWindow {
                     text: tile.title
                     color: tile.active ? Theme.primaryContainerText : Theme.surfaceText
                     font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSizeLabelLarge
+                    font.pixelSize: Theme.fontSizeTitleMedium
                     font.weight: Font.Medium
                     elide: Text.ElideRight
                 }
@@ -1051,7 +1159,6 @@ PanelWindow {
                     visible: text !== ""
                     text: tile.subtitle
                     color: tile.active ? Theme.primaryContainerText : Theme.surfaceVariantText
-                    opacity: 0.75
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeLabelMedium
                     elide: Text.ElideRight
@@ -1083,7 +1190,7 @@ PanelWindow {
                 text: tile.detailsExpanded ? Theme.iconExpandLess : Theme.iconExpandMore
                 color: tile.active ? Theme.primaryContainerText : Theme.surfaceVariantText
                 font.family: Theme.iconFont
-                font.pixelSize: 20
+                font.pixelSize: Theme.iconSize
             }
         }
 
@@ -1106,7 +1213,7 @@ PanelWindow {
 
         width: ListView.view ? ListView.view.width : 0
         height: root.netRowHeight
-        radius: Theme.shapeMD
+        radius: Theme.shapeLG
         color: "transparent"
 
         StateLayer {
@@ -1124,7 +1231,7 @@ PanelWindow {
             text: Theme.iconWifi
             color: row.net.connected ? Theme.primary : Theme.surfaceVariantText
             font.family: Theme.iconFont
-            font.pixelSize: 18
+            font.pixelSize: Theme.iconSize
         }
 
         Text {
@@ -1149,7 +1256,7 @@ PanelWindow {
             text: Theme.iconLock
             color: Theme.surfaceVariantText
             font.family: Theme.iconFont
-            font.pixelSize: 14
+            font.pixelSize: Theme.iconSizeSmall
         }
 
         Text {
@@ -1222,7 +1329,7 @@ PanelWindow {
         signal activated
 
         width: parent ? parent.width : 0
-        height: 44
+        height: 48
         radius: Theme.shapeLG
         color: row.modelData.container
         scale: row.pressed ? 0.98 : 1
@@ -1231,7 +1338,7 @@ PanelWindow {
             NumberAnimation {
                 duration: Theme.durShort
                 easing.type: Easing.OutBack
-                easing.overshoot: 1.4
+                easing.overshoot: Theme.springOvershoot
             }
         }
 
@@ -1265,7 +1372,7 @@ PanelWindow {
             text: row.modelData.icon
             color: row.modelData.content
             font.family: Theme.iconFont
-            font.pixelSize: 20
+            font.pixelSize: Theme.iconSizeMedium
         }
 
         Text {
@@ -1287,7 +1394,6 @@ PanelWindow {
             anchors.verticalCenter: parent.verticalCenter
             text: row.modelData.keys[0].toUpperCase()
             color: row.modelData.content
-            opacity: 0.55
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSizeLabelMedium
             font.weight: Font.Medium

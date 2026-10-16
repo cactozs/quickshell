@@ -12,5 +12,7 @@
   "17": "QuickSettings.qml",
   "18": "Brightness.qml",
   "19": "NightLight.qml",
-  "20": "closePowerMenu"
+  "20": "closePowerMenu",
+  "21": "WeatherPopup.qml",
+  "22": "Weather.qml"
 }
