@@ -51,7 +51,8 @@ Row {
 
                 anchors.centerIn: parent
 
-                implicitWidth: label.implicitWidth + 24
+                // M3 nav indicator: active pill never narrower than 48.
+                implicitWidth: Math.max(label.implicitWidth + 24, cell.active ? 48 : 28)
                 implicitHeight: Theme.chipHeight
                 width: implicitWidth
                 height: implicitHeight

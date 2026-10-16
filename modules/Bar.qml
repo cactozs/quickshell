@@ -6,8 +6,8 @@ import QtQuick
 import "../services"
 import "../style"
 
-// M3 Expressive bar: a floating pill (surfaceContainer, corner-full, 6 px
-// gaps) hosting the niri workspaces, window title, clock and status chips.
+// M3 Expressive bar: three floating islands (surfaceContainer sides, raised
+// clock hero) hosting the niri workspaces, window title, clock and status chips.
 PanelWindow {
     id: root
 
@@ -39,15 +39,12 @@ PanelWindow {
     // Mod+P (niri bind) through the `bar` IPC target hides the bar; unmapping also
     // releases the exclusive zone, so windows reclaim the space. The window stays
     // mapped while the fade-out plays.
-    visible: root.shown || surface.opacity > 0.001
+    visible: root.shown || islands.opacity > 0.001
 
-    Rectangle {
-        id: surface
+    Item {
+        id: islands
 
         anchors.fill: parent
-        radius: Theme.shapeFull
-        color: Theme.surfaceContainer
-
         opacity: root.shown ? 1 : 0
 
         transform: Translate {
@@ -70,60 +67,117 @@ PanelWindow {
             }
         }
 
-        Behavior on color {
-            ColorAnimation {
-                duration: Theme.durLong
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasized
-            }
-        }
-
-        // left: workspaces + focused window title
-        Row {
-            id: leftRow
+        // left island: workspaces + focused window title
+        Rectangle {
+            id: leftIsland
 
             anchors.left: parent.left
-            anchors.leftMargin: Theme.barPadding
             anchors.verticalCenter: parent.verticalCenter
-            spacing: 2
+            width: Math.min(leftRow.implicitWidth + 2 * Theme.barPadding, Math.floor(root.width * 0.4))
+            height: Theme.barHeight
+            radius: Theme.shapeFull
+            color: Theme.surfaceContainer
+            clip: true
 
-            Workspaces {
-                screenName: root.modelData.name
+            Behavior on color {
+                ColorAnimation {
+                    duration: Theme.durLong
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curveEmphasized
+                }
             }
 
-            WindowTitle {
-                maxWidth: Math.floor(root.width * 0.33)
+            Row {
+                id: leftRow
+
+                anchors.left: parent.left
+                anchors.leftMargin: Theme.barPadding
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 2
+
+                Workspaces {
+                    screenName: root.modelData.name
+                }
+
+                WindowTitle {
+                    maxWidth: Math.floor(root.width * 0.25)
+                }
             }
         }
 
-        // center: keyboard layout chip + date + time
-        Row {
+        // center island: clock hero, raised one tonal step over the sides
+        Rectangle {
+            id: centerIsland
+
             anchors.centerIn: parent
-            spacing: 4
+            width: centerRow.implicitWidth + 2 * Theme.barPadding
+            height: Theme.barHeight
+            radius: Theme.shapeFull
+            color: Theme.surfaceContainerHigh
 
-            KeyboardLayout {}
-            DateClock {}
-            TimeClock {}
-        }
-
-        // right: status chips + power
-        Row {
-            anchors.right: parent.right
-            anchors.rightMargin: Theme.barPadding
-            anchors.verticalCenter: parent.verticalCenter
-            spacing: 4
-
-            Backlight {}
-            SystemStats {}
-            Volume {}
-            Battery {}
-
-            NotificationBell {
-                screenName: root.modelData.name
+            Behavior on color {
+                ColorAnimation {
+                    duration: Theme.durLong
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curveEmphasized
+                }
             }
 
-            PowerButton {
-                screenName: root.modelData.name
+            Row {
+                id: centerRow
+
+                anchors.centerIn: parent
+                spacing: 4
+
+                KeyboardLayout {}
+                DateClock {}
+                TimeClock {
+                    screenName: root.modelData.name
+                }
+            }
+        }
+
+        // right island: status cluster + notification + power FAB
+        Rectangle {
+            id: rightIsland
+
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            width: rightRow.implicitWidth + 2 * Theme.barPadding
+            height: Theme.barHeight
+            radius: Theme.shapeFull
+            color: Theme.surfaceContainer
+
+            Behavior on color {
+                ColorAnimation {
+                    duration: Theme.durLong
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curveEmphasized
+                }
+            }
+
+            Row {
+                id: rightRow
+
+                anchors.right: parent.right
+                anchors.rightMargin: Theme.barPadding
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 4
+
+                Backlight {}
+                SystemStats {
+                    screenName: root.modelData.name
+                }
+                Volume {}
+                Battery {}
+
+                NotificationBell {
+                    screenName: root.modelData.name
+                }
+
+                PowerButton {
+                    screenName: root.modelData.name
+                }
             }
         }
     }

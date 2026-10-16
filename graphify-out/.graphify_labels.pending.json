@@ -14,5 +14,6 @@
   "19": "NightLight.qml",
   "20": "closePowerMenu",
   "21": "WeatherPopup.qml",
-  "22": "Weather.qml"
+  "22": "Weather.qml",
+  "23": "AppUsage.qml"
 }

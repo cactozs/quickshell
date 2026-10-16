@@ -50,9 +50,9 @@ Item {
         height: implicitHeight
 
         // M3E shape morph: full pill at rest; the press pulls the corners
-        // inward (round button -> large, chip -> medium) and springs back.
+        // inward (round button -> extra-large-increased, chip -> medium).
         radius: clickArea.pressed
-            ? (root.round ? Theme.shapeLG : Theme.shapeMD)
+            ? (root.round ? Theme.shapeLGI : Theme.shapeMD)
             : Theme.shapeFull
         color: root.containerColor
 

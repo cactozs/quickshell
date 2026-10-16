@@ -225,10 +225,10 @@ Singleton {
 
     // ---- bar metrics -----------------------------------------------------------
 
-    readonly property int barHeight: 36
+    readonly property int barHeight: 40
     readonly property int barMargin: 4
-    readonly property int barPadding: 8
-    readonly property int chipHeight: 28
+    readonly property int barPadding: 4
+    readonly property int chipHeight: 32
     readonly property int iconButtonSize: 32
     readonly property int iconSize: 20
     readonly property int iconSizeMedium: 24

@@ -3,11 +3,14 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import QtQuick
 import QtQuick.Layouts
+import "../services"
 import "../style"
 
 // Clock with an M3 schedule glyph; click toggles the weather popup.
 Item {
     id: root
+
+    property string screenName: ""
 
     implicitWidth: content.implicitWidth + 16
     implicitHeight: Theme.barHeight
@@ -45,11 +48,6 @@ Item {
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton
         cursorShape: Qt.PointingHandCursor
-        onClicked: popup.shown = !popup.shown
-    }
-
-    WeatherPopup {
-        id: popup
-        target: root
+        onClicked: ShellState.toggleWeather(root.screenName)
     }
 }

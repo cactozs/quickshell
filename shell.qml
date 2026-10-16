@@ -49,4 +49,16 @@ ShellRoot {
 
         NotificationCenter {}
     }
+
+    Variants {
+        model: Quickshell.screens
+
+        WeatherPopup {}
+    }
+
+    Variants {
+        model: Quickshell.screens
+
+        SystemPopup {}
+    }
 }

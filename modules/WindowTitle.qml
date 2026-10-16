@@ -23,7 +23,8 @@ Item {
     }
 
     height: Theme.barHeight
-    implicitWidth: 8 + icon.width + (icon.visible ? 6 : 0) + titleText.implicitWidth + 4
+    visible: root.win !== null
+    implicitWidth: !visible ? 0 : 8 + (icon.visible ? icon.width + 6 : 0) + titleText.implicitWidth + 4
     width: Math.min(implicitWidth, maxWidth)
 
     IconImage {

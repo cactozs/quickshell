@@ -1,42 +1,84 @@
 pragma ComponentBehavior: Bound
 
 import Quickshell
+import Quickshell.Wayland
 import QtQuick
 import "../services"
 import "../style"
 
 // Weather popup for the bar's time chip: current conditions, the next 24 h
 // in 3 h steps and a 3-day forecast (services/Weather, Open-Meteo).
-// The owner drives `visible` via `shown`, like CalendarPopup.
-// shortcut: closes only by re-clicking the clock, add outside-click dismiss when annoying.
-PopupWindow {
+// Fullscreen transparent PanelWindow like QuickSettings: only the card under
+// the bar is visible, a click outside the card or Esc dismisses it.
+PanelWindow {
     id: root
 
-    required property Item target
+    required property ShellScreen modelData
 
-    property bool shown: false
+    readonly property bool shown: ShellState.weatherScreen === root.modelData.name
 
     readonly property int pad: 16
 
-    visible: shown || surface.opacity > 0.001
+    screen: modelData
+
+    anchors {
+        top: true
+        left: true
+        right: true
+        bottom: true
+    }
+
+    exclusionMode: ExclusionMode.Ignore
     color: "transparent"
+    visible: shown || card.opacity > 0.001
 
-    anchor.item: target
-    anchor.edges: Edges.Bottom | Edges.Left
-    anchor.gravity: Edges.Bottom | Edges.Right
-
-    implicitWidth: (content.visible ? content.implicitWidth : status.implicitWidth) + 2 * root.pad
-    implicitHeight: (content.visible ? content.implicitHeight : status.implicitHeight) + 2 * root.pad
+    WlrLayershell.layer: WlrLayer.Overlay
+    WlrLayershell.namespace: "quickshell:weather"
+    WlrLayershell.keyboardFocus: root.shown ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
     onShownChanged: {
-        if (root.shown)
+        if (root.shown) {
             Weather.refresh();
+            focusKick.restart();
+        }
+    }
+
+    // Layer surfaces take a moment to gain keyboard focus; make sure the key
+    // catcher ends up active either way.
+    Timer {
+        id: focusKick
+        interval: 50
+        onTriggered: keyCatcher.forceActiveFocus()
+    }
+
+    // click outside the card dismisses the popup
+    MouseArea {
+        anchors.fill: parent
+        onClicked: ShellState.closeWeather()
+    }
+
+    Item {
+        id: keyCatcher
+
+        anchors.fill: parent
+        focus: root.shown
+
+        Keys.onPressed: event => {
+            if (event.key === Qt.Key_Escape)
+                ShellState.closeWeather();
+            event.accepted = true;
+        }
     }
 
     Rectangle {
-        id: surface
+        id: card
 
-        anchors.fill: parent
+        anchors.top: parent.top
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.topMargin: Theme.barHeight + 2 * Theme.barMargin
+
+        width: (content.visible ? content.implicitWidth : status.implicitWidth) + 2 * root.pad
+        height: (content.visible ? content.implicitHeight : status.implicitHeight) + 2 * root.pad
         radius: Theme.shapeLG
         color: Theme.surfaceContainerHighest
 
@@ -71,6 +113,11 @@ PopupWindow {
                     easing.bezierCurve: Theme.curveEmphasizedDecelerate
                 }
             }
+        }
+
+        // Swallow clicks on the card so they don't reach the dismiss area.
+        MouseArea {
+            anchors.fill: parent
         }
 
         Text {
@@ -217,5 +264,4 @@ PopupWindow {
             }
         }
     }
-
 }

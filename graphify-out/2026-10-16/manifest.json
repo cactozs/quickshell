@@ -33,9 +33,9 @@
     "language": "language=.md"
   },
   "modules/ClipboardLauncher.qml": {
-    "mtime": 1792160490.259022,
-    "seen": 1792160669.6076758,
-    "ast_hash": "06f557098e8f6258300e8ab623879859",
+    "mtime": 1792162503.0178947,
+    "seen": 1792163417.319983,
+    "ast_hash": "72ec997c0264f253ddef61903857f694",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -61,9 +61,9 @@
     "language": "language=.md"
   },
   "modules/Launcher.qml": {
-    "mtime": 1792160490.259022,
-    "seen": 1792160669.607707,
-    "ast_hash": "14239caf385d8e09ead5f507eb6ea83d",
+    "mtime": 1792162503.0058944,
+    "seen": 1792163417.3200145,
+    "ast_hash": "c9aba5588e10e47803764efcc06f5de3",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -82,10 +82,10 @@
     "language": "language=.md"
   },
   "modules/StateLayer.qml": {
-    "mtime": 1792067522.7578306,
-    "seen": 1792080062.622387,
-    "ast_hash": "ecda2313de19167f9dcaae919c0ade17",
-    "semantic_hash": "ecda2313de19167f9dcaae919c0ade17",
+    "mtime": 1792162484.3376532,
+    "seen": 1792163417.3200817,
+    "ast_hash": "069063d4c85155296ffe167092295be4",
+    "semantic_hash": "",
     "language": "language=.md"
   },
   "modules/SystemStats.qml": {
@@ -96,9 +96,9 @@
     "language": "language=.md"
   },
   "modules/TimeClock.qml": {
-    "mtime": 1792159332.3143773,
-    "seen": 1792159739.7874575,
-    "ast_hash": "6e41119fdac2dc888bef5bedd040f0a3",
+    "mtime": 1792163365.8637338,
+    "seen": 1792163417.3200958,
+    "ast_hash": "ceba327c077e70ae5c54a30a2c09014c",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -159,9 +159,9 @@
     "language": "language=.md"
   },
   "style/Theme.qml": {
-    "mtime": 1792159450.8799968,
-    "seen": 1792159739.7875535,
-    "ast_hash": "c7f982e1a20bb186a84e45835d77b9a1",
+    "mtime": 1792163354.2127638,
+    "seen": 1792163417.3202078,
+    "ast_hash": "f11ce168af446b9af590c442528c8367",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -222,9 +222,9 @@
     "language": "language=.md"
   },
   "modules/QuickSettings.qml": {
-    "mtime": 1792160538.789359,
-    "seen": 1792160669.6077635,
-    "ast_hash": "ef10742c8fb32266e35bb157bf92e26b",
+    "mtime": 1792162498.8408408,
+    "seen": 1792163417.3200743,
+    "ast_hash": "0d06e8fa4c66a410d1103c34321d7c66",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -239,6 +239,20 @@
     "mtime": 1792158305.309931,
     "seen": 1792158356.8190274,
     "ast_hash": "dd16ce65aab08bdd017a72ccb3ec5c55",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/WeatherPopup.qml": {
+    "mtime": 1792163350.4947739,
+    "seen": 1792163417.3201184,
+    "ast_hash": "ab8869810815dc005f56053c3636cf67",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "services/Weather.qml": {
+    "mtime": 1792163342.875796,
+    "seen": 1792163417.3201935,
+    "ast_hash": "725fe4a591f2989037da7b63f94707b8",
     "semantic_hash": "",
     "language": "language=.md"
   }

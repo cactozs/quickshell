@@ -27,6 +27,15 @@ Singleton {
 
     property bool hasNvidia: false
 
+    // Short history for the SystemPopup sparklines (60 samples ~ 2 min).
+    property var cpuHistory: []
+    property var ramHistory: []
+    property var gpuHistory: []
+    property int gpuUsageNum: 0
+
+    property string uptime: ""
+    property string loadAvg: ""
+
     // Samples for delta calculations.
     property real statTotal1: 0
     property real statIdle1: 0
@@ -56,13 +65,33 @@ Singleton {
         return Math.round(bytes) + " B/s";
     }
 
+    function formatUptime(seconds: real): string {
+        const s = Math.max(0, Math.floor(seconds));
+        const d = Math.floor(s / 86400);
+        const h = Math.floor(s % 86400 / 3600);
+        const m = Math.floor(s % 3600 / 60);
+        const hh = h < 10 ? "0" + h : "" + h;
+        const mm = m < 10 ? "0" + m : "" + m;
+        return d > 0 ? d + " дн " + hh + ":" + mm : hh + ":" + mm;
+    }
+
+    function pushHistory(series: var, value: int): var {
+        const next = series.concat([Math.max(0, Math.min(100, value))]);
+        return next.length > 60 ? next.slice(next.length - 60) : next;
+    }
+
     function refresh(): void {
         if (!statProc.running) statProc.running = true;
         if (!netProc.running) netProc.running = true;
         if (!memProc.running) memProc.running = true;
         if (!thermalProc.running) thermalProc.running = true;
+        if (!uptimeProc.running) uptimeProc.running = true;
         if (hasNvidia && !gpuProc.running) gpuProc.running = true;
     }
+
+    onCpuUsageChanged: cpuHistory = pushHistory(cpuHistory, cpuUsage)
+    onRamUsageChanged: ramHistory = pushHistory(ramHistory, ramUsage)
+    onGpuUsageNumChanged: gpuHistory = pushHistory(gpuHistory, gpuUsageNum)
 
     // CPU usage: two /proc/stat samples 100 ms apart.
     Process {
@@ -197,6 +226,23 @@ Singleton {
                 if (isNaN(t)) return;
                 root.gpuTemp = t + "°C";
                 root.gpuUsage = parts[1] + "%";
+                const u = parseInt(parts[1]);
+                if (!isNaN(u)) root.gpuUsageNum = u;
+            }
+        }
+    }
+
+    // Uptime seconds + load average, one cheap read per cycle.
+    Process {
+        id: uptimeProc
+        command: ["sh", "-c", "cut -d' ' -f1 /proc/uptime; awk '{print $1, $2, $3}' /proc/loadavg"]
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const lines = text.trim().split("\n");
+                const s = parseFloat(lines[0]);
+                if (!isNaN(s)) root.uptime = root.formatUptime(s);
+                if (lines.length > 1 && lines[1].trim() !== "") root.loadAvg = lines[1].trim();
             }
         }
     }
