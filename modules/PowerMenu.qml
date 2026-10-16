@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import Quickshell.Wayland
 import QtQuick
+import QtQuick.Layouts
 import "../services"
 import "../style"
 
@@ -83,6 +84,10 @@ PanelWindow {
 
     property int currentIndex: 0
 
+    // Lock is focused on open: a stray Enter right after summoning the menu
+    // must not power the machine off.
+    readonly property int defaultIndex: root.actions.findIndex(a => a.icon === Theme.iconLock)
+
     function moveFocus(delta: int): void {
         const n = root.actions.length;
         root.currentIndex = ((root.currentIndex + delta) % n + n) % n;
@@ -116,7 +121,7 @@ PanelWindow {
 
     onShownChanged: {
         if (root.shown) {
-            root.currentIndex = 0;
+            root.currentIndex = root.defaultIndex;
             focusKick.restart();
         }
     }
@@ -298,25 +303,41 @@ PanelWindow {
             }
         }
 
-        Column {
+        ColumnLayout {
             anchors.centerIn: parent
             spacing: 8
 
             Text {
-                anchors.horizontalCenter: parent.horizontalCenter
+                Layout.alignment: Qt.AlignHCenter
                 text: action.modelData.icon
                 color: action.modelData.content
                 font.family: Theme.iconFont
                 font.pixelSize: Theme.iconSizeLarge
             }
 
-            Text {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: action.modelData.label
-                color: action.modelData.content
-                font.family: Theme.fontFamily
-                font.pixelSize: Theme.fontSizeLabelMedium
-                font.weight: Font.Medium
+            ColumnLayout {
+                Layout.alignment: Qt.AlignHCenter
+                spacing: 2
+
+                Text {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: action.modelData.label
+                    color: action.modelData.content
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeLabelMedium
+                    font.weight: Font.Medium
+                }
+
+                // Physical (latin) shortcut letter, from the wlogout-style `keys`.
+                Text {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: action.modelData.keys[0].toUpperCase()
+                    color: action.modelData.content
+                    opacity: 0.55
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeLabelMedium
+                    font.weight: Font.Medium
+                }
             }
         }
 

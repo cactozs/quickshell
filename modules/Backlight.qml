@@ -3,13 +3,21 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import Quickshell.Io
 import QtQuick
+import "../services"
 import "../style"
 
 // brightnessctl-backed status chip: click -5%, middle +5%, wheel ±5%.
+// Hidden entirely when there is no backlight device (desktop); each change
+// pops the shared OSD once brightnessctl reports the new value.
 IconButton {
     id: root
 
     property int percent: 0
+    property bool deviceFound: false
+
+    // Set while a brightness change is in flight; the OSD pops when the new
+    // value arrives from brightnessctl.
+    property bool osdPending: false
 
     function refresh(): void {
         if (!pctProc.running) pctProc.running = true;
@@ -18,6 +26,7 @@ IconButton {
     function setBrightness(delta: string): void {
         Quickshell.execDetached(["brightnessctl", "set", delta]);
         // brightnessctl finishes fast; pick up the new value right after.
+        root.osdPending = true;
         applyDelay.restart();
     }
 
@@ -26,6 +35,7 @@ IconButton {
         : (root.percent <= 66 ? Theme.iconBrightnessMedium : Theme.iconBrightnessHigh)
     label: root.percent + "%"
     iconColor: Theme.tertiary
+    visible: root.deviceFound
 
     onClicked: button => {
         if (button === Qt.MiddleButton)
@@ -56,9 +66,20 @@ IconButton {
             onStreamFinished: {
                 // "device,class,current,percent%,max"
                 const parts = text.trim().split(",");
-                if (parts.length < 4) return;
+                if (parts.length < 4) {
+                    root.deviceFound = false;
+                    root.osdPending = false;
+                    return;
+                }
                 const p = Math.round(parseFloat(parts[3]));
-                if (!isNaN(p)) root.percent = p;
+                if (!isNaN(p)) {
+                    root.percent = p;
+                    root.deviceFound = true;
+                    if (root.osdPending) {
+                        root.osdPending = false;
+                        Osd.show(root.icon, p / 100);
+                    }
+                }
             }
         }
     }

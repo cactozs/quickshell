@@ -8,9 +8,9 @@ import "../services"
 import "../style"
 
 // M3 Expressive application launcher (replaces `wofi --show drun`): a
-// full-screen scrim plus a centered search card. Opened from the bar's
-// launcher button; dismissed by Esc, by a click on the scrim, or by
-// launching an app.
+// full-screen scrim plus a centered search card. Opened by a niri keybind
+// through `qs ipc call launcher toggleOn <output>`; dismissed by Esc, by a
+// click on the scrim, or by launching an app.
 PanelWindow {
     id: root
 
@@ -376,6 +376,17 @@ PanelWindow {
                     onCurrentIndexChanged: {
                         if (currentIndex >= 0)
                             positionViewAtIndex(currentIndex, ListView.Contain);
+                    }
+
+                    // Wheel moves the selection rather than scrolling, so
+                    // Enter can never fire on an off-screen row.
+                    WheelHandler {
+                        onWheel: event => {
+                            if (event.angleDelta.y === 0)
+                                return;
+                            root.moveFocus(event.angleDelta.y > 0 ? -1 : 1);
+                            event.accepted = true;
+                        }
                     }
                 }
 

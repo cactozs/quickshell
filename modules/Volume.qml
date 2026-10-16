@@ -3,10 +3,12 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import Quickshell.Services.Pipewire
 import QtQuick
+import "../services"
 import "../style"
 
 // Pipewire default sink chip: click toggles mute, wheel steps the volume;
-// zero volume and a real mute both render as "muted".
+// zero volume and a real mute both render as "muted". Every change pops the
+// shared OSD.
 IconButton {
     id: root
 
@@ -33,6 +35,11 @@ IconButton {
             sink.audio.muted = !sink.audio.muted;
     }
 
+    // Called after the mutation so the OSD mirrors the fresh state.
+    function showOsd(): void {
+        Osd.show(root.icon, root.effectiveMuted ? 0 : root.volume);
+    }
+
     icon: root.effectiveMuted
         ? Theme.iconVolumeOff
         : (root.percent < 66 ? Theme.iconVolumeDown : Theme.iconVolumeUp)
@@ -40,8 +47,10 @@ IconButton {
     iconColor: root.effectiveMuted ? Theme.surfaceVariantText : Theme.primary
 
     onClicked: button => {
-        if (button === Qt.LeftButton)
+        if (button === Qt.LeftButton) {
             root.toggleMute();
+            root.showOsd();
+        }
     }
 
     onWheeled: delta => {
@@ -53,6 +62,7 @@ IconButton {
         } else if (delta < 0) {
             root.setVolume(root.volume - 0.05);
         }
+        root.showOsd();
     }
 
     Tip {

@@ -5,7 +5,8 @@ import QtQuick
 import QtQuick.Layouts
 import "../style"
 
-// Date with an M3 calendar glyph; the month calendar shows up in the tooltip.
+// Date with an M3 calendar glyph; hovering shows the month calendar popup
+// (Monday-first, today highlighted).
 Item {
     id: root
 
@@ -15,28 +16,6 @@ Item {
     SystemClock {
         id: clock
         precision: SystemClock.Hours
-    }
-
-    function calendarText(): string {
-        const now = new Date();
-        const y = now.getFullYear();
-        const m = now.getMonth();
-        const header = Qt.formatDateTime(now, "yyyy MMMM");
-        const firstDow = new Date(y, m, 1).getDay();
-        const days = new Date(y, m + 1, 0).getDate();
-
-        const lines = ["Su Mo Tu We Th Fr Sa"];
-        let line = "   ".repeat(firstDow);
-        for (let d = 1; d <= days; d++) {
-            line += String(d).padStart(2, " ") + " ";
-            if ((firstDow + d) % 7 === 0) {
-                lines.push(line);
-                line = "";
-            }
-        }
-        if (line.trim().length > 0) lines.push(line);
-
-        return header + "\n\n" + lines.join("\n");
     }
 
     RowLayout {
@@ -66,14 +45,11 @@ Item {
     HoverHandler {
         id: hover
 
-        onHoveredChanged: {
-            if (hovered) tip.text = root.calendarText();
-            tip.visible = hovered;
-        }
+        onHoveredChanged: calendar.visible = hovered
     }
 
-    Tip {
-        id: tip
+    CalendarPopup {
+        id: calendar
         target: root
     }
 }

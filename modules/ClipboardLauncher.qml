@@ -431,6 +431,17 @@ PanelWindow {
                         if (currentIndex >= 0)
                             positionViewAtIndex(currentIndex, ListView.Contain);
                     }
+
+                    // Wheel moves the selection rather than scrolling, so
+                    // Enter can never fire on an off-screen row.
+                    WheelHandler {
+                        onWheel: event => {
+                            if (event.angleDelta.y === 0)
+                                return;
+                            root.moveFocus(event.angleDelta.y > 0 ? -1 : 1);
+                            event.accepted = true;
+                        }
+                    }
                 }
 
                 Text {

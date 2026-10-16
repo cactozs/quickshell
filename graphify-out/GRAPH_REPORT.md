@@ -1,12 +1,19 @@
-# Graph Report - quickshell  (2026-10-15)
+# Graph Report - quickshell  (2026-10-16)
 
 ## Corpus Check
-- Corpus is ~9,512 words - fits in a single context window. You may not need a graph.
+- 28 files · ~10,848 words
+- Verdict: corpus is large enough that graph structure adds value.
+- Unclassified: 2 file(s) not represented in the graph (top: (none) 2)
 
 ## Summary
-- 81 nodes · 119 edges · 8 communities (7 shown, 1 thin omitted)
+- 84 nodes · 119 edges · 11 communities (7 shown, 4 thin omitted)
 - Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 7 edges (avg confidence: 0.82)
-- Token cost: 29,000 input · 8,500 output
+- Token cost: 0 input · 0 output
+
+## Graph Freshness
+- Built from commit: `0773659e`
+- Run `git rev-parse HEAD` and compare to check if the graph is stale.
+- Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - Bar Status Chips
@@ -33,24 +40,24 @@
 ## Surprising Connections (you probably didn't know these)
 - `PowerMenu (session actions overlay, wlogout replacement)` --conceptually_related_to--> `Niri (niri IPC bridge singleton)`  [INFERRED]
   modules/PowerMenu.qml → services/Niri.qml
+- `Bar (M3 floating pill panel)` --shares_data_with--> `ShellState.barHidden`  [EXTRACTED]
+  modules/Bar.qml → services/ShellState.qml
+- `Bar (M3 floating pill panel)` --references--> `Theme (M3 Expressive design tokens singleton)`  [EXTRACTED]
+  modules/Bar.qml → style/Theme.qml
 - `ShellRoot (per-screen shell entry point)` --references--> `Bar (M3 floating pill panel)`  [EXTRACTED]
   shell.qml → modules/Bar.qml
-- `ShellRoot (per-screen shell entry point)` --references--> `ClipboardLauncher (cliphist overlay)`  [EXTRACTED]
-  shell.qml → modules/ClipboardLauncher.qml
-- `ShellRoot (per-screen shell entry point)` --references--> `Launcher (app launcher overlay, wofi replacement)`  [EXTRACTED]
-  shell.qml → modules/Launcher.qml
-- `ShellRoot (per-screen shell entry point)` --references--> `LayoutBadge (keyboard-layout HUD)`  [EXTRACTED]
-  shell.qml → modules/LayoutBadge.qml
+- `SystemStats (CPU/GPU/RAM chip)` --references--> `SystemMonitor.tooltip`  [EXTRACTED]
+  modules/SystemStats.qml → services/SystemMonitor.qml
 
 ## Import Cycles
 - None detected.
 
 ## Hyperedges (group relationships)
-- **niri IPC integration (event stream + action bridge)** — services_niri_niri, services_niri_handleline, services_niri_layoutswitched, modules_workspaces_workspaces, modules_windowtitle_windowtitle, modules_keyboardlayout_keyboardlayout, modules_layoutbadge_layoutbadge [EXTRACTED 1.00]
 - **M3 Expressive design system implementation** — style_theme_theme, style_theme_m3_expressive, modules_iconbutton_iconbutton, modules_statelayer_statelayer, modules_tip_tip, modules_bar_bar, modules_layoutbadge_layoutbadge [EXTRACTED 1.00]
+- **niri IPC integration (event stream + action bridge)** — services_niri_niri, services_niri_handleline, services_niri_layoutswitched, modules_workspaces_workspaces, modules_windowtitle_windowtitle, modules_keyboardlayout_keyboardlayout, modules_layoutbadge_layoutbadge [EXTRACTED 1.00]
 - **Cross-window overlay open/close flow via ShellState** — services_shellstate_shellstate, modules_bar_bar, modules_powerbutton_powerbutton, modules_powermenu_powermenu, modules_launcher_launcher, modules_clipboardlauncher_clipboardlauncher [INFERRED 0.95]
 
-## Communities (8 total, 1 thin omitted)
+## Communities (11 total, 4 thin omitted)
 
 ### Community 0 - "Bar Status Chips"
 Cohesion: 0.16
@@ -81,20 +88,20 @@ Cohesion: 0.40
 Nodes (3): Workspaces (niri workspace chips), Niri.workspaces state, workspacesFor()
 
 ## Knowledge Gaps
-- **4 isolated node(s):** `TimeClock (clock chip)`, `ShellState (cross-window state singleton)`, `IPC target: power`, `IPC target: bar`
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 20 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **1 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **4 isolated node(s):** `TimeClock (clock chip)`, `IPC target: bar`, `ShellState (cross-window state singleton)`, `IPC target: power`
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 23 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **4 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Bar (M3 floating pill panel)` connect `Bar Status Chips` to `Niri IPC Integration`, `Power Menu & Shell Root`, `M3 Theme & Controls`, `Niri Workspaces`?**
-  _High betweenness centrality (0.290) - this node is a cross-community bridge._
+  _High betweenness centrality (0.269) - this node is a cross-community bridge._
 - **Are the 2 inferred relationships involving `IconButton (M3 chip control base)` (e.g. with `PowerAction (inline action tile)` and `Material 3 Expressive design language`) actually correct?**
   _`IconButton (M3 chip control base)` has 2 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `TimeClock (clock chip)`, `ShellState (cross-window state singleton)`, `IPC target: power` to the rest of the system?**
+- **What connects `TimeClock (clock chip)`, `IPC target: bar`, `ShellState (cross-window state singleton)` to the rest of the system?**
   _4 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Why does `ShellRoot (per-screen shell entry point)` connect `Power Menu & Shell Root` to `Bar Status Chips`, `Niri IPC Integration`, `Clipboard Overlay`, `App Launcher Overlay`?**
-  _High betweenness centrality (0.252) - this node is a cross-community bridge._
+  _High betweenness centrality (0.234) - this node is a cross-community bridge._
 - **Why does `Launcher (app launcher overlay, wofi replacement)` connect `App Launcher Overlay` to `Niri IPC Integration`, `Clipboard Overlay`, `Power Menu & Shell Root`, `M3 Theme & Controls`?**
-  _High betweenness centrality (0.242) - this node is a cross-community bridge._
+  _High betweenness centrality (0.225) - this node is a cross-community bridge._

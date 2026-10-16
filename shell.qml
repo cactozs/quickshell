@@ -23,6 +23,12 @@ ShellRoot {
     Variants {
         model: Quickshell.screens
 
+        OsdBadge {}
+    }
+
+    Variants {
+        model: Quickshell.screens
+
         Launcher {}
     }
 

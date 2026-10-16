@@ -65,6 +65,7 @@ Item {
     Tip {
         target: root
         text: root.title
-        visible: hover.hovered
+        // Only when the title is actually cut off.
+        visible: hover.hovered && titleText.truncated
     }
 }
