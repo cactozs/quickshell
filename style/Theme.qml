@@ -280,6 +280,7 @@ Singleton {
     readonly property string iconNext: "\uE044" // skip_next
     readonly property string iconPrevious: "\uE045" // skip_previous
     readonly property string iconMusic: "\uE3A1" // music_note
+    readonly property string iconStar: "\uE838" // star
 
     // Weather: classic codepoints, glyphs verified by render against the
     // installed MaterialSymbolsRounded font.

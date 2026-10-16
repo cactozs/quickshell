@@ -37,8 +37,9 @@ PanelWindow {
     readonly property string query: input.text
     property int currentIndex: 0
 
-    // Most-launched first while the query is empty (alphabetical on ties),
-    // scored matches otherwise. Only the visible instance bothers computing
+    // Most-launched first while the query is empty (favorites pinned on
+    // top, alphabetical on ties), scored matches otherwise. Only the
+    // visible instance bothers computing
     readonly property var results: {
         if (!root.visible)
             return [];
@@ -46,8 +47,8 @@ PanelWindow {
         const entries = root.allEntries;
         const q = root.query.toLowerCase().trim();
         if (q === "")
-            // Most launched first, alphabetical on ties.
-            return entries.slice().sort((a, b) => (AppUsage.launchCount(b) - AppUsage.launchCount(a)) || a.name.localeCompare(b.name));
+            // Favorites first, then most launched, alphabetical on ties.
+            return entries.slice().sort((a, b) => ((AppUsage.isFavorite(b) ? 1 : 0) - (AppUsage.isFavorite(a) ? 1 : 0)) || (AppUsage.launchCount(b) - AppUsage.launchCount(a)) || a.name.localeCompare(b.name));
 
         const scored = [];
         for (let i = 0; i < entries.length; i++) {
@@ -112,6 +113,8 @@ PanelWindow {
 
         if (score > 0)
             score += Math.max(0, 20 - entry.name.length); // short names first
+        if (score > 0 && AppUsage.isFavorite(entry))
+            score += 1000; // favorites stay on top among matches
         return score;
     }
 
@@ -138,6 +141,22 @@ PanelWindow {
             });
         else
             entry.execute();
+    }
+
+    function toggleFavorite(index: int): void {
+        const entry = root.results[index];
+        if (!entry)
+            return;
+
+        const key = AppUsage.launchKey(entry);
+        AppUsage.toggleFavorite(entry);
+        // Re-sorting moves the row; keep the selection on the same app.
+        for (let i = 0; i < root.results.length; i++) {
+            if (AppUsage.launchKey(root.results[i]) === key) {
+                root.currentIndex = i;
+                break;
+            }
+        }
     }
 
     // ---- panel window -----------------------------------------------------------
@@ -330,6 +349,9 @@ PanelWindow {
                         } else if ((event.modifiers & Qt.ControlModifier) && event.key === Qt.Key_P) {
                             root.moveFocus(-1);
                             event.accepted = true;
+                        } else if ((event.modifiers & Qt.ControlModifier) && event.key === Qt.Key_F) {
+                            root.toggleFavorite(root.currentIndex);
+                            event.accepted = true;
                         }
                     }
                 }
@@ -425,7 +447,7 @@ PanelWindow {
 
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "↑↓ — выбор · Enter — запуск · Esc — закрыть"
+                    text: "↑↓ — выбор · Enter — запуск · Ctrl+F — в избранное · Esc — закрыть"
                     color: Theme.surfaceVariantText
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeLabelMedium
@@ -511,8 +533,8 @@ PanelWindow {
         Column {
             anchors.left: iconBox.right
             anchors.leftMargin: 12
-            anchors.right: parent.right
-            anchors.rightMargin: 12
+            anchors.right: favStar.left
+            anchors.rightMargin: 8
             anchors.verticalCenter: parent.verticalCenter
             spacing: 1
 
@@ -535,6 +557,19 @@ PanelWindow {
                 font.pixelSize: Theme.fontSizeLabelMedium
                 elide: Text.ElideRight
             }
+        }
+
+        Text {
+            id: favStar
+
+            anchors.right: parent.right
+            anchors.rightMargin: 12
+            anchors.verticalCenter: parent.verticalCenter
+            visible: AppUsage.isFavorite(item.modelData)
+            text: Theme.iconStar
+            color: item.selected ? Theme.secondaryContainerText : Theme.surfaceVariantText
+            font.family: Theme.iconFont
+            font.pixelSize: Theme.iconSizeSmall
         }
 
         HoverHandler {
