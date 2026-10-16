@@ -123,6 +123,7 @@ Row {
 
                 anchors.fill: parent
                 acceptedButtons: Qt.LeftButton | Qt.MiddleButton
+                cursorShape: Qt.PointingHandCursor
 
                 onClicked: Niri.focusWorkspace(cell.modelData.idx)
             }

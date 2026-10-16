@@ -19,7 +19,16 @@ Singleton {
     property string powerMenuScreen: ""
     property string launcherScreen: ""
     property string clipboardScreen: ""
-    property bool barHidden: false
+
+    // Carried in-memory across config reloads, so a hidden bar stays hidden
+    // while editing the shell.
+    PersistentProperties {
+        id: props
+        reloadableId: "shell-state"
+        property bool barHidden
+    }
+
+    readonly property bool barHidden: props.barHidden
 
     function togglePowerMenu(screenName: string): void {
         root.powerMenuScreen = root.powerMenuScreen === screenName ? "" : screenName;
@@ -46,7 +55,7 @@ Singleton {
     }
 
     function toggleBar(): void {
-        root.barHidden = !root.barHidden;
+        props.barHidden = !props.barHidden;
     }
 
     IpcHandler {

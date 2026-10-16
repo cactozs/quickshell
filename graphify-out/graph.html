@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>graphify - graphify-out/graph.html</title>
+<script src="https://unpkg.com/vis-network@9.1.6/standalone/umd/vis-network.min.js"
+        integrity="sha384-Ux6phic9PEHJ38YtrijhkzyJ8yQlH8i/+buBR8s3mAZOJrP1gwyvAcIYl3GWtpX1"
+        crossorigin="anonymous"></script>
+<style>
+  :root {
+    --bg: #0f0f1a; --panel: #1a1a2e; --border: #2a2a4e; --input-border: #3a3a5e;
+    --text: #e0e0e0; --text-2: #aaa; --text-3: #ccc; --muted: #555; --count: #666;
+    --neighbor-border: #333; --node-label: #ffffff;
+  }
+  [data-theme="light"] {
+    --bg: #ffffff; --panel: #f8f9fa; --border: #d9dee5; --input-border: #c3cad4;
+    --text: #222222; --text-2: #666666; --text-3: #333333; --muted: #888888; --count: #777777;
+    --neighbor-border: #ccc; --node-label: #222222;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; display: flex; height: 100vh; overflow: hidden; }
+  #graph { flex: 1; }
+  #sidebar { width: 280px; background: var(--panel); border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+  #search-wrap { padding: 12px; border-bottom: 1px solid var(--border); }
+  #search { width: 100%; background: var(--bg); border: 1px solid var(--input-border); color: var(--text); padding: 7px 10px; border-radius: 6px; font-size: 13px; outline: none; }
+  #search:focus { border-color: #4E79A7; }
+  #search-results { max-height: 140px; overflow-y: auto; padding: 4px 12px; border-bottom: 1px solid var(--border); display: none; }
+  .search-item { padding: 4px 6px; cursor: pointer; border-radius: 4px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .search-item:hover { background: var(--border); }
+  #info-panel { padding: 14px; border-bottom: 1px solid var(--border); min-height: 140px; }
+  #info-panel h3 { font-size: 13px; color: var(--text-2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+  #info-content { font-size: 13px; color: var(--text-3); line-height: 1.6; }
+  #info-content .field { margin-bottom: 5px; }
+  #info-content .field b { color: var(--text); }
+  #info-content .empty { color: var(--muted); font-style: italic; }
+  .neighbor-link { display: block; padding: 2px 6px; margin: 2px 0; border-radius: 3px; cursor: pointer; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-left: 3px solid var(--neighbor-border); }
+  .neighbor-link:hover { background: var(--border); }
+  #neighbors-list { max-height: 160px; overflow-y: auto; margin-top: 4px; }
+  #legend-wrap { flex: 1; overflow-y: auto; padding: 12px; }
+  #legend-wrap h3 { font-size: 13px; color: var(--text-2); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .legend-item { display: flex; align-items: center; gap: 8px; padding: 4px 0; cursor: pointer; border-radius: 4px; font-size: 12px; }
+  .legend-item:hover { background: var(--border); padding-left: 4px; }
+  .legend-item.dimmed { opacity: 0.35; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .legend-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .legend-count { color: var(--count); font-size: 11px; }
+  #stats { padding: 10px 14px; border-top: 1px solid var(--border); font-size: 11px; color: var(--muted); }
+  #legend-controls { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding: 4px 0; }
+  #legend-controls label { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 12px; color: var(--text-2); user-select: none; }
+  #legend-controls label:hover { color: var(--text); }
+  .legend-cb, #select-all-cb { appearance: none; -webkit-appearance: none; width: 14px; height: 14px; border: 1.5px solid var(--input-border); border-radius: 3px; background: var(--bg); cursor: pointer; position: relative; flex-shrink: 0; }
+  .legend-cb:checked, #select-all-cb:checked { background: #4E79A7; border-color: #4E79A7; }
+  .legend-cb:checked::after, #select-all-cb:checked::after { content: ''; position: absolute; left: 3.5px; top: 1px; width: 4px; height: 7px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+  #select-all-cb:indeterminate { background: #4E79A7; border-color: #4E79A7; }
+  #select-all-cb:indeterminate::after { content: ''; position: absolute; left: 2px; top: 5px; width: 8px; height: 2px; background: #fff; border: none; transform: none; }
+  #theme-wrap { display: flex; gap: 4px; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  #theme-wrap button { flex: 1; background: var(--bg); color: var(--text-2); border: 1px solid var(--input-border); border-radius: 4px; padding: 3px 0; font-size: 11px; cursor: pointer; }
+  #theme-wrap button:hover { color: var(--text); }
+  #theme-wrap button[aria-pressed="true"] { background: #4E79A7; border-color: #4E79A7; color: #fff; }
+</style>
+<script id="graphify-theme-init">
+// Apply the saved theme before first paint (#3894). No saved choice keeps the
+// historical dark look; "system" follows prefers-color-scheme.
+(function () {
+  var pref = null;
+  try { pref = localStorage.getItem('graphify-theme'); } catch (e) {}
+  var t = pref === 'light' ? 'light'
+    : pref === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light'
+    : 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+})();
+</script>
+</head>
+<body>
+<div id="graph"></div>
+<div id="sidebar">
+  <div id="theme-wrap" role="group" aria-label="Theme">
+    <button type="button" data-theme-choice="light">Light</button>
+    <button type="button" data-theme-choice="dark">Dark</button>
+    <button type="button" data-theme-choice="system">System</button>
+  </div>
+  <div id="search-wrap">
+    <input id="search" type="text" placeholder="Search nodes..." autocomplete="off">
+    <div id="search-results"></div>
+  </div>
+  <div id="info-panel">
+    <h3>Node Info</h3>
+    <div id="info-content"><span class="empty">Click a node to inspect it</span></div>
+  </div>
+  <div id="legend-wrap">
+    <h3>Communities</h3>
+    <div id="legend-controls">
+      <label><input type="checkbox" id="select-all-cb" checked onchange="toggleAllCommunities(!this.checked)">Select All</label>
+    </div>
+    <div id="legend"></div>
+  </div>
+  <div id="stats">81 nodes &middot; 119 edges &middot; 8 communities</div>
+</div>
+<script>
+const RAW_NODES = [{"id": "modules_backlight_backlight", "label": "Backlight (brightnessctl chip)", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 16.9, "font": {"size": 12, "color": "#ffffff"}, "title": "Backlight (brightnessctl chip)", "community": 0, "community_name": "Bar Status Chips", "source_file": "modules/Backlight.qml", "file_type": "code", "degree": 3}, {"id": "modules_bar_bar", "label": "Bar (M3 floating pill panel)", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 40.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Bar (M3 floating pill panel)", "community": 0, "community_name": "Bar Status Chips", "source_file": "modules/Bar.qml", "file_type": "code", "degree": 13}, {"id": "modules_battery_battery", "label": "Battery (UPower chip)", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 16.9, "font": {"size": 12, "color": "#ffffff"}, "title": "Battery (UPower chip)", "community": 0, "community_name": "Bar Status Chips", "source_file": "modules/Battery.qml", "file_type": "code", "degree": 3}, {"id": "modules_dateclock_calendartext", "label": "calendarText()", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 12.3, "font": {"size": 0, "color": "#ffffff"}, "title": "calendarText()", "community": 0, "community_name": "Bar Status Chips", "source_file": "modules/DateClock.qml", "file_type": "code", "degree": 1}, {"id": "modules_dateclock_dateclock", "label": "DateClock (date chip with calendar tooltip)", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 16.9, "font": {"size": 12, "color": "#ffffff"}, "title": "DateClock (date chip with calendar tooltip)", "community": 0, "community_name": "Bar Status Chips", "source_file": "modules/DateClock.qml", "file_type": "code", "degree": 3}, {"id": "modules_systemstats_systemstats", "label": "SystemStats (CPU/GPU/RAM chip)", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 21.5, "font": {"size": 12, "color": "#ffffff"}, "title": "SystemStats (CPU/GPU/RAM chip)", "community": 0, "community_name": "Bar Status Chips", "source_file": "modules/SystemStats.qml", "file_type": "code", "degree": 5}, {"id": "modules_timeclock_timeclock", "label": "TimeClock (clock chip)", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 12.3, "font": {"size": 0, "color": "#ffffff"}, "title": "TimeClock (clock chip)", "community": 0, "community_name": "Bar Status Chips", "source_file": "modules/TimeClock.qml", "file_type": "code", "degree": 1}, {"id": "modules_tip_tip", "label": "Tip (M3 tooltip popup)", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 23.8, "font": {"size": 12, "color": "#ffffff"}, "title": "Tip (M3 tooltip popup)", "community": 0, "community_name": "Bar Status Chips", "source_file": "modules/Tip.qml", "file_type": "code", "degree": 6}, {"id": "modules_volume_volume", "label": "Volume (Pipewire sink chip)", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 16.9, "font": {"size": 12, "color": "#ffffff"}, "title": "Volume (Pipewire sink chip)", "community": 0, "community_name": "Bar Status Chips", "source_file": "modules/Volume.qml", "file_type": "code", "degree": 3}, {"id": "modules_windowtitle_windowtitle", "label": "WindowTitle (focused window chip)", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 16.9, "font": {"size": 12, "color": "#ffffff"}, "title": "WindowTitle (focused window chip)", "community": 0, "community_name": "Bar Status Chips", "source_file": "modules/WindowTitle.qml", "file_type": "code", "degree": 3}, {"id": "services_shellstate_barhidden", "label": "ShellState.barHidden", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "ShellState.barHidden", "community": 0, "community_name": "Bar Status Chips", "source_file": "services/ShellState.qml", "file_type": "code", "degree": 2}, {"id": "services_shellstate_ipc_bar", "label": "IPC target: bar", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 12.3, "font": {"size": 0, "color": "#ffffff"}, "title": "IPC target: bar", "community": 0, "community_name": "Bar Status Chips", "source_file": "services/ShellState.qml", "file_type": "code", "degree": 1}, {"id": "services_shellstate_togglebar", "label": "toggleBar()", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "toggleBar()", "community": 0, "community_name": "Bar Status Chips", "source_file": "services/ShellState.qml", "file_type": "code", "degree": 2}, {"id": "services_systemmonitor_formatspeed", "label": "formatSpeed()", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 12.3, "font": {"size": 0, "color": "#ffffff"}, "title": "formatSpeed()", "community": 0, "community_name": "Bar Status Chips", "source_file": "services/SystemMonitor.qml", "file_type": "code", "degree": 1}, {"id": "services_systemmonitor_refresh", "label": "refresh()", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 12.3, "font": {"size": 0, "color": "#ffffff"}, "title": "refresh()", "community": 0, "community_name": "Bar Status Chips", "source_file": "services/SystemMonitor.qml", "file_type": "code", "degree": 1}, {"id": "services_systemmonitor_systemmonitor", "label": "SystemMonitor (CPU/GPU/RAM/network poller)", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 21.5, "font": {"size": 12, "color": "#ffffff"}, "title": "SystemMonitor (CPU/GPU/RAM/network poller)", "community": 0, "community_name": "Bar Status Chips", "source_file": "services/SystemMonitor.qml", "file_type": "code", "degree": 5}, {"id": "services_systemmonitor_tooltip", "label": "SystemMonitor.tooltip", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "SystemMonitor.tooltip", "community": 0, "community_name": "Bar Status Chips", "source_file": "services/SystemMonitor.qml", "file_type": "code", "degree": 2}, {"id": "modules_keyboardlayout_keyboardlayout", "label": "KeyboardLayout (niri layout chip)", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 16.9, "font": {"size": 12, "color": "#ffffff"}, "title": "KeyboardLayout (niri layout chip)", "community": 1, "community_name": "Niri IPC Integration", "source_file": "modules/KeyboardLayout.qml", "file_type": "code", "degree": 3}, {"id": "modules_layoutbadge_hide", "label": "hide()", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 12.3, "font": {"size": 0, "color": "#ffffff"}, "title": "hide()", "community": 1, "community_name": "Niri IPC Integration", "source_file": "modules/LayoutBadge.qml", "file_type": "code", "degree": 1}, {"id": "modules_layoutbadge_layoutbadge", "label": "LayoutBadge (keyboard-layout HUD)", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 26.2, "font": {"size": 12, "color": "#ffffff"}, "title": "LayoutBadge (keyboard-layout HUD)", "community": 1, "community_name": "Niri IPC Integration", "source_file": "modules/LayoutBadge.qml", "file_type": "code", "degree": 7}, {"id": "modules_layoutbadge_show", "label": "show()", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 12.3, "font": {"size": 0, "color": "#ffffff"}, "title": "show()", "community": 1, "community_name": "Niri IPC Integration", "source_file": "modules/LayoutBadge.qml", "file_type": "code", "degree": 1}, {"id": "services_niri_currentlayout", "label": "Niri.currentLayout", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 16.9, "font": {"size": 12, "color": "#ffffff"}, "title": "Niri.currentLayout", "community": 1, "community_name": "Niri IPC Integration", "source_file": "services/Niri.qml", "file_type": "code", "degree": 3}, {"id": "services_niri_focusedwindow", "label": "Niri.focusedWindow", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "Niri.focusedWindow", "community": 1, "community_name": "Niri IPC Integration", "source_file": "services/Niri.qml", "file_type": "code", "degree": 2}, {"id": "services_niri_handleline", "label": "handleLine() event dispatch", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 23.8, "font": {"size": 12, "color": "#ffffff"}, "title": "handleLine() event dispatch", "community": 1, "community_name": "Niri IPC Integration", "source_file": "services/Niri.qml", "file_type": "code", "degree": 6}, {"id": "services_niri_keyboardlayouts", "label": "Niri.keyboardLayouts state", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 16.9, "font": {"size": 12, "color": "#ffffff"}, "title": "Niri.keyboardLayouts state", "community": 1, "community_name": "Niri IPC Integration", "source_file": "services/Niri.qml", "file_type": "code", "degree": 3}, {"id": "services_niri_layoutshortname", "label": "layoutShortName()", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 16.9, "font": {"size": 12, "color": "#ffffff"}, "title": "layoutShortName()", "community": 1, "community_name": "Niri IPC Integration", "source_file": "services/Niri.qml", "file_type": "code", "degree": 3}, {"id": "services_niri_layoutswitched", "label": "layoutSwitched signal", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "layoutSwitched signal", "community": 1, "community_name": "Niri IPC Integration", "source_file": "services/Niri.qml", "file_type": "code", "degree": 2}, {"id": "services_niri_niri", "label": "Niri (niri IPC bridge singleton)", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 19.2, "font": {"size": 12, "color": "#ffffff"}, "title": "Niri (niri IPC bridge singleton)", "community": 1, "community_name": "Niri IPC Integration", "source_file": "services/Niri.qml", "file_type": "code", "degree": 4}, {"id": "services_niri_refreshworkspaces", "label": "refreshWorkspaces()", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "refreshWorkspaces()", "community": 1, "community_name": "Niri IPC Integration", "source_file": "services/Niri.qml", "file_type": "code", "degree": 2}, {"id": "services_niri_windows", "label": "Niri.windows state", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "Niri.windows state", "community": 1, "community_name": "Niri IPC Integration", "source_file": "services/Niri.qml", "file_type": "code", "degree": 2}, {"id": "services_shellstate_shellstate", "label": "ShellState (cross-window state singleton)", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 12.3, "font": {"size": 0, "color": "#ffffff"}, "title": "ShellState (cross-window state singleton)", "community": 1, "community_name": "Niri IPC Integration", "source_file": "services/ShellState.qml", "file_type": "code", "degree": 1}, {"id": "services_systemmonitor_waybar_migration", "label": "Waybar-era shell migration", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 19.2, "font": {"size": 12, "color": "#ffffff"}, "title": "Waybar-era shell migration", "community": 1, "community_name": "Niri IPC Integration", "source_file": "services/SystemMonitor.qml", "file_type": "concept", "degree": 4}, {"id": "modules_clipboardlauncher_activatemenu", "label": "activateMenu()", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 16.9, "font": {"size": 12, "color": "#ffffff"}, "title": "activateMenu()", "community": 2, "community_name": "Clipboard Overlay", "source_file": "modules/ClipboardLauncher.qml", "file_type": "code", "degree": 3}, {"id": "modules_clipboardlauncher_clampindex", "label": "clampIndex()", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 12.3, "font": {"size": 0, "color": "#ffffff"}, "title": "clampIndex()", "community": 2, "community_name": "Clipboard Overlay", "source_file": "modules/ClipboardLauncher.qml", "file_type": "code", "degree": 1}, {"id": "modules_clipboardlauncher_clipboardlauncher", "label": "ClipboardLauncher (cliphist overlay)", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 33.1, "font": {"size": 12, "color": "#ffffff"}, "title": "ClipboardLauncher (cliphist overlay)", "community": 2, "community_name": "Clipboard Overlay", "source_file": "modules/ClipboardLauncher.qml", "file_type": "code", "degree": 10}, {"id": "modules_clipboardlauncher_clipitem", "label": "ClipItem (inline entry delegate)", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "ClipItem (inline entry delegate)", "community": 2, "community_name": "Clipboard Overlay", "source_file": "modules/ClipboardLauncher.qml", "file_type": "code", "degree": 2}, {"id": "modules_clipboardlauncher_copyentry", "label": "copyEntry()", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "copyEntry()", "community": 2, "community_name": "Clipboard Overlay", "source_file": "modules/ClipboardLauncher.qml", "file_type": "code", "degree": 2}, {"id": "modules_clipboardlauncher_deleteentry", "label": "deleteEntry()", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "deleteEntry()", "community": 2, "community_name": "Clipboard Overlay", "source_file": "modules/ClipboardLauncher.qml", "file_type": "code", "degree": 2}, {"id": "modules_clipboardlauncher_menuentry", "label": "MenuEntry (inline actions row)", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "MenuEntry (inline actions row)", "community": 2, "community_name": "Clipboard Overlay", "source_file": "modules/ClipboardLauncher.qml", "file_type": "code", "degree": 2}, {"id": "modules_clipboardlauncher_parselist", "label": "parseList()", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "parseList()", "community": 2, "community_name": "Clipboard Overlay", "source_file": "modules/ClipboardLauncher.qml", "file_type": "code", "degree": 2}, {"id": "modules_clipboardlauncher_wipehistory", "label": "wipeHistory()", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "wipeHistory()", "community": 2, "community_name": "Clipboard Overlay", "source_file": "modules/ClipboardLauncher.qml", "file_type": "code", "degree": 2}, {"id": "services_shellstate_clipboardscreen", "label": "ShellState.clipboardScreen", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "ShellState.clipboardScreen", "community": 2, "community_name": "Clipboard Overlay", "source_file": "services/ShellState.qml", "file_type": "code", "degree": 2}, {"id": "services_shellstate_closeclipboard", "label": "closeClipboard()", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "closeClipboard()", "community": 2, "community_name": "Clipboard Overlay", "source_file": "services/ShellState.qml", "file_type": "code", "degree": 2}, {"id": "services_shellstate_ipc_clipboard", "label": "IPC target: clipboard", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "IPC target: clipboard", "community": 2, "community_name": "Clipboard Overlay", "source_file": "services/ShellState.qml", "file_type": "code", "degree": 2}, {"id": "services_shellstate_toggleclipboard", "label": "toggleClipboard()", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "toggleClipboard()", "community": 2, "community_name": "Clipboard Overlay", "source_file": "services/ShellState.qml", "file_type": "code", "degree": 2}, {"id": "modules_launcher_activate", "label": "activate()", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "activate()", "community": 3, "community_name": "App Launcher Overlay", "source_file": "modules/Launcher.qml", "file_type": "code", "degree": 2}, {"id": "modules_launcher_fieldscore", "label": "fieldScore()", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "fieldScore()", "community": 3, "community_name": "App Launcher Overlay", "source_file": "modules/Launcher.qml", "file_type": "code", "degree": 2}, {"id": "modules_launcher_launcher", "label": "Launcher (app launcher overlay, wofi replacement)", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 28.5, "font": {"size": 12, "color": "#ffffff"}, "title": "Launcher (app launcher overlay, wofi replacement)", "community": 3, "community_name": "App Launcher Overlay", "source_file": "modules/Launcher.qml", "file_type": "code", "degree": 8}, {"id": "modules_launcher_matchquality", "label": "matchQuality()", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 12.3, "font": {"size": 0, "color": "#ffffff"}, "title": "matchQuality()", "community": 3, "community_name": "App Launcher Overlay", "source_file": "modules/Launcher.qml", "file_type": "code", "degree": 1}, {"id": "modules_launcher_resultitem", "label": "ResultItem (inline app row delegate)", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "ResultItem (inline app row delegate)", "community": 3, "community_name": "App Launcher Overlay", "source_file": "modules/Launcher.qml", "file_type": "code", "degree": 2}, {"id": "modules_launcher_scoreentry", "label": "scoreEntry()", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "scoreEntry()", "community": 3, "community_name": "App Launcher Overlay", "source_file": "modules/Launcher.qml", "file_type": "code", "degree": 2}, {"id": "services_shellstate_closelauncher", "label": "closeLauncher()", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "closeLauncher()", "community": 3, "community_name": "App Launcher Overlay", "source_file": "services/ShellState.qml", "file_type": "code", "degree": 2}, {"id": "services_shellstate_ipc_launcher", "label": "IPC target: launcher", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "IPC target: launcher", "community": 3, "community_name": "App Launcher Overlay", "source_file": "services/ShellState.qml", "file_type": "code", "degree": 2}, {"id": "services_shellstate_launcherscreen", "label": "ShellState.launcherScreen", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "ShellState.launcherScreen", "community": 3, "community_name": "App Launcher Overlay", "source_file": "services/ShellState.qml", "file_type": "code", "degree": 2}, {"id": "services_shellstate_togglelauncher", "label": "toggleLauncher()", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "toggleLauncher()", "community": 3, "community_name": "App Launcher Overlay", "source_file": "services/ShellState.qml", "file_type": "code", "degree": 2}, {"id": "modules_powerbutton_powerbutton", "label": "PowerButton (tonal power toggle)", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 16.9, "font": {"size": 12, "color": "#ffffff"}, "title": "PowerButton (tonal power toggle)", "community": 4, "community_name": "Power Menu & Shell Root", "source_file": "modules/PowerButton.qml", "file_type": "code", "degree": 3}, {"id": "modules_powermenu_activate", "label": "activate()", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "activate()", "community": 4, "community_name": "Power Menu & Shell Root", "source_file": "modules/PowerMenu.qml", "file_type": "code", "degree": 2}, {"id": "modules_powermenu_movefocus", "label": "moveFocus()", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 12.3, "font": {"size": 0, "color": "#ffffff"}, "title": "moveFocus()", "community": 4, "community_name": "Power Menu & Shell Root", "source_file": "modules/PowerMenu.qml", "file_type": "code", "degree": 1}, {"id": "modules_powermenu_powermenu", "label": "PowerMenu (session actions overlay, wlogout replacement)", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 26.2, "font": {"size": 12, "color": "#ffffff"}, "title": "PowerMenu (session actions overlay, wlogout replacement)", "community": 4, "community_name": "Power Menu & Shell Root", "source_file": "modules/PowerMenu.qml", "file_type": "code", "degree": 7}, {"id": "services_shellstate_closepowermenu", "label": "closePowerMenu()", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 12.3, "font": {"size": 0, "color": "#ffffff"}, "title": "closePowerMenu()", "community": 4, "community_name": "Power Menu & Shell Root", "source_file": "services/ShellState.qml", "file_type": "code", "degree": 1}, {"id": "services_shellstate_ipc_power", "label": "IPC target: power", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 12.3, "font": {"size": 0, "color": "#ffffff"}, "title": "IPC target: power", "community": 4, "community_name": "Power Menu & Shell Root", "source_file": "services/ShellState.qml", "file_type": "code", "degree": 1}, {"id": "services_shellstate_powermenuscreen", "label": "ShellState.powerMenuScreen", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "ShellState.powerMenuScreen", "community": 4, "community_name": "Power Menu & Shell Root", "source_file": "services/ShellState.qml", "file_type": "code", "degree": 2}, {"id": "services_shellstate_togglepowermenu", "label": "togglePowerMenu()", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 16.9, "font": {"size": 12, "color": "#ffffff"}, "title": "togglePowerMenu()", "community": 4, "community_name": "Power Menu & Shell Root", "source_file": "services/ShellState.qml", "file_type": "code", "degree": 3}, {"id": "shell_shellroot", "label": "ShellRoot (per-screen shell entry point)", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 21.5, "font": {"size": 12, "color": "#ffffff"}, "title": "ShellRoot (per-screen shell entry point)", "community": 4, "community_name": "Power Menu & Shell Root", "source_file": "shell.qml", "file_type": "code", "degree": 5}, {"id": "modules_iconbutton_iconbutton", "label": "IconButton (M3 chip control base)", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 35.4, "font": {"size": 12, "color": "#ffffff"}, "title": "IconButton (M3 chip control base)", "community": 5, "community_name": "M3 Theme & Controls", "source_file": "modules/IconButton.qml", "file_type": "code", "degree": 11}, {"id": "modules_powermenu_poweraction", "label": "PowerAction (inline action tile)", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 16.9, "font": {"size": 12, "color": "#ffffff"}, "title": "PowerAction (inline action tile)", "community": 5, "community_name": "M3 Theme & Controls", "source_file": "modules/PowerMenu.qml", "file_type": "code", "degree": 3}, {"id": "modules_statelayer_statelayer", "label": "StateLayer (M3 hover/press overlay)", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 28.5, "font": {"size": 12, "color": "#ffffff"}, "title": "StateLayer (M3 hover/press overlay)", "community": 5, "community_name": "M3 Theme & Controls", "source_file": "modules/StateLayer.qml", "file_type": "code", "degree": 8}, {"id": "style_theme_applygeneratedscheme", "label": "applyGeneratedScheme()", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "applyGeneratedScheme()", "community": 5, "community_name": "M3 Theme & Controls", "source_file": "style/Theme.qml", "file_type": "code", "degree": 2}, {"id": "style_theme_normalizehex", "label": "normalizeHex()", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 12.3, "font": {"size": 0, "color": "#ffffff"}, "title": "normalizeHex()", "community": 5, "community_name": "M3 Theme & Controls", "source_file": "style/Theme.qml", "file_type": "code", "degree": 1}, {"id": "style_theme_theme", "label": "Theme (M3 Expressive design tokens singleton)", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 23.8, "font": {"size": 12, "color": "#ffffff"}, "title": "Theme (M3 Expressive design tokens singleton)", "community": 5, "community_name": "M3 Theme & Controls", "source_file": "style/Theme.qml", "file_type": "code", "degree": 6}, {"id": "style_theme_m3_expressive", "label": "Material 3 Expressive design language", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 16.9, "font": {"size": 12, "color": "#ffffff"}, "title": "Material 3 Expressive design language", "community": 5, "community_name": "M3 Theme & Controls", "source_file": "style/Theme.qml", "file_type": "rationale", "degree": 3}, {"id": "style_theme_matugen_scheme", "label": "matugen dynamic color scheme", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 12.3, "font": {"size": 0, "color": "#ffffff"}, "title": "matugen dynamic color scheme", "community": 5, "community_name": "M3 Theme & Controls", "source_file": "style/Theme.qml", "file_type": "rationale", "degree": 1}, {"id": "modules_workspaces_workspaces", "label": "Workspaces (niri workspace chips)", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 28.5, "font": {"size": 12, "color": "#ffffff"}, "title": "Workspaces (niri workspace chips)", "community": 6, "community_name": "Niri Workspaces", "source_file": "modules/Workspaces.qml", "file_type": "code", "degree": 8}, {"id": "services_niri_focusworkspace", "label": "focusWorkspace()", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 12.3, "font": {"size": 0, "color": "#ffffff"}, "title": "focusWorkspace()", "community": 6, "community_name": "Niri Workspaces", "source_file": "services/Niri.qml", "file_type": "code", "degree": 1}, {"id": "services_niri_focusworkspacedown", "label": "focusWorkspaceDown()", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 12.3, "font": {"size": 0, "color": "#ffffff"}, "title": "focusWorkspaceDown()", "community": 6, "community_name": "Niri Workspaces", "source_file": "services/Niri.qml", "file_type": "code", "degree": 1}, {"id": "services_niri_focusworkspaceup", "label": "focusWorkspaceUp()", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 12.3, "font": {"size": 0, "color": "#ffffff"}, "title": "focusWorkspaceUp()", "community": 6, "community_name": "Niri Workspaces", "source_file": "services/Niri.qml", "file_type": "code", "degree": 1}, {"id": "services_niri_workspaces", "label": "Niri.workspaces state", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 16.9, "font": {"size": 12, "color": "#ffffff"}, "title": "Niri.workspaces state", "community": 6, "community_name": "Niri Workspaces", "source_file": "services/Niri.qml", "file_type": "code", "degree": 3}, {"id": "services_niri_workspacesfor", "label": "workspacesFor()", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "workspacesFor()", "community": 6, "community_name": "Niri Workspaces", "source_file": "services/Niri.qml", "file_type": "code", "degree": 2}, {"id": "agents_graphify", "label": "graphify Knowledge Graph Workflow", "color": {"background": "#FF9DA7", "border": "#FF9DA7", "highlight": {"background": "#ffffff", "border": "#FF9DA7"}}, "size": 14.6, "font": {"size": 12, "color": "#ffffff"}, "title": "graphify Knowledge Graph Workflow", "community": 7, "community_name": "Graphify Agent Workflow", "source_file": "AGENTS.md", "file_type": "document", "degree": 2}, {"id": "agents_graphify_update_rule", "label": "graphify update After Code Changes", "color": {"background": "#FF9DA7", "border": "#FF9DA7", "highlight": {"background": "#ffffff", "border": "#FF9DA7"}}, "size": 12.3, "font": {"size": 0, "color": "#ffffff"}, "title": "graphify update After Code Changes", "community": 7, "community_name": "Graphify Agent Workflow", "source_file": "AGENTS.md", "file_type": "rationale", "degree": 1}, {"id": "agents_query_before_grep_rule", "label": "Query Graph Before grep or File Reads", "color": {"background": "#FF9DA7", "border": "#FF9DA7", "highlight": {"background": "#ffffff", "border": "#FF9DA7"}}, "size": 12.3, "font": {"size": 0, "color": "#ffffff"}, "title": "Query Graph Before grep or File Reads", "community": 7, "community_name": "Graphify Agent Workflow", "source_file": "AGENTS.md", "file_type": "rationale", "degree": 1}];
+const RAW_EDGES = [{"from": "modules_backlight_backlight", "to": "modules_iconbutton_iconbutton", "label": "implements", "title": "implements [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_backlight_backlight", "to": "modules_tip_tip", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_bar_bar", "to": "modules_backlight_backlight", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_bar_bar", "to": "style_theme_theme", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_bar_bar", "to": "modules_workspaces_workspaces", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_bar_bar", "to": "modules_windowtitle_windowtitle", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_bar_bar", "to": "modules_keyboardlayout_keyboardlayout", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_bar_bar", "to": "modules_dateclock_dateclock", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_bar_bar", "to": "modules_timeclock_timeclock", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_bar_bar", "to": "modules_systemstats_systemstats", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_bar_bar", "to": "modules_volume_volume", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_bar_bar", "to": "modules_battery_battery", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_bar_bar", "to": "modules_powerbutton_powerbutton", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "shell_shellroot", "to": "modules_bar_bar", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_bar_bar", "to": "services_shellstate_barhidden", "label": "shares_data_with", "title": "shares_data_with [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_battery_battery", "to": "modules_iconbutton_iconbutton", "label": "implements", "title": "implements [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_battery_battery", "to": "modules_tip_tip", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_dateclock_dateclock", "to": "modules_dateclock_calendartext", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_dateclock_dateclock", "to": "modules_tip_tip", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_systemstats_systemstats", "to": "modules_iconbutton_iconbutton", "label": "implements", "title": "implements [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_systemstats_systemstats", "to": "modules_tip_tip", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_systemstats_systemstats", "to": "services_systemmonitor_systemmonitor", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_systemstats_systemstats", "to": "services_systemmonitor_tooltip", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_volume_volume", "to": "modules_tip_tip", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_windowtitle_windowtitle", "to": "modules_tip_tip", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_volume_volume", "to": "modules_iconbutton_iconbutton", "label": "implements", "title": "implements [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_windowtitle_windowtitle", "to": "services_niri_focusedwindow", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "services_shellstate_togglebar", "to": "services_shellstate_barhidden", "label": "shares_data_with", "title": "shares_data_with [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "services_shellstate_ipc_bar", "to": "services_shellstate_togglebar", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "services_systemmonitor_systemmonitor", "to": "services_systemmonitor_formatspeed", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "services_systemmonitor_systemmonitor", "to": "services_systemmonitor_refresh", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "services_systemmonitor_systemmonitor", "to": "services_systemmonitor_waybar_migration", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "services_systemmonitor_systemmonitor", "to": "services_systemmonitor_tooltip", "label": "shares_data_with", "title": "shares_data_with [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_keyboardlayout_keyboardlayout", "to": "modules_iconbutton_iconbutton", "label": "implements", "title": "implements [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_keyboardlayout_keyboardlayout", "to": "services_niri_currentlayout", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_layoutbadge_layoutbadge", "to": "modules_layoutbadge_hide", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_layoutbadge_layoutbadge", "to": "services_niri_layoutshortname", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_layoutbadge_layoutbadge", "to": "modules_layoutbadge_show", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_layoutbadge_layoutbadge", "to": "services_niri_layoutswitched", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "shell_shellroot", "to": "modules_layoutbadge_layoutbadge", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_layoutbadge_layoutbadge", "to": "services_niri_keyboardlayouts", "label": "shares_data_with", "title": "shares_data_with [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_layoutbadge_layoutbadge", "to": "modules_workspaces_workspaces", "label": "semantically_similar_to", "title": "semantically_similar_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "services_niri_currentlayout", "to": "services_niri_layoutshortname", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "services_niri_currentlayout", "to": "services_niri_keyboardlayouts", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "services_niri_focusedwindow", "to": "services_niri_windows", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "services_niri_handleline", "to": "services_niri_refreshworkspaces", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "services_niri_niri", "to": "services_niri_handleline", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "services_niri_handleline", "to": "services_niri_layoutswitched", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "services_niri_handleline", "to": "services_niri_workspaces", "label": "shares_data_with", "title": "shares_data_with [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "services_niri_handleline", "to": "services_niri_windows", "label": "shares_data_with", "title": "shares_data_with [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "services_niri_handleline", "to": "services_niri_keyboardlayouts", "label": "shares_data_with", "title": "shares_data_with [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "services_niri_layoutshortname", "to": "services_systemmonitor_waybar_migration", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "services_niri_niri", "to": "services_niri_refreshworkspaces", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_powermenu_powermenu", "to": "services_niri_niri", "label": "conceptually_related_to", "title": "conceptually_related_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "services_shellstate_shellstate", "to": "services_niri_niri", "label": "conceptually_related_to", "title": "conceptually_related_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "modules_launcher_launcher", "to": "services_systemmonitor_waybar_migration", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_powermenu_powermenu", "to": "services_systemmonitor_waybar_migration", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_clipboardlauncher_activatemenu", "to": "modules_clipboardlauncher_deleteentry", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_clipboardlauncher_activatemenu", "to": "modules_clipboardlauncher_wipehistory", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_clipboardlauncher_clipboardlauncher", "to": "modules_clipboardlauncher_activatemenu", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_clipboardlauncher_parselist", "to": "modules_clipboardlauncher_clampindex", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_clipboardlauncher_clipboardlauncher", "to": "modules_clipboardlauncher_parselist", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_clipboardlauncher_clipboardlauncher", "to": "modules_clipboardlauncher_deleteentry", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_clipboardlauncher_clipboardlauncher", "to": "modules_clipboardlauncher_wipehistory", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_clipboardlauncher_clipboardlauncher", "to": "modules_clipboardlauncher_copyentry", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_clipboardlauncher_clipboardlauncher", "to": "modules_clipboardlauncher_clipitem", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_clipboardlauncher_clipboardlauncher", "to": "modules_clipboardlauncher_menuentry", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "shell_shellroot", "to": "modules_clipboardlauncher_clipboardlauncher", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_clipboardlauncher_clipboardlauncher", "to": "services_shellstate_clipboardscreen", "label": "shares_data_with", "title": "shares_data_with [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_clipboardlauncher_clipboardlauncher", "to": "modules_launcher_launcher", "label": "semantically_similar_to", "title": "semantically_similar_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "modules_clipboardlauncher_clipitem", "to": "modules_statelayer_statelayer", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_clipboardlauncher_copyentry", "to": "services_shellstate_closeclipboard", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_clipboardlauncher_menuentry", "to": "modules_statelayer_statelayer", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "services_shellstate_toggleclipboard", "to": "services_shellstate_clipboardscreen", "label": "shares_data_with", "title": "shares_data_with [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "services_shellstate_ipc_clipboard", "to": "services_shellstate_closeclipboard", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "services_shellstate_ipc_clipboard", "to": "services_shellstate_toggleclipboard", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_launcher_activate", "to": "services_shellstate_closelauncher", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_launcher_launcher", "to": "modules_launcher_activate", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_launcher_fieldscore", "to": "modules_launcher_matchquality", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_launcher_scoreentry", "to": "modules_launcher_fieldscore", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_launcher_launcher", "to": "modules_launcher_scoreentry", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_launcher_launcher", "to": "modules_iconbutton_iconbutton", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_launcher_launcher", "to": "modules_launcher_resultitem", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "shell_shellroot", "to": "modules_launcher_launcher", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_launcher_launcher", "to": "services_shellstate_launcherscreen", "label": "shares_data_with", "title": "shares_data_with [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_launcher_resultitem", "to": "modules_statelayer_statelayer", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "services_shellstate_ipc_launcher", "to": "services_shellstate_closelauncher", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "services_shellstate_ipc_launcher", "to": "services_shellstate_togglelauncher", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "services_shellstate_togglelauncher", "to": "services_shellstate_launcherscreen", "label": "shares_data_with", "title": "shares_data_with [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_powerbutton_powerbutton", "to": "services_shellstate_togglepowermenu", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_powerbutton_powerbutton", "to": "modules_iconbutton_iconbutton", "label": "implements", "title": "implements [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_powermenu_activate", "to": "services_shellstate_closepowermenu", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_powermenu_powermenu", "to": "modules_powermenu_activate", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_powermenu_powermenu", "to": "modules_powermenu_movefocus", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_powermenu_powermenu", "to": "modules_powermenu_poweraction", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "shell_shellroot", "to": "modules_powermenu_powermenu", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_powermenu_powermenu", "to": "services_shellstate_powermenuscreen", "label": "shares_data_with", "title": "shares_data_with [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "services_shellstate_ipc_power", "to": "services_shellstate_togglepowermenu", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "services_shellstate_togglepowermenu", "to": "services_shellstate_powermenuscreen", "label": "shares_data_with", "title": "shares_data_with [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_iconbutton_iconbutton", "to": "style_theme_theme", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_iconbutton_iconbutton", "to": "modules_statelayer_statelayer", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_powermenu_poweraction", "to": "modules_iconbutton_iconbutton", "label": "semantically_similar_to", "title": "semantically_similar_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "style_theme_m3_expressive", "to": "modules_iconbutton_iconbutton", "label": "rationale_for", "title": "rationale_for [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "modules_powermenu_poweraction", "to": "modules_statelayer_statelayer", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_statelayer_statelayer", "to": "style_theme_theme", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_workspaces_workspaces", "to": "modules_statelayer_statelayer", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "style_theme_m3_expressive", "to": "modules_statelayer_statelayer", "label": "rationale_for", "title": "rationale_for [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "style_theme_applygeneratedscheme", "to": "style_theme_normalizehex", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "style_theme_theme", "to": "style_theme_applygeneratedscheme", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "style_theme_m3_expressive", "to": "style_theme_theme", "label": "rationale_for", "title": "rationale_for [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "style_theme_matugen_scheme", "to": "style_theme_theme", "label": "rationale_for", "title": "rationale_for [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_workspaces_workspaces", "to": "services_niri_focusworkspace", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_workspaces_workspaces", "to": "services_niri_focusworkspaceup", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_workspaces_workspaces", "to": "services_niri_focusworkspacedown", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_workspaces_workspaces", "to": "services_niri_workspacesfor", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "modules_workspaces_workspaces", "to": "services_niri_workspaces", "label": "shares_data_with", "title": "shares_data_with [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "services_niri_workspacesfor", "to": "services_niri_workspaces", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "agents_graphify_update_rule", "to": "agents_graphify", "label": "rationale_for", "title": "rationale_for [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "agents_query_before_grep_rule", "to": "agents_graphify", "label": "rationale_for", "title": "rationale_for [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}];
+const LEGEND = [{"cid": 0, "color": "#4E79A7", "label": "Bar Status Chips", "count": 17}, {"cid": 1, "color": "#F28E2B", "label": "Niri IPC Integration", "count": 15}, {"cid": 2, "color": "#E15759", "label": "Clipboard Overlay", "count": 13}, {"cid": 3, "color": "#76B7B2", "label": "App Launcher Overlay", "count": 10}, {"cid": 4, "color": "#59A14F", "label": "Power Menu &amp; Shell Root", "count": 9}, {"cid": 5, "color": "#EDC948", "label": "M3 Theme &amp; Controls", "count": 8}, {"cid": 6, "color": "#B07AA1", "label": "Niri Workspaces", "count": 6}, {"cid": 7, "color": "#FF9DA7", "label": "Graphify Agent Workflow", "count": 3}];
+
+// HTML-escape helper — prevents XSS when injecting graph data into innerHTML
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// Build vis datasets
+const nodesDS = new vis.DataSet(RAW_NODES.map((n, i) => ({
+  id: n.id, label: n.label, color: n.color, size: n.size,
+  font: n.font, title: n.title,
+  // Fermat/golden-angle spiral seed positions (#3699): spreading nodes out
+  // before physics runs keeps avoidOverlap from computing near-zero-distance
+  // repulsion that blows the BarnesHut recursion into a stack overflow on large
+  // graphs. `i` is the map index — physics still settles small graphs identically.
+  x: 30 * Math.sqrt(i) * Math.cos(i * 2.4),
+  y: 30 * Math.sqrt(i) * Math.sin(i * 2.4),
+  community: n.community, community_name: n.community_name,
+  source_file: n.source_file, file_type: n.file_type, degree: n.degree,
+  member_count: n.member_count,
+})));
+
+const edgesDS = new vis.DataSet(RAW_EDGES.map((e, i) => ({
+  id: i, from: e.from, to: e.to,
+  label: '',
+  title: e.title,
+  dashes: e.dashes,
+  width: e.width,
+  color: e.color,
+  arrows: { to: { enabled: true, scaleFactor: 0.5 } },
+})));
+
+const container = document.getElementById('graph');
+const network = new vis.Network(container, { nodes: nodesDS, edges: edgesDS }, {
+  physics: {
+    enabled: true,
+    solver: 'forceAtlas2Based',
+    forceAtlas2Based: {
+      gravitationalConstant: -60,
+      centralGravity: 0.005,
+      springLength: 120,
+      springConstant: 0.08,
+      damping: 0.4,
+      avoidOverlap: 0.8,
+    },
+    stabilization: { iterations: 200, fit: true },
+  },
+  interaction: {
+    hover: true,
+    tooltipDelay: 100,
+    hideEdgesOnDrag: true,
+    navigationButtons: false,
+    keyboard: false,
+  },
+  nodes: { shape: 'dot', borderWidth: 1.5 },
+  edges: { smooth: { type: 'continuous', roundness: 0.2 }, selectionWidth: 3 },
+});
+
+// Theme toggle (#3894): Light / Dark / System, persisted in localStorage.
+const THEME_KEY = 'graphify-theme';
+const themeMQ = window.matchMedia ? window.matchMedia('(prefers-color-scheme: light)') : null;
+let themeLabelColor = '#ffffff';  // matches the per-node font color set in Python
+function themePref() {
+  let p = null;
+  try { p = localStorage.getItem(THEME_KEY); } catch (e) {}
+  return (p === 'light' || p === 'dark' || p === 'system') ? p : null;
+}
+function applyTheme(pref) {
+  const t = pref === 'light' ? 'light' : (pref === 'system' && themeMQ && themeMQ.matches) ? 'light' : 'dark';
+  const root = document.documentElement;
+  if (!root) return;
+  root.setAttribute('data-theme', t);
+  document.querySelectorAll('[data-theme-choice]').forEach(b => {
+    b.setAttribute('aria-pressed', String(b.dataset.themeChoice === (pref || 'dark')));
+  });
+  const labelColor = getComputedStyle(root).getPropertyValue('--node-label').trim();
+  if (labelColor && labelColor !== themeLabelColor) {
+    themeLabelColor = labelColor;
+    nodesDS.update(nodesDS.get().map(n => ({ id: n.id, font: Object.assign({}, n.font, { color: labelColor }) })));
+  }
+}
+document.querySelectorAll('[data-theme-choice]').forEach(b => {
+  b.addEventListener('click', () => {
+    const pref = b.dataset.themeChoice;
+    try { localStorage.setItem(THEME_KEY, pref); } catch (e) {}
+    applyTheme(pref);
+  });
+});
+if (themeMQ) {
+  const onSchemeChange = () => { if (themePref() === 'system') applyTheme('system'); };
+  if (themeMQ.addEventListener) themeMQ.addEventListener('change', onSchemeChange);
+  else if (themeMQ.addListener) themeMQ.addListener(onSchemeChange);
+}
+applyTheme(themePref());
+
+network.once('stabilizationIterationsDone', () => {
+  network.setOptions({ physics: { enabled: false } });
+});
+
+function showInfo(nodeId) {
+  const n = nodesDS.get(nodeId);
+  if (!n) return;
+  const neighborIds = network.getConnectedNodes(nodeId);
+  const neighborItems = neighborIds.map(nid => {
+    const nb = nodesDS.get(nid);
+    const color = nb ? nb.color.background : '#555';
+    return `<span class="neighbor-link" style="border-left-color:${esc(color)}" data-nid="${esc(nid)}">${esc(nb ? nb.label : nid)}</span>`;
+  }).join('');
+  const isMetaNode = !n.file_type && !n.source_file;
+  let html = `<div class="field"><b>${esc(n.label)}</b></div>`;
+  if (!isMetaNode) {
+    html += `<div class="field">Type: ${esc(n.file_type || 'unknown')}</div>`;
+  }
+  html += `<div class="field">Community: ${esc(n.community_name || '')}</div>`;
+  if (!isMetaNode) {
+    html += `<div class="field">Source: ${esc(n.source_file || '-')}</div>`;
+  } else if (n.member_count !== undefined && n.member_count !== null) {
+    html += `<div class="field">Members: ${esc(n.member_count)}</div>`;
+  }
+  html += `<div class="field">Degree: ${n.degree}</div>`;
+  if (neighborIds.length) {
+    html += `<div class="field" style="margin-top:8px;color:var(--text-2);font-size:11px">Neighbors (${neighborIds.length})</div><div id="neighbors-list">${neighborItems}</div>`;
+  }
+  document.getElementById('info-content').innerHTML = html;
+}
+
+function focusNode(nodeId) {
+  network.focus(nodeId, { scale: 1.4, animation: true });
+  network.selectNodes([nodeId]);
+  showInfo(nodeId);
+}
+
+// Neighbor links use a data attribute + one delegated listener rather than an
+// inline onclick. A node id/label sourced from a document or a scraped URL
+// (graphify add) can contain a double-quote; dropping the stringified id
+// unescaped into a quoted onclick both broke every link and allowed a hostile
+// source to inject an event handler into the local report (stored XSS, #1838).
+// esc() on data-nid keeps the value inside the attribute; the listener reads it
+// back verbatim. Bound to document so it survives the innerHTML rebuild that
+// recreates #neighbors-list on each showInfo().
+document.addEventListener('click', e => {
+  const el = e.target.closest('.neighbor-link');
+  if (el && el.dataset.nid !== undefined) focusNode(el.dataset.nid);
+});
+
+// Sidebar tooltips reuse vis-network's .vis-tooltip style and 100ms tooltipDelay.
+// Names get one only when CSS ellipsis truncates them (the full text is still in
+// the DOM); counts always get one, to say what the number is. Text is set with
+// textContent only (labels are untrusted). Delegated on document so rows rebuilt
+// later (search results, showInfo()) are covered.
+const sidebarTip = document.createElement('div');
+sidebarTip.className = 'vis-tooltip';
+sidebarTip.style.cssText = 'white-space: normal; max-width: 360px; overflow-wrap: break-word;';
+document.body.appendChild(sidebarTip);
+let sidebarTipTimer = null;
+let sidebarTipEl = null;    // element whose text the tooltip shows
+let sidebarTipZone = null;  // element the pointer must leave to hide it
+function hideSidebarTip() {
+  clearTimeout(sidebarTipTimer);
+  sidebarTip.style.visibility = 'hidden';
+  sidebarTip.textContent = '';
+  sidebarTipEl = sidebarTipZone = null;
+}
+document.addEventListener('mouseover', e => {
+  const zone = e.target.closest && e.target.closest('.legend-count, .legend-item, .search-item, .neighbor-link');
+  // Anywhere on a legend row except its count (dot, checkbox, gaps, padding)
+  // stands for the row's name, so moving within the row never re-triggers it.
+  const el = zone && zone.classList.contains('legend-item') ? zone.querySelector('.legend-label') : zone;
+  if (!el || el === sidebarTipEl) return;
+  hideSidebarTip();
+  const isCount = el.classList.contains('legend-count');
+  if (!isCount && el.scrollWidth <= el.clientWidth) return;
+  const text = isCount ? `${el.textContent} ${el.textContent === '1' ? 'node' : 'nodes'}` : el.textContent;
+  sidebarTipEl = el;
+  sidebarTipZone = zone;
+  const x = e.clientX, y = e.clientY;
+  sidebarTipTimer = setTimeout(() => {
+    sidebarTip.textContent = text;
+    sidebarTip.style.left = sidebarTip.style.top = '0px';  // measure at full max-width
+    sidebarTip.style.visibility = 'visible';
+    const w = sidebarTip.offsetWidth, h = sidebarTip.offsetHeight;
+    sidebarTip.style.left = Math.max(4, Math.min(x + 12, window.innerWidth - w - 4)) + 'px';
+    sidebarTip.style.top = (y + 16 + h > window.innerHeight ? Math.max(4, y - h - 8) : y + 16) + 'px';
+  }, 100);
+});
+document.addEventListener('mouseout', e => {
+  if (sidebarTipZone && !sidebarTipZone.contains(e.relatedTarget)) hideSidebarTip();
+});
+// A click rebuilds or hides the row (showInfo(), search pick) without a mouseout.
+document.addEventListener('mousedown', hideSidebarTip);
+
+// Track hovered node — hover detection is more reliable than click params
+let hoveredNodeId = null;
+network.on('hoverNode', params => {
+  hoveredNodeId = params.node;
+  container.style.cursor = 'pointer';
+});
+network.on('blurNode', () => {
+  hoveredNodeId = null;
+  container.style.cursor = 'default';
+});
+container.addEventListener('click', () => {
+  if (hoveredNodeId !== null) {
+    showInfo(hoveredNodeId);
+    network.selectNodes([hoveredNodeId]);
+  }
+});
+network.on('click', params => {
+  if (params.nodes.length > 0) {
+    showInfo(params.nodes[0]);
+  } else if (hoveredNodeId === null) {
+    document.getElementById('info-content').innerHTML = '<span class="empty">Click a node to inspect it</span>';
+  }
+});
+
+const searchInput = document.getElementById('search');
+const searchResults = document.getElementById('search-results');
+searchInput.addEventListener('input', () => {
+  const q = searchInput.value.toLowerCase().trim();
+  searchResults.innerHTML = '';
+  if (!q) { searchResults.style.display = 'none'; return; }
+  const matches = RAW_NODES.filter(n => n.label.toLowerCase().includes(q)).slice(0, 20);
+  if (!matches.length) { searchResults.style.display = 'none'; return; }
+  searchResults.style.display = 'block';
+  matches.forEach(n => {
+    const el = document.createElement('div');
+    el.className = 'search-item';
+    el.textContent = n.label;
+    el.style.borderLeft = `3px solid ${n.color.background}`;
+    el.style.paddingLeft = '8px';
+    el.onclick = () => {
+      network.focus(n.id, { scale: 1.5, animation: true });
+      network.selectNodes([n.id]);
+      showInfo(n.id);
+      searchResults.style.display = 'none';
+      searchInput.value = '';
+    };
+    searchResults.appendChild(el);
+  });
+});
+document.addEventListener('click', e => {
+  if (!searchResults.contains(e.target) && e.target !== searchInput)
+    searchResults.style.display = 'none';
+});
+
+const hiddenCommunities = new Set();
+
+const selectAllCb = document.getElementById('select-all-cb');
+
+function updateSelectAllState() {
+  const total = LEGEND.length;
+  const hidden = hiddenCommunities.size;
+  selectAllCb.checked = hidden === 0;
+  selectAllCb.indeterminate = hidden > 0 && hidden < total;
+}
+
+function toggleAllCommunities(hide) {
+  document.querySelectorAll('.legend-item').forEach(item => {
+    hide ? item.classList.add('dimmed') : item.classList.remove('dimmed');
+  });
+  document.querySelectorAll('.legend-cb').forEach(cb => {
+    cb.checked = !hide;
+  });
+  LEGEND.forEach(c => {
+    if (hide) hiddenCommunities.add(c.cid); else hiddenCommunities.delete(c.cid);
+  });
+  const updates = RAW_NODES.map(n => ({ id: n.id, hidden: hide }));
+  nodesDS.update(updates);
+  updateSelectAllState();
+}
+
+const legendEl = document.getElementById('legend');
+LEGEND.forEach(c => {
+  const item = document.createElement('div');
+  item.className = 'legend-item';
+  const cb = document.createElement('input');
+  cb.type = 'checkbox';
+  cb.className = 'legend-cb';
+  cb.checked = true;
+  cb.addEventListener('change', (e) => {
+    e.stopPropagation();
+    if (cb.checked) {
+      hiddenCommunities.delete(c.cid);
+      item.classList.remove('dimmed');
+    } else {
+      hiddenCommunities.add(c.cid);
+      item.classList.add('dimmed');
+    }
+    const updates = RAW_NODES
+      .filter(n => n.community === c.cid)
+      .map(n => ({ id: n.id, hidden: !cb.checked }));
+    nodesDS.update(updates);
+    updateSelectAllState();
+  });
+  item.innerHTML = `<div class="legend-dot" style="background:${c.color}"></div>
+    <span class="legend-label">${c.label}</span>
+    <span class="legend-count">${c.count}</span>`;
+  item.prepend(cb);
+  item.onclick = (e) => {
+    if (e.target === cb) return;
+    cb.checked = !cb.checked;
+    cb.dispatchEvent(new Event('change'));
+  };
+  legendEl.appendChild(item);
+});
+</script>
+<script>
+// Render hyperedges as shaded regions
+const hyperedges = [{"id": "m3_expressive_design_system", "label": "M3 Expressive design system implementation", "nodes": ["style_theme_theme", "style_theme_m3_expressive", "modules_iconbutton_iconbutton", "modules_statelayer_statelayer", "modules_tip_tip", "modules_bar_bar", "modules_layoutbadge_layoutbadge"], "relation": "implement", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "style/Theme.qml"}, {"id": "niri_ipc_integration", "label": "niri IPC integration (event stream + action bridge)", "nodes": ["services_niri_niri", "services_niri_handleline", "services_niri_layoutswitched", "modules_workspaces_workspaces", "modules_windowtitle_windowtitle", "modules_keyboardlayout_keyboardlayout", "modules_layoutbadge_layoutbadge"], "relation": "participate_in", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "services/Niri.qml"}, {"id": "cross_window_overlay_flow", "label": "Cross-window overlay open/close flow via ShellState", "nodes": ["services_shellstate_shellstate", "modules_bar_bar", "modules_powerbutton_powerbutton", "modules_powermenu_powermenu", "modules_launcher_launcher", "modules_clipboardlauncher_clipboardlauncher"], "relation": "participate_in", "confidence": "INFERRED", "confidence_score": 0.95, "source_file": "services/ShellState.qml"}];
+// afterDrawing passes ctx already transformed to network coordinate space.
+// Draw node positions raw — no manual pan/zoom/DPR math needed.
+
+// Andrew's monotone chain. Returns the hull in counter-clockwise order, which
+// is what the perimeter must be traced in. Collinear and duplicate points
+// collapse to the extremes, so degenerate member sets render as a segment
+// rather than a zero-area crossed path.
+function convexHull(pts) {
+    const p = pts.slice().sort((a, b) => (a.x - b.x) || (a.y - b.y));
+    if (p.length < 3) return p;
+    const cross = (o, a, b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+    const build = seq => {
+        const out = [];
+        for (const q of seq) {
+            while (out.length >= 2 && cross(out[out.length - 2], out[out.length - 1], q) <= 0) out.pop();
+            out.push(q);
+        }
+        out.pop();
+        return out;
+    };
+    const hull = build(p).concat(build(p.slice().reverse()));
+    return hull.length >= 3 ? hull : p;
+}
+network.on('afterDrawing', function(ctx) {
+    hyperedges.forEach(h => {
+        const positions = h.nodes
+            .map(nid => network.getPositions([nid])[nid])
+            .filter(p => p !== undefined);
+        if (positions.length < 2) return;
+        ctx.save();
+        ctx.globalAlpha = 0.12;
+        ctx.fillStyle = '#6366f1';
+        ctx.strokeStyle = '#6366f1';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        // Centroid and expanded hull in network coordinates.
+        // The perimeter must follow hull order, not h.nodes order: tracing the
+        // raw member order self-intersects whenever the layout does not happen
+        // to place members in angular order, filling as crossed wedges.
+        const cx = positions.reduce((s, p) => s + p.x, 0) / positions.length;
+        const cy = positions.reduce((s, p) => s + p.y, 0) / positions.length;
+        const hull = convexHull(positions);
+        const expanded = hull.map(p => ({
+            x: cx + (p.x - cx) * 1.15,
+            y: cy + (p.y - cy) * 1.15
+        }));
+        ctx.moveTo(expanded[0].x, expanded[0].y);
+        expanded.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+        ctx.closePath();
+        ctx.fill();
+        ctx.globalAlpha = 0.4;
+        ctx.stroke();
+        // Label
+        ctx.globalAlpha = 0.8;
+        ctx.fillStyle = '#4f46e5';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(h.label, cx, cy - 5);
+        ctx.restore();
+    });
+});
+</script>
+</body>
+</html>

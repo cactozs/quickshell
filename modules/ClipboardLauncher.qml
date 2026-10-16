@@ -16,6 +16,10 @@ PanelWindow {
 
     required property ShellScreen modelData
 
+    // `shown` is the semantic state; the window stays mapped while the close
+    // fade plays out (see `visible` below), like LayoutBadge.
+    readonly property bool shown: ShellState.clipboardScreen === root.modelData.name
+
     readonly property int cardWidth: 560
     readonly property int cardPadding: 20
     readonly property int listMaxHeight: Math.floor(root.height * 0.5)
@@ -185,14 +189,14 @@ PanelWindow {
 
     exclusionMode: ExclusionMode.Ignore
     color: "transparent"
-    visible: ShellState.clipboardScreen === root.modelData.name
+    visible: root.shown || card.opacity > 0.001
 
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "quickshell:clipboard"
-    WlrLayershell.keyboardFocus: root.visible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+    WlrLayershell.keyboardFocus: root.shown ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
-    onVisibleChanged: {
-        if (root.visible) {
+    onShownChanged: {
+        if (root.shown) {
             input.text = "";
             root.currentIndex = 0;
             root.menuOpen = false;
@@ -214,7 +218,7 @@ PanelWindow {
 
         anchors.fill: parent
         color: Theme.scrim
-        opacity: root.visible ? 0.5 : 0
+        opacity: root.shown ? 0.5 : 0
 
         Behavior on opacity {
             NumberAnimation {
@@ -241,8 +245,8 @@ PanelWindow {
         radius: Theme.shapeXL
         color: Theme.surfaceContainerHigh
 
-        scale: root.visible ? 1 : 0.85
-        opacity: root.visible ? 1 : 0
+        scale: root.shown ? 1 : 0.85
+        opacity: root.shown ? 1 : 0
 
         Behavior on scale {
             NumberAnimation {
@@ -340,7 +344,7 @@ PanelWindow {
                     selectionColor: Theme.primary
                     selectedTextColor: Theme.primaryText
 
-                    focus: root.visible
+                    focus: root.shown
 
                     onAccepted: {
                         if (root.menuOpen)

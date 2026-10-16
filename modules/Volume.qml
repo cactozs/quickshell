@@ -57,7 +57,8 @@ IconButton {
 
     Tip {
         target: root
-        text: root.sinkDescription + "\n" + (root.effectiveMuted ? "muted" : "Volume: " + root.percent + "%")
+        text: (root.sinkDescription !== "" ? root.sinkDescription + "\n" : "")
+            + (root.effectiveMuted ? "muted" : "Volume: " + root.percent + "%")
         visible: root.hovered
     }
 }

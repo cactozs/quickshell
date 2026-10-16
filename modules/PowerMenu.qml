@@ -25,6 +25,7 @@ PanelWindow {
             icon: Theme.iconPower,
             label: "Выключение",
             shortcut: Qt.Key_S,
+            keys: ["s", "ы"],
             command: ["systemctl", "poweroff"],
             container: Theme.errorContainer,
             content: Theme.errorContainerText
@@ -33,6 +34,7 @@ PanelWindow {
             icon: Theme.iconRestart,
             label: "Перезагрузка",
             shortcut: Qt.Key_R,
+            keys: ["r", "к"],
             command: ["systemctl", "reboot"],
             container: Theme.primaryContainer,
             content: Theme.primaryContainerText
@@ -41,6 +43,7 @@ PanelWindow {
             icon: Theme.iconLogout,
             label: "Выход",
             shortcut: Qt.Key_E,
+            keys: ["e", "у"],
             command: ["niri", "msg", "action", "quit", "--skip-confirmation"],
             container: Theme.secondaryContainer,
             content: Theme.secondaryContainerText
@@ -49,6 +52,7 @@ PanelWindow {
             icon: Theme.iconHibernate,
             label: "Гибернация",
             shortcut: Qt.Key_H,
+            keys: ["h", "р"],
             command: ["systemctl", "hibernate"],
             container: Theme.tertiaryContainer,
             content: Theme.tertiaryContainerText
@@ -57,6 +61,7 @@ PanelWindow {
             icon: Theme.iconLock,
             label: "Блокировка",
             shortcut: Qt.Key_L,
+            keys: ["l", "д"],
             command: ["hyprlock"],
             container: Theme.surfaceContainerHighest,
             content: Theme.surfaceText
@@ -65,11 +70,16 @@ PanelWindow {
             icon: Theme.iconSuspend,
             label: "Сон",
             shortcut: Qt.Key_U,
+            keys: ["u", "г"],
             command: ["systemctl", "suspend"],
             container: Theme.primary,
             content: Theme.primaryText
         }
     ]
+
+    // `shown` is the semantic state; the window stays mapped while the close
+    // fade plays out (see `visible` below), like LayoutBadge.
+    readonly property bool shown: ShellState.powerMenuScreen === root.modelData.name
 
     property int currentIndex: 0
 
@@ -98,15 +108,25 @@ PanelWindow {
     // the whole output (Ignore and exclusiveZone are mutually exclusive).
     exclusionMode: ExclusionMode.Ignore
     color: "transparent"
-    visible: ShellState.powerMenuScreen === root.modelData.name
+    visible: root.shown || card.opacity > 0.001
 
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "quickshell:power"
-    WlrLayershell.keyboardFocus: root.visible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+    WlrLayershell.keyboardFocus: root.shown ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
-    onVisibleChanged: {
-        if (root.visible)
+    onShownChanged: {
+        if (root.shown) {
             root.currentIndex = 0;
+            focusKick.restart();
+        }
+    }
+
+    // Layer surfaces take a moment to gain keyboard focus; make sure the key
+    // catcher ends up active either way.
+    Timer {
+        id: focusKick
+        interval: 50
+        onTriggered: keyCatcher.forceActiveFocus()
     }
 
     Rectangle {
@@ -114,7 +134,7 @@ PanelWindow {
 
         anchors.fill: parent
         color: Theme.scrim
-        opacity: root.visible ? 0.5 : 0
+        opacity: root.shown ? 0.5 : 0
 
         Behavior on opacity {
             NumberAnimation {
@@ -136,7 +156,7 @@ PanelWindow {
         id: keyCatcher
 
         anchors.fill: parent
-        focus: root.visible
+        focus: root.shown
 
         Keys.onPressed: event => {
             switch (event.key) {
@@ -160,13 +180,18 @@ PanelWindow {
             case Qt.Key_Space:
                 root.activate(root.currentIndex);
                 break;
-            default:
+            default: {
+                // In a cyrillic layout the letter arrives as Qt.Key_Cyrillic_*,
+                // so also match event.text against the action's `keys`.
+                const ch = event.text.toLowerCase();
                 for (let i = 0; i < root.actions.length; i++) {
-                    if (event.key === root.actions[i].shortcut) {
+                    if (event.key === root.actions[i].shortcut
+                            || (ch.length === 1 && root.actions[i].keys.includes(ch))) {
                         root.activate(i);
                         break;
                     }
                 }
+            }
             }
             event.accepted = true;
         }
@@ -184,8 +209,8 @@ PanelWindow {
         radius: Theme.shapeXL
         color: Theme.surfaceContainerHigh
 
-        scale: root.visible ? 1 : 0.85
-        opacity: root.visible ? 1 : 0
+        scale: root.shown ? 1 : 0.85
+        opacity: root.shown ? 1 : 0
 
         Behavior on scale {
             NumberAnimation {

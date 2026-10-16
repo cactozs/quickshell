@@ -65,6 +65,18 @@ Singleton {
             root.workspaces = ev.WorkspacesChanged.workspaces;
         } else if (ev.WindowsChanged) {
             root.windows = ev.WindowsChanged.windows;
+        } else if (ev.WindowOpenedOrChanged) {
+            // WindowsChanged arrives only when the stream connects; afterwards
+            // niri sends per-window events. A focused window clears the flag
+            // on every other one, same rule niri applies internally.
+            const win = ev.WindowOpenedOrChanged.window;
+            const next = root.windows.filter(w => w.id !== win.id);
+            next.push(win);
+            root.windows = win.is_focused
+                ? next.map(w => Object.assign({}, w, { is_focused: w.id === win.id }))
+                : next;
+        } else if (ev.WindowClosed) {
+            root.windows = root.windows.filter(w => w.id !== ev.WindowClosed.id);
         } else if (ev.KeyboardLayoutsChanged) {
             const kl = ev.KeyboardLayoutsChanged.keyboard_layouts;
             root.keyboardLayouts = { names: kl.names ?? [], currentIdx: kl.current_idx ?? 0 };

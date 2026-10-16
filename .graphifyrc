@@ -1,0 +1,5 @@
+# graphify project config.
+# Quickshell configs are written in QML (ECMAScript-based, declarative).
+# graphify has no QML AST extractor, so .qml files are treated as text
+# documents and graphified via semantic (LLM) extraction instead.
+language.qml=markdown

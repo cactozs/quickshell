@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import Quickshell
+import Quickshell.Wayland
 import QtQuick
 import "../services"
 import "../style"
@@ -30,6 +31,8 @@ PanelWindow {
     exclusiveZone: Theme.barHeight + Theme.barMargin
     implicitHeight: Theme.barHeight
     color: "transparent"
+
+    WlrLayershell.namespace: "quickshell:bar"
 
     // Mod+P (niri bind) through the `bar` IPC target hides the bar; unmapping also
     // releases the exclusive zone, so windows reclaim the space.

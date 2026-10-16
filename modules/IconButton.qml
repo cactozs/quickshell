@@ -127,6 +127,7 @@ Item {
 
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton | Qt.MiddleButton
+        cursorShape: Qt.PointingHandCursor
 
         // Pending touchpad scroll, accumulated into discrete steps.
         property real wheelAccum: 0
