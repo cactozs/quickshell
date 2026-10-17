@@ -49,6 +49,15 @@ PanelWindow {
         height: Theme.barHeight
     }
 
+    // Any image dropped on the bar band becomes the wallpaper. Declared under
+    // the islands so it never affects their click handling.
+    WallpaperDropArea {
+        x: 0
+        y: root.bandTop
+        width: root.width
+        height: Theme.barHeight
+    }
+
     // Acrylic behind the three islands (New style only).
     BackgroundEffect.blurRegion: Theme.glass ? blurRegion : null
 

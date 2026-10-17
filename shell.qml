@@ -11,6 +11,12 @@ ShellRoot {
     Variants {
         model: Quickshell.screens
 
+        WallpaperDrop {}
+    }
+
+    Variants {
+        model: Quickshell.screens
+
         QuickSettings {}
     }
 

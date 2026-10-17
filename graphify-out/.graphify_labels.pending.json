@@ -20,5 +20,7 @@
   "24": "QuickShell Config",
   "25": "ShellState.barHidden",
   "26": "SystemPopup.qml",
-  "27": "Settings.qml"
+  "27": "Settings.qml",
+  "28": "WallpaperDrop.qml",
+  "29": "WallpaperDropArea.qml"
 }

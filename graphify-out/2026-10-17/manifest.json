@@ -1,9 +1,9 @@
 {
   "style/Colors.json": {
-    "mtime": 1792209714.813466,
-    "seen": 1792213940.9114964,
+    "mtime": 1792240544.0905657,
+    "seen": 1792243846.861472,
     "ast_hash": "664c3df21c3b1f7aa9cfd50483348672",
-    "semantic_hash": "664c3df21c3b1f7aa9cfd50483348672"
+    "semantic_hash": ""
   },
   "AGENTS.md": {
     "mtime": 1792210562.4329185,
@@ -12,120 +12,120 @@
     "semantic_hash": ""
   },
   "modules/Backlight.qml": {
-    "mtime": 1792160594.4897525,
-    "seen": 1792160669.6076415,
+    "mtime": 1792215497.638891,
+    "seen": 1792226528.403873,
     "ast_hash": "d2593191c84f46020b156314fe29765a",
     "semantic_hash": "",
     "language": "language=.md"
   },
   "modules/Bar.qml": {
-    "mtime": 1792213874.8824546,
-    "seen": 1792213940.911534,
-    "ast_hash": "d0604db5736ccc0da66a5e8d21031b30",
+    "mtime": 1792235599.5127509,
+    "seen": 1792237379.8920364,
+    "ast_hash": "24e5096e6fc5eded37cbbde300c87244",
     "semantic_hash": "",
     "language": "language=.md"
   },
   "modules/Battery.qml": {
-    "mtime": 1792160594.4897525,
-    "seen": 1792160669.60766,
+    "mtime": 1792215497.6308615,
+    "seen": 1792226528.4038908,
     "ast_hash": "70e20429e9463eb81967d124651189aa",
     "semantic_hash": "",
     "language": "language=.md"
   },
   "modules/ClipboardLauncher.qml": {
-    "mtime": 1792162503.0178947,
-    "seen": 1792163417.319983,
-    "ast_hash": "72ec997c0264f253ddef61903857f694",
+    "mtime": 1792235599.5127509,
+    "seen": 1792237379.8920646,
+    "ast_hash": "56aa070f68834774f426aab76077ddf3",
     "semantic_hash": "",
     "language": "language=.md"
   },
   "modules/DateClock.qml": {
-    "mtime": 1792213874.9304547,
-    "seen": 1792213940.9115694,
+    "mtime": 1792215584.5826094,
+    "seen": 1792226528.4039147,
     "ast_hash": "57aa2c635ce98c5e6fc05c157fda883f",
     "semantic_hash": "",
     "language": "language=.md"
   },
   "modules/IconButton.qml": {
-    "mtime": 1792165618.8514328,
-    "seen": 1792165687.9407508,
+    "mtime": 1792215584.5849366,
+    "seen": 1792226528.4039218,
     "ast_hash": "86b157a23bfb79ad27a9c5ad43a148a8",
     "semantic_hash": "",
     "language": "language=.md"
   },
   "modules/KeyboardLayout.qml": {
-    "mtime": 1792213874.977455,
-    "seen": 1792213940.9115837,
+    "mtime": 1792215497.6386518,
+    "seen": 1792226528.4039288,
     "ast_hash": "38efca893e4632cd3c20895eb5d2dc8c",
     "semantic_hash": "38efca893e4632cd3c20895eb5d2dc8c",
     "language": "language=.md"
   },
   "modules/Launcher.qml": {
-    "mtime": 1792172744.7291346,
-    "seen": 1792175277.0855591,
-    "ast_hash": "b89dd57b3acd7d75b0f0569543bbd6b3",
+    "mtime": 1792243822.0857604,
+    "seen": 1792243846.8615668,
+    "ast_hash": "a932b39d82ff70f01d0fb0e71d884629",
     "semantic_hash": "",
     "language": "language=.md"
   },
   "modules/LayoutBadge.qml": {
-    "mtime": 1792176468.6263483,
-    "seen": 1792209616.3784776,
-    "ast_hash": "36dd6d5e2f9f69e04979c646ccede75d",
+    "mtime": 1792235599.5127509,
+    "seen": 1792237379.8921204,
+    "ast_hash": "6aa22958b7b238c1a15ac61e2316b42c",
     "semantic_hash": "",
     "language": "language=.md"
   },
   "modules/PowerButton.qml": {
-    "mtime": 1792157595.6930432,
-    "seen": 1792157791.6277153,
+    "mtime": 1792215497.637135,
+    "seen": 1792226528.4039836,
     "ast_hash": "f2d979b362af61dd778120325290af75",
     "semantic_hash": "",
     "language": "language=.md"
   },
   "modules/StateLayer.qml": {
-    "mtime": 1792162484.3376532,
-    "seen": 1792163417.3200817,
+    "mtime": 1792215497.6346478,
+    "seen": 1792226528.4040062,
     "ast_hash": "069063d4c85155296ffe167092295be4",
     "semantic_hash": "",
     "language": "language=.md"
   },
   "modules/SystemStats.qml": {
-    "mtime": 1792170719.2899818,
-    "seen": 1792175277.085642,
+    "mtime": 1792215497.6330502,
+    "seen": 1792226528.4040296,
     "ast_hash": "18f8da5b099d3fc499851b6959c2053d",
     "semantic_hash": "",
     "language": "language=.md"
   },
   "modules/TimeClock.qml": {
-    "mtime": 1792213875.0224552,
-    "seen": 1792213940.911677,
+    "mtime": 1792215584.601249,
+    "seen": 1792226528.4040363,
     "ast_hash": "417edd266e594fe1f0c99a61e7826b34",
     "semantic_hash": "",
     "language": "language=.md"
   },
   "modules/Tip.qml": {
-    "mtime": 1792160585.1546862,
-    "seen": 1792160669.60779,
-    "ast_hash": "08c65dc0db24513d9075e26317b435c2",
+    "mtime": 1792229932.529364,
+    "seen": 1792231915.6117034,
+    "ast_hash": "00748abf0ce4e317ae9ab3c68481f937",
     "semantic_hash": "",
     "language": "language=.md"
   },
   "modules/Volume.qml": {
-    "mtime": 1792160594.4897525,
-    "seen": 1792160669.6077964,
+    "mtime": 1792215497.633977,
+    "seen": 1792226528.4040494,
     "ast_hash": "4009685ca980caac795d7dcf2edf7566",
     "semantic_hash": "",
     "language": "language=.md"
   },
   "modules/WindowTitle.qml": {
-    "mtime": 1792176466.2629843,
-    "seen": 1792209616.3785813,
+    "mtime": 1792215497.6381395,
+    "seen": 1792226528.4040625,
     "ast_hash": "2d6f9e3c6448f3082bdb41221f1bd084",
     "semantic_hash": "",
     "language": "language=.md"
   },
   "modules/Workspaces.qml": {
-    "mtime": 1792213875.0694554,
-    "seen": 1792213940.9117105,
+    "mtime": 1792215497.6296046,
+    "seen": 1792226528.4040692,
     "ast_hash": "48df2bb0e7d4709a32ffcdee76adf2db",
     "semantic_hash": "",
     "language": "language=.md"
@@ -138,9 +138,9 @@
     "language": "language=.md"
   },
   "services/ShellState.qml": {
-    "mtime": 1792170705.3120973,
-    "seen": 1792175277.0857441,
-    "ast_hash": "7021d78dba0ce3e6cc84a068541cae33",
+    "mtime": 1792229513.0611238,
+    "seen": 1792231915.611784,
+    "ast_hash": "fd68962ed14591d7e069615c4fdaa361",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -152,30 +152,30 @@
     "language": "language=.md"
   },
   "shell.qml": {
-    "mtime": 1792170741.9107926,
-    "seen": 1792175277.0857642,
-    "ast_hash": "dfe13a1154bc4f516e3d86ab4766eee6",
+    "mtime": 1792229938.5012288,
+    "seen": 1792231915.611803,
+    "ast_hash": "839c3b4ee210186a517b54860877c96d",
     "semantic_hash": "",
     "language": "language=.md"
   },
   "style/Theme.qml": {
-    "mtime": 1792213875.1144557,
-    "seen": 1792213940.911792,
-    "ast_hash": "d3635b976ed81bd9f4a31cbf4555ffba",
+    "mtime": 1792229562.5561862,
+    "seen": 1792231915.61181,
+    "ast_hash": "1ce0a83e3dcd6698eaf5637de66334b0",
     "semantic_hash": "",
     "language": "language=.md"
   },
   "modules/CalendarPopup.qml": {
-    "mtime": 1792213874.734454,
-    "seen": 1792213940.9115527,
-    "ast_hash": "841d05d3ff0aada3851a7617516bd321",
+    "mtime": 1792229932.529364,
+    "seen": 1792231915.6115742,
+    "ast_hash": "bf16cb2ea0249a86097b14cadcdc214a",
     "semantic_hash": "",
     "language": "language=.md"
   },
   "modules/OsdBadge.qml": {
-    "mtime": 1792159384.9031696,
-    "seen": 1792159739.7874165,
-    "ast_hash": "a86de8bb16e7dcf7b2e2cc75a18bb33f",
+    "mtime": 1792235599.5127509,
+    "seen": 1792237379.8921604,
+    "ast_hash": "1384cddaad3ae108a01edbca1891fda6",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -187,44 +187,44 @@
     "language": "language=.md"
   },
   "modules/MiniIconButton.qml": {
-    "mtime": 1792159340.3873413,
-    "seen": 1792159739.787384,
+    "mtime": 1792215584.5895615,
+    "seen": 1792226528.4039497,
     "ast_hash": "48b5132d56c7c04df5859576f17aa29c",
     "semantic_hash": "",
     "language": "language=.md"
   },
   "modules/NotificationBell.qml": {
-    "mtime": 1792160585.1546862,
-    "seen": 1792160669.6077297,
+    "mtime": 1792215497.6355464,
+    "seen": 1792226528.4039567,
     "ast_hash": "4bb318b63990b482620cb129e9620f97",
     "semantic_hash": "",
     "language": "language=.md"
   },
   "modules/NotificationCenter.qml": {
-    "mtime": 1792160490.259022,
-    "seen": 1792160669.6077368,
-    "ast_hash": "30d5b7221c505c50e6159981153dffc6",
+    "mtime": 1792235656.4869244,
+    "seen": 1792237379.8921466,
+    "ast_hash": "7e38f72a4e03d6dc1f71ee6378df5fd2",
     "semantic_hash": "",
     "language": "language=.md"
   },
   "modules/NotificationToast.qml": {
-    "mtime": 1792161604.2134254,
-    "seen": 1792161738.616214,
-    "ast_hash": "4f9daef80c0fd86a1357672f7fe54079",
+    "mtime": 1792237212.5770266,
+    "seen": 1792237379.8921535,
+    "ast_hash": "b8be8f17cfa96e3fcbc784f33dbc3e1d",
     "semantic_hash": "",
     "language": "language=.md"
   },
   "services/Notifications.qml": {
-    "mtime": 1792161617.8346786,
-    "seen": 1792161738.6163175,
+    "mtime": 1792237221.2151124,
+    "seen": 1792237379.8922908,
     "ast_hash": "8af733323c0eae6d09c32f9ea116a90e",
     "semantic_hash": "",
     "language": "language=.md"
   },
   "modules/QuickSettings.qml": {
-    "mtime": 1792214183.7828112,
-    "seen": 1792214185.5674639,
-    "ast_hash": "88e6cdfdbbeea8059e56abebb42c1e5f",
+    "mtime": 1792235656.4869244,
+    "seen": 1792237379.8921757,
+    "ast_hash": "c47c6a717cdcf1d356b3b4784763ea2a",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -243,9 +243,9 @@
     "language": "language=.md"
   },
   "modules/WeatherPopup.qml": {
-    "mtime": 1792213874.8324544,
-    "seen": 1792213940.9116976,
-    "ast_hash": "04cea2a14e26249b31ce89bfc18c9c66",
+    "mtime": 1792235656.4869244,
+    "seen": 1792237379.8922327,
+    "ast_hash": "83d4bc345a42e5e8f2876b5e6e60409d",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -257,16 +257,16 @@
     "language": "language=.md"
   },
   "services/AppUsage.qml": {
-    "mtime": 1792172725.1985228,
-    "seen": 1792175277.0857022,
-    "ast_hash": "65237b1f231368b8fd97d9b4caf86957",
+    "mtime": 1792228001.276481,
+    "seen": 1792228427.6233387,
+    "ast_hash": "373fcc815656b8a85f736e2adc79a97d",
     "semantic_hash": "",
     "language": "language=.md"
   },
   "modules/SystemPopup.qml": {
-    "mtime": 1792213874.7834542,
-    "seen": 1792213940.911664,
-    "ast_hash": "d4e66b8c496cb3a2441ca354bff57c1c",
+    "mtime": 1792235656.4869244,
+    "seen": 1792237379.8921962,
+    "ast_hash": "7c4e345be13133f9c17eb10d9de7bb12",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -275,5 +275,12 @@
     "seen": 1792213940.9117174,
     "ast_hash": "189b0ca93832d6e84c54589fb789013b",
     "semantic_hash": ""
+  },
+  "modules/Settings.qml": {
+    "mtime": 1792235656.4869244,
+    "seen": 1792237379.892182,
+    "ast_hash": "80dd8cc1c23d2f46776045dcc533a6e2",
+    "semantic_hash": "",
+    "language": "language=.md"
   }
 }

@@ -52,6 +52,7 @@ sudo pacman -S nvidia-utils wlsunset swayidle playerctl papirus-icon-theme
 Notes:
 
 - The UI font is **Google Sans** (`Theme.fontFamily`); no Arch package — install it by hand, otherwise text falls back to the default sans.
+- Dropping an image file onto the bare desktop or the bar sets it as the wallpaper (`modules/WallpaperDrop.qml`).
 - MPRIS players (mpv, browsers, Spotify…) are what the media tile talks to; nothing to install for it.
 - Quickshell *is* the notification daemon — don't run dunst/mako/swaync next to it.
 - No waybar, wofi/rofi/fuzzel or cava: bar, launcher, clipboard, OSD, notifications and the power menu are all QML. The shell only shells out to `sh` + coreutils against `/proc` and `/sys/class/thermal`.
