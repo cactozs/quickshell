@@ -1,14 +1,14 @@
 {
   "style/Colors.json": {
-    "mtime": 1792066319.254051,
-    "seen": 1792080062.6222763,
+    "mtime": 1792209508.2010455,
+    "seen": 1792209616.3783743,
     "ast_hash": "664c3df21c3b1f7aa9cfd50483348672",
     "semantic_hash": "664c3df21c3b1f7aa9cfd50483348672"
   },
   "AGENTS.md": {
-    "mtime": 1792175261.6470506,
-    "seen": 1792175277.0854769,
-    "ast_hash": "4649bafde90138200f6d71ba46ee8178",
+    "mtime": 1792209609.8623853,
+    "seen": 1792209616.3783908,
+    "ast_hash": "b6b452f4d03b0f8de79a86481095384c",
     "semantic_hash": ""
   },
   "modules/Backlight.qml": {
@@ -19,9 +19,9 @@
     "language": "language=.md"
   },
   "modules/Bar.qml": {
-    "mtime": 1792170724.568938,
-    "seen": 1792175277.0855012,
-    "ast_hash": "290e6582100603a6ab9330283e099b15",
+    "mtime": 1792176730.527107,
+    "seen": 1792209616.378413,
+    "ast_hash": "d0604db5736ccc0da66a5e8d21031b30",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -68,9 +68,9 @@
     "language": "language=.md"
   },
   "modules/LayoutBadge.qml": {
-    "mtime": 1792159359.2192628,
-    "seen": 1792159739.7873719,
-    "ast_hash": "656669849bdffba70e2aa1488aa27b7d",
+    "mtime": 1792176468.6263483,
+    "seen": 1792209616.3784776,
+    "ast_hash": "36dd6d5e2f9f69e04979c646ccede75d",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -117,16 +117,16 @@
     "language": "language=.md"
   },
   "modules/WindowTitle.qml": {
-    "mtime": 1792166590.4835756,
-    "seen": 1792175277.0856786,
-    "ast_hash": "42dc1b9fe4f9658e3ef6c7773341f2b3",
+    "mtime": 1792176466.2629843,
+    "seen": 1792209616.3785813,
+    "ast_hash": "2d6f9e3c6448f3082bdb41221f1bd084",
     "semantic_hash": "",
     "language": "language=.md"
   },
   "modules/Workspaces.qml": {
-    "mtime": 1792165618.8514328,
-    "seen": 1792165687.9408848,
-    "ast_hash": "d39d2e70a6eb3356607986006e1518e5",
+    "mtime": 1792176466.2629843,
+    "seen": 1792209616.3785877,
+    "ast_hash": "48df2bb0e7d4709a32ffcdee76adf2db",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -159,9 +159,9 @@
     "language": "language=.md"
   },
   "style/Theme.qml": {
-    "mtime": 1792172713.4352376,
-    "seen": 1792175277.0857708,
-    "ast_hash": "276b3995e6df966963d24b7ed10130b7",
+    "mtime": 1792209374.6526,
+    "seen": 1792209616.3786716,
+    "ast_hash": "d3635b976ed81bd9f4a31cbf4555ffba",
     "semantic_hash": "",
     "language": "language=.md"
   },

@@ -76,6 +76,7 @@ Singleton {
         printErrors: false
 
         onLoaded: root.applyGeneratedScheme()
+        onFileChanged: colorsFile.reload()
         onTextChanged: root.applyGeneratedScheme()
     }
 

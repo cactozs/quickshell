@@ -1,5 +1,3 @@
-# QuickShell Config
-
 ## MOSTLY WRITTEN BY AI
 
 <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/cb5d604d-3d5a-4edc-9d16-75ab9f15e2b1" />
@@ -10,5 +8,6 @@
 <img width="364" height="115" alt="image" src="https://github.com/user-attachments/assets/72eddaa6-babc-431c-be72-0d5de2d9d425" />
 <img width="135" height="69" alt="image" src="https://github.com/user-attachments/assets/c5e1990e-3629-4787-b6a8-09da612e7978" />
 
+a bit inspired by Material 3 Expressive
 
-a bit inspired by Material 3 Expressive 
+## dependencies
