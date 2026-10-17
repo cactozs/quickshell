@@ -73,4 +73,10 @@ ShellRoot {
 
         Settings {}
     }
+
+    Variants {
+        model: Quickshell.screens
+
+        WallpaperManager {}
+    }
 }

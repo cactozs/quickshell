@@ -10,8 +10,8 @@ import "../style"
 
 // Settings menu: a centered card over a full-screen scrim, unlike the bar's
 // docked panels. Opened from the "Настройки" tile in the quick settings;
-// Esc or a click outside dismisses it. Two sections: the launcher view and the
-// shell-wide style pack.
+// Esc or a click outside dismisses it. Three sections: the launcher view, the
+// shell-wide style pack and the wallpaper manager shortcut.
 PanelWindow {
     id: root
 
@@ -226,6 +226,32 @@ PanelWindow {
                     label: "New"
                     selected: ShellState.styleMode === "new"
                     onClicked: ShellState.setStyleMode("new")
+                }
+            }
+
+            // ---- wallpaper ------------------------------------------------------
+
+            RowLayout {
+                width: parent.width
+                spacing: 8
+
+                Text {
+                    Layout.fillWidth: true
+                    text: "Обои"
+                    color: Theme.surfaceText
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeBodyLarge
+                }
+
+                IconButton {
+                    round: true
+                    icon: Theme.iconOrnament
+                    iconFamily: Theme.nerdFont
+
+                    onClicked: {
+                        ShellState.closeSettings();
+                        ShellState.toggleWallpaper(root.modelData.name);
+                    }
                 }
             }
         }

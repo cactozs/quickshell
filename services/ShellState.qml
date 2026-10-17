@@ -8,12 +8,14 @@ import QtQuick
 // Cross-window shell state. Currently: which screen shows the quick settings,
 // which screen shows the app launcher, which one shows the clipboard history,
 // which one shows the notification center, which one shows the weather
-// popup and which one shows the settings menu (empty string = closed), plus
-// whether the bar is hidden. The IPC targets let scripts toggle them:
+// popup, which one shows the settings menu and which one shows the wallpaper
+// manager (empty string = closed), plus whether the bar is hidden. The IPC
+// targets let scripts toggle them:
 //   qs ipc call settings toggle
 //   qs ipc call launcher toggle
 //   qs ipc call clipboard toggle
 //   qs ipc call center toggle
+//   qs ipc call wallpaper toggle
 //   qs ipc call bar toggle
 Singleton {
     id: root
@@ -25,6 +27,7 @@ Singleton {
     property string weatherScreen: ""
     property string systemScreen: ""
     property string settingsScreen: ""
+    property string wallpaperScreen: ""
 
     // Carried in-memory across config reloads, so a hidden bar stays hidden
     // while editing the shell.
@@ -107,6 +110,14 @@ Singleton {
         root.settingsScreen = "";
     }
 
+    function toggleWallpaper(screenName: string): void {
+        root.wallpaperScreen = root.wallpaperScreen === screenName ? "" : screenName;
+    }
+
+    function closeWallpaper(): void {
+        root.wallpaperScreen = "";
+    }
+
     function setLauncherFullscreen(value: bool): void {
         props.launcherFullscreen = value;
     }
@@ -142,6 +153,34 @@ Singleton {
         // Style pack, so scripts can flip it: `qs ipc call settings style new`.
         function style(name: string): void {
             root.setStyleMode(name);
+        }
+    }
+
+    IpcHandler {
+        target: "wallpaper"
+
+        // Opens on the first screen; useful for testing and scripted use.
+        function toggle(): void {
+            const screens = Quickshell.screens;
+            root.toggleWallpaper(screens.length > 0 ? screens[0].name : "");
+        }
+
+        // Toggles on a specific screen; niri keybinds pass the focused output.
+        function toggleOn(screenName: string): void {
+            const screens = Quickshell.screens;
+            root.toggleWallpaper(screenName !== "" ? screenName : (screens.length > 0 ? screens[0].name : ""));
+        }
+
+        function close(): void {
+            root.closeWallpaper();
+        }
+
+        // Applies a random wallpaper without opening the manager, so it can be
+        // bound to a niri keybind: `qs ipc call wallpaper random`.
+        function random(): void {
+            const path = Wallpapers.randomPath();
+            if (path !== "")
+                Wallpapers.apply(path);
         }
     }
 

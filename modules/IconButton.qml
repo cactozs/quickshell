@@ -11,6 +11,8 @@ Item {
     id: root
 
     property string icon: ""
+    // Icon glyph family; override for glyphs outside Material Symbols.
+    property string iconFamily: Theme.iconFont
     property string label: ""
     property bool round: false
     property color containerColor: Theme.surfaceContainerHigh
@@ -89,7 +91,7 @@ Item {
                 visible: text !== ""
                 text: root.icon
                 color: root.iconColor
-                font.family: Theme.iconFont
+                font.family: root.iconFamily
                 font.pixelSize: Theme.iconSize
 
                 Behavior on color {

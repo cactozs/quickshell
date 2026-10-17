@@ -259,6 +259,9 @@ Singleton {
 
     readonly property string fontFamily: "Google Sans"
     readonly property string iconFont: "Material Symbols Rounded"
+    // Nerd Font symbols-only family; used by the few glyphs (like md-ornament
+    // below) that Material Symbols does not carry.
+    readonly property string nerdFont: "Symbols Nerd Font"
     readonly property int fontSizeDisplayLarge: 57
     readonly property int fontSizeDisplayMedium: 45
     readonly property int fontSizeDisplaySmall: 36
@@ -335,6 +338,8 @@ Singleton {
     readonly property string iconPrevious: "\uE045" // skip_previous
     readonly property string iconMusic: "\uE3A1" // music_note
     readonly property string iconStar: "\uE838" // star
+    readonly property string iconShuffle: "\uE043" // shuffle
+    readonly property string iconOrnament: "\uF03CC" // md-ornament (Symbols Nerd Font)
 
     // Weather: classic codepoints, glyphs verified by render against the
     // installed MaterialSymbolsRounded font.

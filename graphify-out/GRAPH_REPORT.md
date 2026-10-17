@@ -1,17 +1,17 @@
 # Graph Report - quickshell  (2026-10-17)
 
 ## Corpus Check
-- 43 files · ~25,830 words
+- 45 files · ~28,394 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 2 file(s) not represented in the graph (top: (none) 2)
 
 ## Summary
-- 98 nodes · 111 edges · 30 communities (9 shown, 21 thin omitted)
+- 100 nodes · 111 edges · 32 communities (9 shown, 23 thin omitted)
 - Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 5 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `02875edf`
+- Built from commit: `2d862e87`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -59,7 +59,7 @@
 - **M3 Expressive design system implementation** — style_theme_theme, style_theme_m3_expressive, modules_iconbutton_iconbutton, modules_statelayer_statelayer, modules_tip_tip, modules_bar_bar, modules_layoutbadge_layoutbadge [EXTRACTED 1.00]
 - **niri IPC integration (event stream + action bridge)** — services_niri_niri, services_niri_handleline, services_niri_layoutswitched, modules_workspaces_workspaces, modules_windowtitle_windowtitle, modules_keyboardlayout_keyboardlayout, modules_layoutbadge_layoutbadge [EXTRACTED 1.00]
 
-## Communities (30 total, 21 thin omitted)
+## Communities (32 total, 23 thin omitted)
 
 ### Community 0 - "Bar Status Chips"
 Cohesion: 0.28
@@ -99,17 +99,17 @@ Nodes (3): ShellState.barHidden, IPC target: bar, toggleBar()
 
 ## Knowledge Gaps
 - **5 isolated node(s):** `TimeClock (clock chip)`, `ShellState (cross-window state singleton)`, `IPC target: bar`, `IPC target: power`, `ShellState.powerMenuScreen`
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 40 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **21 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 42 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **23 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Bar (M3 floating pill panel)` connect `Bar Status Chips` to `ShellState.barHidden`, `M3 Theme & Controls`, `Niri Workspaces`, `LayoutBadge (keyboard-layout HUD)`?**
-  _High betweenness centrality (0.196) - this node is a cross-community bridge._
+  _High betweenness centrality (0.189) - this node is a cross-community bridge._
 - **What connects `TimeClock (clock chip)`, `ShellState (cross-window state singleton)`, `IPC target: bar` to the rest of the system?**
   _5 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Why does `Launcher (app launcher overlay, wofi replacement)` connect `App Launcher Overlay` to `Bar Status Chips`, `LayoutBadge (keyboard-layout HUD)`, `Clipboard Overlay`, `M3 Theme & Controls`, `SystemMonitor (CPU/GPU/RAM/network poller)`?**
-  _High betweenness centrality (0.157) - this node is a cross-community bridge._
+  _High betweenness centrality (0.151) - this node is a cross-community bridge._
 - **Why does `ClipboardLauncher (cliphist overlay)` connect `Clipboard Overlay` to `LayoutBadge (keyboard-layout HUD)`, `App Launcher Overlay`, `M3 Theme & Controls`?**
-  _High betweenness centrality (0.149) - this node is a cross-community bridge._
+  _High betweenness centrality (0.143) - this node is a cross-community bridge._
