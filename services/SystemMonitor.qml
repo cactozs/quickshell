@@ -155,7 +155,7 @@ Singleton {
 
     Process {
         id: memProc
-        command: ["grep", "-E", "^(MemTotal|MemAvailable):", "/proc/meminfo"]
+        command: ["rg", "-N", "^(MemTotal|MemAvailable):", "/proc/meminfo"]
 
         stdout: StdioCollector {
             onStreamFinished: {

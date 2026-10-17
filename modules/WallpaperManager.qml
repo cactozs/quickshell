@@ -68,21 +68,23 @@ PanelWindow {
     }
 
     readonly property var results: {
-        if (!root.visible)
-            return [];
-
-        let list = Wallpapers.entries;
+        // slice(): the sort below must not reorder the shared Wallpapers.entries.
+        let list = Wallpapers.entries.slice();
         if (root.starOnly)
             list = list.filter(entry => Wallpapers.isFavorite(entry.path));
         else if (root.folderFilter !== "")
             list = list.filter(entry => entry.folder === root.folderFilter);
 
         const q = root.query.toLowerCase().trim();
-        if (q === "")
-            return list;
+        if (q !== "")
+            list = list.filter(entry => entry.name.toLowerCase().indexOf(q) !== -1
+                || entry.folder.toLowerCase().indexOf(q) !== -1);
 
-        return list.filter(entry => entry.name.toLowerCase().indexOf(q) !== -1
-            || entry.folder.toLowerCase().indexOf(q) !== -1);
+        // Favorites pinned first; stable sort keeps the folder/name order.
+        if (!root.starOnly)
+            list.sort((a, b) => (Wallpapers.isFavorite(b.path) ? 1 : 0)
+                - (Wallpapers.isFavorite(a.path) ? 1 : 0));
+        return list;
     }
 
     onResultsChanged: root.tryScrollToCurrent()

@@ -43,6 +43,10 @@ Singleton {
             });
         }
         out.sort((a, b) => a.folder.localeCompare(b.folder) || a.name.localeCompare(b.name));
+        // Unchanged list: keep the array identity, otherwise every menu open
+        // rebuilds the grid and re-decodes all previews.
+        if (out.length === root.entries.length && out.every((e, i) => e.path === root.entries[i].path))
+            return;
         root.entries = out;
     }
 
@@ -73,9 +77,8 @@ Singleton {
     Process {
         id: scan
 
-        command: ["find", root.rootDir, "-type", "f",
-            "(", "-iname", "*.jpg", "-o", "-iname", "*.jpeg",
-            "-o", "-iname", "*.png", "-o", "-iname", "*.webp", ")"]
+        command: ["fd", "-H", "-I", "-t", "f", "-e", "jpg", "-e", "jpeg",
+            "-e", "png", "-e", "webp", ".", root.rootDir]
 
         stdout: StdioCollector {
             waitForEnd: true

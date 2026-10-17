@@ -16,7 +16,7 @@ Wayland + niri, Arch package names. Everything at once:
 
 ```sh
 sudo pacman -S quickshell niri alacritty jq cliphist wl-clipboard brightnessctl \
-    curl matugen awww ttf-material-symbols-variable ttf-nerd-fonts-symbols hyprlock \
+    curl fd ripgrep matugen awww ttf-material-symbols-variable ttf-nerd-fonts-symbols hyprlock \
     pipewire wireplumber upower networkmanager
 ```
 
@@ -28,6 +28,9 @@ sudo pacman -S nvidia-utils wlsunset swayidle playerctl papirus-icon-theme
 
 | package | used for |
 |---|---|
+| `fd` | wallpaper library scan, replaces `find` (`services/Wallpapers.qml`) |
+| `grep` | replaced by `rg` (`services/SystemMonitor.qml`) |
+| `ripgrep` (`rg`) | reads `/proc/meminfo` for the RAM chip, replaces `grep` (`services/SystemMonitor.qml:158`) |
 | `quickshell` | the shell itself and `qs` IPC (`qs ipc call launcher toggle`); pulls in Qt 6 |
 | `niri` | workspaces, window title, keyboard layout, focus/quit via `niri msg -j` (`services/Niri.qml`) |
 | `alacritty` | terminal for `Terminal=true` desktop entries (`modules/Launcher.qml:27`) |
@@ -78,9 +81,9 @@ Without niri/jq, drop `toggleOn $(…)` for `toggle` — it opens on the first s
 Notes:
 
 - The UI font is **Google Sans** (`Theme.fontFamily`); no Arch package — install it by hand, otherwise text falls back to the default sans.
-- The wallpaper manager lists `~/Pictures/Wallpapers` recursively (change `services/Wallpapers.qml:18` for another folder); favorites go to `wallpaper-favorites.json` next to the config — runtime state, don't commit it.
+- The wallpaper manager lists `~/Pictures/Wallpapers` recursively (change `services/Wallpapers.qml:18` for another folder); the scan result is cached, so reopening the menu no longer re-decodes all previews; favorites go to `wallpaper-favorites.json` next to the config — runtime state, don't commit it, and are pinned first in the grid.
 - Dropping an image file onto the bare desktop or the bar sets it as the wallpaper (`modules/WallpaperDrop.qml`).
 - MPRIS players (mpv, browsers, Spotify…) are what the media tile talks to; nothing to install for it.
 - Quickshell *is* the notification daemon — don't run dunst/mako/swaync next to it.
-- No waybar, wofi/rofi/fuzzel or cava: bar, launcher, clipboard, OSD, notifications and the power menu are all QML. The shell only shells out to `sh` + coreutils against `/proc` and `/sys/class/thermal`.
+- No waybar, wofi/rofi/fuzzel or cava: bar, launcher, clipboard, OSD, notifications and the power menu are all QML. The shell only shells out to `sh` + coreutils against `/proc` and `/sys/class/thermal`, plus `fd` (wallpaper scan) and `rg` (`/proc/meminfo`).
 - `brightnessctl` needs access to `/sys/class/backlight` (video group or a udev rule).
