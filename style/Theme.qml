@@ -339,7 +339,7 @@ Singleton {
     readonly property string iconMusic: "\uE3A1" // music_note
     readonly property string iconStar: "\uE838" // star
     readonly property string iconShuffle: "\uE043" // shuffle
-    readonly property string iconOrnament: "\uF03CC" // md-ornament (Symbols Nerd Font)
+    readonly property string iconOrnament: "\udb80\udfcc" // md-ornament (Symbols Nerd Font)
 
     // Weather: classic codepoints, glyphs verified by render against the
     // installed MaterialSymbolsRounded font.

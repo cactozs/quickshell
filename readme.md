@@ -16,7 +16,7 @@ Wayland + niri, Arch package names. Everything at once:
 
 ```sh
 sudo pacman -S quickshell niri alacritty jq cliphist wl-clipboard brightnessctl \
-    curl matugen awww ttf-material-symbols-variable hyprlock \
+    curl matugen awww ttf-material-symbols-variable ttf-nerd-fonts-symbols hyprlock \
     pipewire wireplumber upower networkmanager
 ```
 
@@ -30,7 +30,7 @@ sudo pacman -S nvidia-utils wlsunset swayidle playerctl papirus-icon-theme
 |---|---|
 | `quickshell` | the shell itself and `qs` IPC (`qs ipc call launcher toggle`); pulls in Qt 6 |
 | `niri` | workspaces, window title, keyboard layout, focus/quit via `niri msg -j` (`services/Niri.qml`) |
-| `alacritty` | terminal for `Terminal=true` desktop entries (`modules/Launcher.qml:24`) |
+| `alacritty` | terminal for `Terminal=true` desktop entries (`modules/Launcher.qml:27`) |
 | `jq` | niri keybinds resolve the focused output before `qs ipc call` |
 | `cliphist` | clipboard history backend (`modules/ClipboardLauncher.qml`) |
 | `wl-clipboard` | `wl-paste --watch cliphist store` at startup, `wl-copy` on paste-back |
@@ -39,6 +39,7 @@ sudo pacman -S nvidia-utils wlsunset swayidle playerctl papirus-icon-theme
 | `matugen` | generates `style/Colors.json` (SchemeExpressive) from the wallpaper |
 | `awww` | wallpaper; `awww-daemon` at startup, `awww img` routed through matugen by the `/usr/local/bin/awww` shim |
 | `ttf-material-symbols-variable` | every icon (`Theme.iconFont`) |
+| `ttf-nerd-fonts-symbols` | "Symbols Nerd Font" (`Theme.nerdFont`), the one ornament glyph Material Symbols doesn't carry (`modules/Settings.qml:249`) |
 | `hyprlock` | "Блокировка" in the power menu, `Super+Alt+L` |
 | `pipewire` + `wireplumber` | volume chip, slider, mute (`Quickshell.Services.Pipewire`) |
 | `upower` | battery chip (`Quickshell.Services.UPower`) |
@@ -49,9 +50,35 @@ sudo pacman -S nvidia-utils wlsunset swayidle playerctl papirus-icon-theme
 | `playerctl` | media keys in niri keybinds |
 | `papirus-icon-theme` | app icons; `hicolor-icon-theme` is pulled in by quickshell |
 
+## keybinds
+
+A bind is just a `qs ipc` call: `qs` ships with quickshell, and the shell has to be running (`spawn-at-startup "quickshell"` in niri's autostart). To open a panel on the monitor you're on, the bind also needs `niri` and `jq`, to pass the focused output name:
+
+```kdl
+Mod+A       repeat=false { spawn-sh "qs ipc call launcher toggleOn $(niri msg --json focused-output | jq -r .name)"; }
+Mod+V       repeat=false { spawn-sh "qs ipc call clipboard toggleOn $(niri msg --json focused-output | jq -r .name)"; }
+Mod+N       repeat=false { spawn-sh "qs ipc call center toggleOn $(niri msg --json focused-output | jq -r .name)"; }
+Mod+Ctrl+W  repeat=false { spawn-sh "qs ipc call wallpaper toggleOn $(niri msg --json focused-output | jq -r .name)"; }
+Mod+Shift+N repeat=false { spawn "qs" "ipc" "call" "notifs" "toggleDnd"; }
+Mod+P       repeat=false { spawn "qs" "ipc" "call" "bar" "toggle"; }
+```
+
+Without niri/jq, drop `toggleOn $(…)` for `toggle` — it opens on the first screen.
+
+| target | functions |
+|---|---|
+| `launcher`, `clipboard`, `center` (notifications) | `toggle`, `toggleOn <output>`, `close` |
+| `settings` (quick settings) | the same + `launcherView <bool>`, `style <m3\|new>` |
+| `wallpaper` (manager) | the same + `random` — applies a random wallpaper without opening the panel |
+| `bar` | `toggle` |
+| `notifs` | `toggleDnd`, `dnd`, `clear` |
+
+`<output>` is a monitor name (`"eDP-1"`, see `niri msg outputs`), not a number. `qs ipc show` prints the live list of targets and functions. Esc or a click outside closes an open panel. Volume, brightness, media and lock binds don't go through the shell at all: plain `wpctl`, `brightnessctl`, `playerctl`, `hyprlock`.
+
 Notes:
 
 - The UI font is **Google Sans** (`Theme.fontFamily`); no Arch package — install it by hand, otherwise text falls back to the default sans.
+- The wallpaper manager lists `~/Pictures/Wallpapers` recursively (change `services/Wallpapers.qml:18` for another folder); favorites go to `wallpaper-favorites.json` next to the config — runtime state, don't commit it.
 - Dropping an image file onto the bare desktop or the bar sets it as the wallpaper (`modules/WallpaperDrop.qml`).
 - MPRIS players (mpv, browsers, Spotify…) are what the media tile talks to; nothing to install for it.
 - Quickshell *is* the notification daemon — don't run dunst/mako/swaync next to it.
