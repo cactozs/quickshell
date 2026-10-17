@@ -456,6 +456,12 @@ PanelWindow {
                         } else if ((event.modifiers & Qt.ControlModifier) && event.key === Qt.Key_F) {
                             root.toggleFavorite(root.currentIndex);
                             event.accepted = true;
+                        } else if (root.fullscreen && event.key === Qt.Key_Left) {
+                            root.moveFocus(-1);
+                            event.accepted = true;
+                        } else if (root.fullscreen && event.key === Qt.Key_Right) {
+                            root.moveFocus(1);
+                            event.accepted = true;
                         }
                     }
                 }
@@ -533,7 +539,7 @@ PanelWindow {
                 }
 
                 // Fullscreen icon grid, Launchpad-style: icon over the name.
-                // Scrolls natively; ↓/↑ move the selection a row at a time.
+                // Scrolls natively; ↓/↑ move the selection a row, ←/→ a tile.
                 GridView {
                     id: grid
 
@@ -577,7 +583,7 @@ PanelWindow {
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
                     text: root.fullscreen
-                        ? "↑↓ — выбор · Enter — запуск · тянуть иконку — порядок · Ctrl+F — в избранное · Esc — закрыть"
+                        ? "↑↓←→ — выбор · Enter — запуск · тянуть иконку — порядок · Ctrl+F — в избранное · Esc — закрыть"
                         : "↑↓ — выбор · Enter — запуск · Ctrl+F — в избранное · Esc — закрыть"
                     color: Theme.surfaceVariantText
                     font.family: Theme.fontFamily
