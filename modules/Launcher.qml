@@ -302,7 +302,7 @@ PanelWindow {
         onClicked: ShellState.closeLauncher()
     }
 
-    // Warm ambient shadow under the card (New style only); the fullscreen grid
+    // Ambient shadow under the card (New style only); the fullscreen grid
     // fills the output, so it stays shadowless.
     RectangularShadow {
         anchors.fill: card
@@ -326,6 +326,18 @@ PanelWindow {
         color: root.fullscreen && Theme.glass ? Theme.surface : Theme.surfaceContainerHigh
         border.width: root.fullscreen ? 0 : Theme.hairlineWidth
         border.color: Theme.hairline
+
+        // Inner 1px rim: the glass edge. No-op under m3 and on the fullscreen grid.
+        Rectangle {
+            anchors.fill: parent
+            anchors.margins: 1
+            radius: Math.max(0, parent.radius - 1)
+            color: "transparent"
+            border.width: Theme.hairlineWidth
+            border.color: Theme.cardRim
+            visible: !root.fullscreen
+            z: 1
+        }
 
         scale: root.shown ? 1 : 0.9
         opacity: root.shown ? 1 : 0

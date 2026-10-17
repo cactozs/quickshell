@@ -27,7 +27,7 @@ PopupWindow {
     implicitWidth: label.implicitWidth + 16
     implicitHeight: label.implicitHeight + 12
 
-    // Warm ambient shadow under the tooltip (New style only); follows its fade.
+    // Ambient shadow under the tooltip (New style only); follows its fade.
     // No acrylic: blur is only available on panel windows, not popups.
     RectangularShadow {
         anchors.fill: surface
@@ -47,6 +47,17 @@ PopupWindow {
         color: Theme.surfaceContainerHighest
         border.width: Theme.hairlineWidth
         border.color: Theme.hairline
+
+        // Inner 1px rim: the glass edge. No-op under m3.
+        Rectangle {
+            anchors.fill: parent
+            anchors.margins: 1
+            radius: Math.max(0, parent.radius - 1)
+            color: "transparent"
+            border.width: Theme.hairlineWidth
+            border.color: Theme.cardRim
+            z: 1
+        }
 
         opacity: root.shown ? 1 : 0
 

@@ -24,5 +24,6 @@
   "28": "WallpaperDrop.qml",
   "29": "WallpaperDropArea.qml",
   "30": "WallpaperManager.qml",
-  "31": "Wallpapers.qml"
+  "31": "Wallpapers.qml",
+  "32": "handleLine() event dispatch"
 }

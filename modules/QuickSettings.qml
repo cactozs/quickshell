@@ -362,7 +362,7 @@ PanelWindow {
         }
     }
 
-    // Warm ambient shadow under the panel (New style only); follows the card's
+    // Ambient shadow under the panel (New style only); follows the card's
     // entrance fade/scale.
     RectangularShadow {
         anchors.fill: card
@@ -389,6 +389,17 @@ PanelWindow {
         color: Theme.surfaceContainerHigh
         border.width: Theme.hairlineWidth
         border.color: Theme.hairline
+
+        // Inner 1px rim: the glass edge. No-op under m3.
+        Rectangle {
+            anchors.fill: parent
+            anchors.margins: 1
+            radius: Math.max(0, parent.radius - 1)
+            color: "transparent"
+            border.width: Theme.hairlineWidth
+            border.color: Theme.cardRim
+            z: 1
+        }
 
         scale: root.shown ? 1 : 0.92
         opacity: root.shown ? 1 : 0

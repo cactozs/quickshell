@@ -57,7 +57,7 @@ PanelWindow {
         Region { item: blurAnchor; radius: pill.radius }
     }
 
-    // Warm ambient shadow under the pill (New style only); follows the pill's
+    // Ambient shadow under the pill (New style only); follows the pill's
     // entrance fade/scale.
     RectangularShadow {
         anchors.fill: pill
@@ -86,6 +86,17 @@ PanelWindow {
         color: Theme.surfaceContainerHigh
         border.width: Theme.hairlineWidth
         border.color: Theme.hairline
+
+        // Inner 1px rim: the glass edge. No-op under m3.
+        Rectangle {
+            anchors.fill: parent
+            anchors.margins: 1
+            radius: Math.max(0, parent.radius - 1)
+            color: "transparent"
+            border.width: Theme.hairlineWidth
+            border.color: Theme.cardRim
+            z: 1
+        }
 
         opacity: Osd.shown ? 1 : 0
         scale: Osd.shown ? 1 : 0.85

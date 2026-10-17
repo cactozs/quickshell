@@ -15,9 +15,10 @@ import "../services"
 //
 // Two style packs share these tokens (ShellState.styleMode, switched in the
 // settings menu): "m3" is the wallpaper palette above; "new" swaps in fixed
-// graphite surfaces with acrylic alpha, flat text tones, hairline borders and
-// a warm card shadow, while the accents stay wallpaper-derived. Every
-// style-dependent token hangs off `glass`, so the M3 look is untouched.
+// graphite surfaces with acrylic alpha, flat text tones, a hairline edge with
+// an inner rim and a neutral drop shadow, while the accents stay
+// wallpaper-derived. Every style-dependent token hangs off `glass`, so the M3
+// look is untouched.
 Singleton {
     id: root
 
@@ -79,8 +80,9 @@ Singleton {
 
     // "New" pack: near-black/graphite surfaces, soft light-gray typography and
     // muted secondary labels. Container tones carry acrylic alpha (the windows
-    // blur what is behind them, see BackgroundEffect in the modules). Accents
-    // (primary/secondary/tertiary and their containers) are left to matugen.
+    // blur what is behind them, see BackgroundEffect in the modules) — kept low
+    // enough that the blur reads. Accents (primary/secondary/tertiary and their
+    // containers) are left to matugen.
     readonly property var newScheme: ({
         "surface": "#ff0f1013",
         "on_surface": "#ffe2e4e8",
@@ -90,9 +92,9 @@ Singleton {
         "surface_bright": "#ff3a3f47",
         "surface_container_lowest": "#ff0b0c0f",
         "surface_container_low": "#ff14161a",
-        "surface_container": "#dc17191e",
-        "surface_container_high": "#d91c1f25",
-        "surface_container_highest": "#e624282e",
+        "surface_container": "#cc17191e",
+        "surface_container_high": "#cc1c1f25",
+        "surface_container_highest": "#d924282e",
         "outline": "#ff3c4149",
         "outline_variant": "#26ffffff",
         "scrim": "#ff000000",
@@ -216,12 +218,15 @@ Singleton {
 
     // Hairline edges: 0 width under m3, so borders can be added unconditionally.
     readonly property int hairlineWidth: root.glass ? 1 : 0
-    readonly property color hairline: root.glass ? scheme.outline_variant : "transparent"
+    // Outer edge stays faint; the bright edge is cardRim, one pixel inside it.
+    readonly property color hairline: root.glass ? "#14ffffff" : "transparent"
+    readonly property color cardRim: root.glass ? "#26ffffff" : "transparent"
 
-    // Warm outer glow / ambient shadow under cards, as RectangularShadow args.
-    readonly property color cardShadow: root.glass ? "#3dffa44d" : "transparent"
-    readonly property int cardShadowBlur: 18
-    readonly property int cardShadowOffset: 3
+    // Neutral drop shadow under cards, as RectangularShadow args. Invisible
+    // over dark wallpaper, which is why every surface also draws cardRim.
+    readonly property color cardShadow: root.glass ? "#66000000" : "transparent"
+    readonly property int cardShadowBlur: 22
+    readonly property int cardShadowOffset: 5
 
 
     // ---- motion ----------------------------------------------------------------

@@ -40,7 +40,7 @@ PopupWindow {
     implicitWidth: column.implicitWidth + 2 * root.pad
     implicitHeight: column.implicitHeight + 2 * root.pad
 
-    // Warm ambient shadow under the surface (New style only); follows its
+    // Ambient shadow under the surface (New style only); follows its
     // entrance fade/scale. No acrylic: blur needs a panel window, not a popup.
     RectangularShadow {
         anchors.fill: surface
@@ -79,6 +79,17 @@ PopupWindow {
         color: Theme.surfaceContainerHighest
         border.width: Theme.hairlineWidth
         border.color: Theme.hairline
+
+        // Inner 1px rim: the glass edge. No-op under m3.
+        Rectangle {
+            anchors.fill: parent
+            anchors.margins: 1
+            radius: Math.max(0, parent.radius - 1)
+            color: "transparent"
+            border.width: Theme.hairlineWidth
+            border.color: Theme.cardRim
+            z: 1
+        }
 
         opacity: root.shown ? 1 : 0
         scale: root.shown ? 1 : 0.92

@@ -21,11 +21,11 @@ PanelWindow {
         right: true
     }
 
-    // Under "new" the surface grows around the islands so the warm glow has
+    // Under "new" the surface grows around the islands so the shadow has
     // room to render; the band mask keeps that extra area click-through. Under
     // "m3" these collapse to the old numbers and the surface is just the bar.
     readonly property int bandTop: Theme.glass ? Theme.barMargin : 0
-    readonly property int glowInset: Theme.glass ? Theme.cardShadowBlur + Theme.cardShadowOffset : 0
+    readonly property int shadowInset: Theme.glass ? Theme.cardShadowBlur + Theme.cardShadowOffset : 0
 
     margins {
         top: Theme.glass ? 0 : Theme.barMargin
@@ -36,12 +36,12 @@ PanelWindow {
     // Bar bottom sits at barMargin + barHeight; windows start one barMargin
     // below it. Quickshell adds `margins` to this value on top of it.
     exclusiveZone: Theme.barHeight + Theme.barMargin
-    implicitHeight: root.bandTop + Theme.barHeight + root.glowInset
+    implicitHeight: root.bandTop + Theme.barHeight + root.shadowInset
     color: "transparent"
 
     WlrLayershell.namespace: "quickshell:bar"
 
-    // Only the bar band takes input; the glow strip below it stays click-through.
+    // Only the bar band takes input; the shadow strip below it stays click-through.
     mask: Region {
         x: 0
         y: root.bandTop
@@ -142,7 +142,7 @@ PanelWindow {
             id: leftIsland
 
             anchors.left: parent.left
-            anchors.leftMargin: root.glowInset
+            anchors.leftMargin: root.shadowInset
             anchors.top: parent.top
             anchors.topMargin: root.bandTop
             width: Math.min(leftRow.implicitWidth + 2 * Theme.barPadding, Math.floor(root.width * 0.3))
@@ -151,6 +151,18 @@ PanelWindow {
             color: Theme.surfaceContainer
             border.width: Theme.hairlineWidth
             border.color: Theme.hairline
+
+            // Inner 1px rim: the glass edge. No-op under m3.
+            Rectangle {
+                anchors.fill: parent
+                anchors.margins: 1
+                radius: Math.max(0, parent.radius - 1)
+                color: "transparent"
+                border.width: Theme.hairlineWidth
+                border.color: Theme.cardRim
+                z: 1
+            }
+
             clip: true
 
             Behavior on width {
@@ -210,6 +222,17 @@ PanelWindow {
             border.width: Theme.hairlineWidth
             border.color: Theme.hairline
 
+            // Inner 1px rim: the glass edge. No-op under m3.
+            Rectangle {
+                anchors.fill: parent
+                anchors.margins: 1
+                radius: Math.max(0, parent.radius - 1)
+                color: "transparent"
+                border.width: Theme.hairlineWidth
+                border.color: Theme.cardRim
+                z: 1
+            }
+
             Behavior on color {
                 ColorAnimation {
                     duration: Theme.durLong
@@ -246,7 +269,7 @@ PanelWindow {
             id: rightIsland
 
             anchors.right: parent.right
-            anchors.rightMargin: root.glowInset
+            anchors.rightMargin: root.shadowInset
             anchors.top: parent.top
             anchors.topMargin: root.bandTop
             width: rightRow.implicitWidth + 2 * Theme.barPadding
@@ -255,6 +278,17 @@ PanelWindow {
             color: Theme.surfaceContainer
             border.width: Theme.hairlineWidth
             border.color: Theme.hairline
+
+            // Inner 1px rim: the glass edge. No-op under m3.
+            Rectangle {
+                anchors.fill: parent
+                anchors.margins: 1
+                radius: Math.max(0, parent.radius - 1)
+                color: "transparent"
+                border.width: Theme.hairlineWidth
+                border.color: Theme.cardRim
+                z: 1
+            }
 
             Behavior on color {
                 ColorAnimation {
