@@ -967,7 +967,7 @@ PanelWindow {
 
     // ---- inline components -----------------------------------------------------------
 
-    // M3 slider: 16 dp track, pill handle that swells on interaction;
+    // M3 Expressive slider: thick track with a narrow pill handle;
     // `moved` fires while dragging, `committed` on release.
     component QsSlider: Item {
         id: slider
@@ -982,7 +982,7 @@ PanelWindow {
 
         // Thumb center inset: the handle travels over the track minus its half.
         readonly property real inset: 8
-        readonly property real thumbWidth: dragArea.pressed || dragArea.containsMouse ? 14 : 12
+        readonly property real thumbWidth: dragArea.pressed ? 2 : 4
 
         function valueAt(x: real): real {
             return Math.max(0, Math.min(1, (x - slider.inset) / Math.max(1, slider.width - 2 * slider.inset)));
@@ -992,37 +992,19 @@ PanelWindow {
             id: track
 
             anchors.verticalCenter: parent.verticalCenter
-            width: parent.width
+            x: slider.inset
+            width: Math.max(0, parent.width - 2 * slider.inset)
             height: 16
             radius: Theme.shapeFull
             color: Theme.surfaceContainerHighest
 
             Rectangle {
-                x: slider.inset
-                width: Math.max(0, slider.value * (parent.width - 2 * slider.inset))
+                width: slider.value * parent.width
                 height: parent.height
                 radius: parent.radius
+                topRightRadius: 0
+                bottomRightRadius: 0
                 color: slider.handleColor
-            }
-
-            // 10% halo on the active side, as in the M3 slider.
-            Rectangle {
-                x: Math.max(0, Math.min(parent.width - width,
-                    slider.inset + slider.value * (parent.width - 2 * slider.inset) - width / 2))
-                anchors.verticalCenter: parent.verticalCenter
-                width: 40
-                height: 40
-                radius: Theme.shapeFull
-                color: slider.handleColor
-                opacity: dragArea.pressed ? Theme.statePressed : (dragArea.containsMouse ? Theme.stateHover : 0)
-
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: Theme.durShort
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: Theme.curveEmphasized
-                    }
-                }
             }
 
             Rectangle {
@@ -1031,7 +1013,7 @@ PanelWindow {
                 width: slider.thumbWidth
                 height: 32
                 radius: Theme.shapeFull
-                x: slider.inset + slider.value * (parent.width - 2 * slider.inset) - width / 2
+                x: slider.value * parent.width - width / 2
                 anchors.verticalCenter: parent.verticalCenter
                 color: slider.handleColor
 
@@ -1042,6 +1024,7 @@ PanelWindow {
                         easing.bezierCurve: Theme.curveEmphasized
                     }
                 }
+
             }
         }
 

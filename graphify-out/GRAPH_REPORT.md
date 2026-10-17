@@ -1,7 +1,7 @@
-# Graph Report - quickshell  (2026-10-16)
+# Graph Report - quickshell  (2026-10-17)
 
 ## Corpus Check
-- 40 files · ~21,127 words
+- 40 files · ~22,107 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 2 file(s) not represented in the graph (top: (none) 2)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `9629e275`
+- Built from commit: `e93ce762`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -30,8 +30,8 @@
 
 ## God Nodes (most connected - your core abstractions)
 1. `Bar (M3 floating pill panel)` - 13 edges
-2. `ClipboardLauncher (cliphist overlay)` - 10 edges
-3. `IconButton (M3 chip control base)` - 10 edges
+2. `IconButton (M3 chip control base)` - 10 edges
+3. `ClipboardLauncher (cliphist overlay)` - 10 edges
 4. `Launcher (app launcher overlay, wofi replacement)` - 8 edges
 5. `Workspaces (niri workspace chips)` - 8 edges
 6. `LayoutBadge (keyboard-layout HUD)` - 7 edges
@@ -43,10 +43,10 @@
 ## Surprising Connections (you probably didn't know these)
 - `Bar (M3 floating pill panel)` --shares_data_with--> `ShellState.barHidden`  [EXTRACTED]
   modules/Bar.qml → services/ShellState.qml
-- `SystemStats (CPU/GPU/RAM chip)` --references--> `SystemMonitor.tooltip`  [EXTRACTED]
-  modules/SystemStats.qml → services/SystemMonitor.qml
 - `Material 3 Expressive design language` --rationale_for--> `IconButton (M3 chip control base)`  [INFERRED]
   style/Theme.qml → modules/IconButton.qml
+- `SystemStats (CPU/GPU/RAM chip)` --references--> `SystemMonitor.tooltip`  [EXTRACTED]
+  modules/SystemStats.qml → services/SystemMonitor.qml
 - `Bar (M3 floating pill panel)` --references--> `Theme (M3 Expressive design tokens singleton)`  [EXTRACTED]
   modules/Bar.qml → style/Theme.qml
 - `ShellRoot (per-screen shell entry point)` --references--> `Bar (M3 floating pill panel)`  [EXTRACTED]
@@ -98,7 +98,7 @@ Cohesion: 0.67
 Nodes (3): ShellState.barHidden, IPC target: bar, toggleBar()
 
 ## Knowledge Gaps
-- **5 isolated node(s):** `TimeClock (clock chip)`, `IPC target: bar`, `ShellState (cross-window state singleton)`, `IPC target: power`, `ShellState.powerMenuScreen`
+- **5 isolated node(s):** `TimeClock (clock chip)`, `ShellState (cross-window state singleton)`, `IPC target: bar`, `IPC target: power`, `ShellState.powerMenuScreen`
   These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 37 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **18 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -107,7 +107,7 @@ _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Bar (M3 floating pill panel)` connect `Bar Status Chips` to `ShellState.barHidden`, `M3 Theme & Controls`, `Niri Workspaces`, `LayoutBadge (keyboard-layout HUD)`?**
   _High betweenness centrality (0.209) - this node is a cross-community bridge._
-- **What connects `TimeClock (clock chip)`, `IPC target: bar`, `ShellState (cross-window state singleton)` to the rest of the system?**
+- **What connects `TimeClock (clock chip)`, `ShellState (cross-window state singleton)`, `IPC target: bar` to the rest of the system?**
   _5 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Why does `Launcher (app launcher overlay, wofi replacement)` connect `App Launcher Overlay` to `Bar Status Chips`, `LayoutBadge (keyboard-layout HUD)`, `Clipboard Overlay`, `M3 Theme & Controls`, `SystemMonitor (CPU/GPU/RAM/network poller)`?**
   _High betweenness centrality (0.168) - this node is a cross-community bridge._
