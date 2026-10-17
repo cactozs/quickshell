@@ -265,10 +265,10 @@ Singleton {
     readonly property string iconImage: "\uE3F4" // image
     readonly property string iconDelete: "\uE872" // delete
     readonly property string iconDeleteForever: "\uE92B" // delete_forever
-    readonly property string iconBatteryCharging: "\uE1A3" // battery_charging_full
-    readonly property string iconBatteryFull: "\uE1A5" // battery_full
+    readonly property string iconBatteryCharging: "\uF205" // battery_charging_full
+    readonly property string iconBatteryFull: "\uF304" // battery_full
     readonly property var iconBatteryBars: [ // battery_0_bar .. battery_6_bar
-        "\uEBDC", "\uEBD9", "\uEBE0", "\uEBDD", "\uEBE2", "\uEBD4", "\uEBD2"
+        "\uF306", "\uF30D", "\uF30C", "\uF30A", "\uF309", "\uF308", "\uF307"
     ]
     readonly property string iconWifi: "\uE63E" // wifi
     readonly property string iconWifiOff: "\uE648" // wifi_off
