@@ -61,4 +61,10 @@ ShellRoot {
 
         SystemPopup {}
     }
+
+    Variants {
+        model: Quickshell.screens
+
+        Settings {}
+    }
 }

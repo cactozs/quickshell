@@ -274,6 +274,7 @@ Singleton {
     readonly property string iconWifiOff: "\uE648" // wifi_off
     readonly property string iconDnd: "\uE612" // do_not_disturb
     readonly property string iconNightlight: "\uEF5E" // nightlight
+    readonly property string iconSettings: "\uE8B8" // settings
     readonly property string iconExpandMore: "\uE5CF" // expand_more
     readonly property string iconExpandLess: "\uE5CE" // expand_less
     readonly property string iconPlay: "\uE037" // play_arrow

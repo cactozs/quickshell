@@ -554,6 +554,17 @@ PanelWindow {
 
                     onActivated: NightLight.toggle()
                 }
+
+                QsTile {
+                    width: tileGrid.tileWidth
+                    icon: Theme.iconSettings
+                    title: "Настройки"
+
+                    onActivated: {
+                        ShellState.closeQuickSettings();
+                        ShellState.toggleSettings(root.modelData.name);
+                    }
+                }
             }
 
             // ---- wi-fi network list -------------------------------------------------

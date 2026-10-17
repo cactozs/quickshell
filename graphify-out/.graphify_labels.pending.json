@@ -19,5 +19,6 @@
   "23": "AppUsage.qml",
   "24": "QuickShell Config",
   "25": "ShellState.barHidden",
-  "26": "SystemPopup.qml"
+  "26": "SystemPopup.qml",
+  "27": "Settings.qml"
 }

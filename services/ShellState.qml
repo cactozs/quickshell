@@ -7,8 +7,8 @@ import QtQuick
 
 // Cross-window shell state. Currently: which screen shows the quick settings,
 // which screen shows the app launcher, which one shows the clipboard history,
-// which one shows the notification center and which one shows the weather
-// popup (empty string = closed), plus
+// which one shows the notification center, which one shows the weather
+// popup and which one shows the settings menu (empty string = closed), plus
 // whether the bar is hidden. The IPC targets let scripts toggle them:
 //   qs ipc call settings toggle
 //   qs ipc call launcher toggle
@@ -24,6 +24,7 @@ Singleton {
     property string notificationScreen: ""
     property string weatherScreen: ""
     property string systemScreen: ""
+    property string settingsScreen: ""
 
     // Carried in-memory across config reloads, so a hidden bar stays hidden
     // while editing the shell.
@@ -81,6 +82,14 @@ Singleton {
 
     function closeSystem(): void {
         root.systemScreen = "";
+    }
+
+    function toggleSettings(screenName: string): void {
+        root.settingsScreen = root.settingsScreen === screenName ? "" : screenName;
+    }
+
+    function closeSettings(): void {
+        root.settingsScreen = "";
     }
 
     function toggleBar(): void {
