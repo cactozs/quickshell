@@ -32,9 +32,14 @@ Singleton {
         id: props
         reloadableId: "shell-state"
         property bool barHidden
+        property bool launcherFullscreen
     }
 
     readonly property bool barHidden: props.barHidden
+
+    // Launcher appearance: fullscreen = icon grid over the whole output,
+    // classic = the centered search card (see modules/Launcher.qml).
+    readonly property bool launcherFullscreen: props.launcherFullscreen
 
     function toggleQuickSettings(screenName: string): void {
         root.quickSettingsScreen = root.quickSettingsScreen === screenName ? "" : screenName;
@@ -92,6 +97,10 @@ Singleton {
         root.settingsScreen = "";
     }
 
+    function setLauncherFullscreen(value: bool): void {
+        props.launcherFullscreen = value;
+    }
+
     function toggleBar(): void {
         props.barHidden = !props.barHidden;
     }
@@ -113,6 +122,11 @@ Singleton {
 
         function close(): void {
             root.closeQuickSettings();
+        }
+
+        // Launcher view, so scripts can flip it: `qs ipc call settings launcherView true`.
+        function launcherView(fullscreen: bool): void {
+            root.setLauncherFullscreen(fullscreen);
         }
     }
 

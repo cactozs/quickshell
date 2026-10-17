@@ -3,12 +3,13 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import Quickshell.Wayland
 import QtQuick
+import QtQuick.Layouts
 import "../services"
 import "../style"
 
 // Settings menu: a centered card over a full-screen scrim, unlike the bar's
 // docked panels. Opened from the "Настройки" tile in the quick settings;
-// Esc or a click outside dismisses it. Contents are still a placeholder.
+// Esc or a click outside dismisses it. Currently one section: the launcher view.
 PanelWindow {
     id: root
 
@@ -141,34 +142,94 @@ PanelWindow {
                 font.weight: Font.Medium
             }
 
-            // placeholder: sections will replace this
-            Rectangle {
+            // ---- launcher view --------------------------------------------------
+
+            RowLayout {
                 width: parent.width
-                height: 160
-                radius: Theme.shapeLG
-                color: Theme.surfaceContainerHighest
+                spacing: 8
 
-                Column {
-                    anchors.centerIn: parent
-                    spacing: 8
+                Text {
+                    Layout.fillWidth: true
+                    text: "Вид лончера"
+                    color: Theme.surfaceText
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeBodyLarge
+                }
 
-                    Text {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: Theme.iconSettings
-                        color: Theme.surfaceVariantText
-                        font.family: Theme.iconFont
-                        font.pixelSize: Theme.iconSizeLarge
-                    }
+                SettingSegment {
+                    label: "Классический"
+                    selected: !ShellState.launcherFullscreen
+                    onClicked: ShellState.setLauncherFullscreen(false)
+                }
 
-                    Text {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: "Пока пусто"
-                        color: Theme.surfaceVariantText
-                        font.family: Theme.fontFamily
-                        font.pixelSize: Theme.fontSizeLabelLarge
-                    }
+                SettingSegment {
+                    label: "Полноэкранный"
+                    selected: ShellState.launcherFullscreen
+                    onClicked: ShellState.setLauncherFullscreen(true)
                 }
             }
+        }
+    }
+
+    // One segment of a two-option selector: tonal when picked, outlined when not.
+    component SettingSegment: Rectangle {
+        id: seg
+
+        property string label: ""
+        property bool selected: false
+
+        signal clicked
+
+        implicitWidth: segLabel.implicitWidth + 32
+        implicitHeight: 40
+        radius: Theme.shapeFull
+        color: seg.selected ? Theme.secondaryContainer : "transparent"
+        border.width: seg.selected ? 0 : 1
+        border.color: Theme.outline
+
+        Behavior on color {
+            ColorAnimation {
+                duration: Theme.durShort
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Theme.curveEmphasized
+            }
+        }
+
+        StateLayer {
+            hovered: segHover.hovered
+            pressed: segTap.pressed
+            color: seg.selected ? Theme.secondaryContainerText : Theme.surfaceText
+        }
+
+        Text {
+            id: segLabel
+
+            anchors.centerIn: parent
+            text: seg.label
+            color: seg.selected ? Theme.secondaryContainerText : Theme.surfaceText
+            font.family: Theme.fontFamily
+            font.pixelSize: Theme.fontSizeLabelLarge
+            font.weight: seg.selected ? Font.Medium : Font.Normal
+
+            Behavior on color {
+                ColorAnimation {
+                    duration: Theme.durShort
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curveEmphasized
+                }
+            }
+        }
+
+        MouseArea {
+            id: segTap
+
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onClicked: seg.clicked()
+        }
+
+        HoverHandler {
+            id: segHover
         }
     }
 }

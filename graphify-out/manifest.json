@@ -61,9 +61,9 @@
     "language": "language=.md"
   },
   "modules/Launcher.qml": {
-    "mtime": 1792215584.5873168,
-    "seen": 1792226528.403936,
-    "ast_hash": "b89dd57b3acd7d75b0f0569543bbd6b3",
+    "mtime": 1792228308.1461966,
+    "seen": 1792228427.6231992,
+    "ast_hash": "32ca0ae06a87f765715a7cf28899473a",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -138,9 +138,9 @@
     "language": "language=.md"
   },
   "services/ShellState.qml": {
-    "mtime": 1792226212.916174,
-    "seen": 1792226528.4041252,
-    "ast_hash": "23d9a619a24db5a356819c15774ca94f",
+    "mtime": 1792227141.9759526,
+    "seen": 1792227727.7566433,
+    "ast_hash": "3c2d1259c3e177359024df7baab05150",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -152,8 +152,8 @@
     "language": "language=.md"
   },
   "shell.qml": {
-    "mtime": 1792226174.7936852,
-    "seen": 1792226528.4041445,
+    "mtime": 1792227204.4857483,
+    "seen": 1792227727.7566638,
     "ast_hash": "839c3b4ee210186a517b54860877c96d",
     "semantic_hash": "",
     "language": "language=.md"
@@ -257,9 +257,9 @@
     "language": "language=.md"
   },
   "services/AppUsage.qml": {
-    "mtime": 1792172725.1985228,
-    "seen": 1792175277.0857022,
-    "ast_hash": "65237b1f231368b8fd97d9b4caf86957",
+    "mtime": 1792228001.276481,
+    "seen": 1792228427.6233387,
+    "ast_hash": "373fcc815656b8a85f736e2adc79a97d",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -277,9 +277,9 @@
     "semantic_hash": ""
   },
   "modules/Settings.qml": {
-    "mtime": 1792226043.5759137,
-    "seen": 1792226528.4039977,
-    "ast_hash": "a1eec88d0e94be91ae07500aa23d2bbe",
+    "mtime": 1792227078.0051396,
+    "seen": 1792227727.7565284,
+    "ast_hash": "3beb72e8ca4d58e8bac59be091ae13c9",
     "semantic_hash": "",
     "language": "language=.md"
   }

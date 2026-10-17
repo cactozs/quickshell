@@ -5,8 +5,8 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 
-// Per-app launch counts and favorites for the launcher. Stored in
-// launcher-usage.json; missing keys count as 0 / not favorite, so a
+// Per-app launch counts, favorites and manual grid order for the launcher.
+// Stored in launcher-usage.json; missing keys count as 0 / not favorite, so a
 // fresh install sorts exactly like before (alphabetically).
 Singleton {
     id: root
@@ -21,6 +21,15 @@ Singleton {
 
     function isFavorite(entry: DesktopEntry): bool {
         return (usageAdapter.favorites ?? []).indexOf(root.launchKey(entry)) !== -1;
+    }
+
+    // Position in the hand-made grid order, -1 for apps never arranged.
+    function orderIndex(entry: DesktopEntry): int {
+        return (usageAdapter.order ?? []).indexOf(root.launchKey(entry));
+    }
+
+    function setOrder(keys: var): void {
+        usageAdapter.order = keys;
     }
 
     function toggleFavorite(entry: DesktopEntry): void {
@@ -53,6 +62,7 @@ Singleton {
 
             property var counts: ({})
             property var favorites: ([])
+            property var order: ([])
         }
     }
 }
