@@ -4,6 +4,7 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import Quickshell.Io
 import QtQuick
+import "../services"
 
 // Material 3 Expressive design tokens.
 //
@@ -11,8 +12,16 @@ import QtQuick
 // style/Colors.json. FileView watches that file, so `matugen image ...`
 // recolors the bar live, without a reload. If the file is absent, the
 // Material baseline dark scheme below is used as-is.
+//
+// Two style packs share these tokens (ShellState.styleMode, switched in the
+// settings menu): "m3" is the wallpaper palette above; "new" swaps in fixed
+// graphite surfaces with acrylic alpha, flat text tones, hairline borders and
+// a warm card shadow, while the accents stay wallpaper-derived. Every
+// style-dependent token hangs off `glass`, so the M3 look is untouched.
 Singleton {
     id: root
+
+    readonly property bool glass: ShellState.styleMode === "new"
 
     // ---- dynamic color scheme ------------------------------------------------
 
@@ -66,7 +75,33 @@ Singleton {
         "on_tertiary_fixed_variant": "#633b48"
     })
 
-    property var scheme: baselineScheme
+    property var m3Scheme: baselineScheme
+
+    // "New" pack: near-black/graphite surfaces, soft light-gray typography and
+    // muted secondary labels. Container tones carry acrylic alpha (the windows
+    // blur what is behind them, see BackgroundEffect in the modules). Accents
+    // (primary/secondary/tertiary and their containers) are left to matugen.
+    readonly property var newScheme: ({
+        "surface": "#ff0f1013",
+        "on_surface": "#ffe2e4e8",
+        "surface_variant": "#ff343941",
+        "on_surface_variant": "#ff9aa1aa",
+        "surface_dim": "#ff0c0d10",
+        "surface_bright": "#ff3a3f47",
+        "surface_container_lowest": "#ff0b0c0f",
+        "surface_container_low": "#ff14161a",
+        "surface_container": "#dc17191e",
+        "surface_container_high": "#d91c1f25",
+        "surface_container_highest": "#e624282e",
+        "outline": "#ff3c4149",
+        "outline_variant": "#26ffffff",
+        "scrim": "#ff000000",
+        "shadow": "#ff000000"
+    })
+
+    readonly property var scheme: root.glass
+        ? Object.assign({}, root.m3Scheme, root.newScheme)
+        : root.m3Scheme
 
     FileView {
         id: colorsFile
@@ -98,7 +133,7 @@ Singleton {
         const merged = Object.assign({}, root.baselineScheme);
         for (const key in data)
             merged[key] = root.normalizeHex(String(data[key]));
-        root.scheme = merged;
+        root.m3Scheme = merged;
     }
 
     // ---- color roles (M3) ----------------------------------------------------
@@ -153,13 +188,14 @@ Singleton {
 
     // ---- state layers ----------------------------------------------------------
 
-    readonly property real stateHover: 0.08
-    readonly property real stateFocus: 0.12
-    readonly property real statePressed: 0.12
-    readonly property real stateDragged: 0.16
+    // New restrains hover/focus feedback and darkens the modal scrim.
+    readonly property real stateHover: root.glass ? 0.06 : 0.08
+    readonly property real stateFocus: root.glass ? 0.08 : 0.12
+    readonly property real statePressed: root.glass ? 0.10 : 0.12
+    readonly property real stateDragged: root.glass ? 0.12 : 0.16
     readonly property real disabledContent: 0.38
     readonly property real disabledContainer: 0.12
-    readonly property real scrimOpacity: 0.32
+    readonly property real scrimOpacity: root.glass ? 0.45 : 0.32
 
     // ---- shape scale (M3 Expressive: 4/8/12/16/20/28/32/48/full) ---------------
 
@@ -167,11 +203,26 @@ Singleton {
     readonly property int shapeSM: 8
     readonly property int shapeMD: 12
     readonly property int shapeLG: 16
-    readonly property int shapeLGI: 20 // large increased
-    readonly property int shapeXL: 28
-    readonly property int shapeXLI: 32 // extra large increased
-    readonly property int shapeXXL: 48 // extra extra large (hero surfaces)
+    readonly property int shapeLGI: root.glass ? 14 : 20 // large increased
+    readonly property int shapeXL: root.glass ? 16 : 28
+    readonly property int shapeXLI: root.glass ? 18 : 32 // extra large increased
+    readonly property int shapeXXL: root.glass ? 22 : 48 // extra extra large (hero surfaces)
     readonly property int shapeFull: 9999
+
+    // ---- style extras (New only; no-ops under m3) ------------------------------
+
+    // Bar islands stop being pills under "new".
+    readonly property int barRadius: root.glass ? 12 : shapeFull
+
+    // Hairline edges: 0 width under m3, so borders can be added unconditionally.
+    readonly property int hairlineWidth: root.glass ? 1 : 0
+    readonly property color hairline: root.glass ? scheme.outline_variant : "transparent"
+
+    // Warm outer glow / ambient shadow under cards, as RectangularShadow args.
+    readonly property color cardShadow: root.glass ? "#3dffa44d" : "transparent"
+    readonly property int cardShadowBlur: 18
+    readonly property int cardShadowOffset: 3
+
 
     // ---- motion ----------------------------------------------------------------
     // Emphasized-family easing curves from the M3 motion spec, as cubic bezier
@@ -226,11 +277,12 @@ Singleton {
 
     // ---- bar metrics -----------------------------------------------------------
 
-    readonly property int barHeight: 40
+    // New packs the bar one notch tighter.
+    readonly property int barHeight: root.glass ? 36 : 40
     readonly property int barMargin: 4
     readonly property int barPadding: 4
-    readonly property int chipHeight: 32
-    readonly property int iconButtonSize: 32
+    readonly property int chipHeight: root.glass ? 30 : 32
+    readonly property int iconButtonSize: root.glass ? 30 : 32
     readonly property int iconSize: 20
     readonly property int iconSizeMedium: 24
     readonly property int iconSizeSmall: 16

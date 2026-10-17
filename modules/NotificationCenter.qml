@@ -5,6 +5,7 @@ import Quickshell.Services.Notifications
 import Quickshell.Wayland
 import Quickshell.Widgets
 import QtQuick
+import QtQuick.Effects
 import "../services"
 import "../style"
 
@@ -40,6 +41,22 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "quickshell:center"
     WlrLayershell.keyboardFocus: root.shown ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+
+    // Acrylic behind the card (New style only).
+    BackgroundEffect.blurRegion: Theme.glass ? blurRegion : null
+
+    // Unscaled twin of the card for the blur region: it only rebuilds on
+    // x/y/w/h changes, so it must not see the entrance scale.
+    Item {
+        id: blurAnchor
+        anchors.fill: card
+    }
+
+    Region {
+        id: blurRegion
+
+        Region { item: blurAnchor; radius: card.radius }
+    }
 
     onShownChanged: {
         if (root.shown) {
@@ -85,6 +102,19 @@ PanelWindow {
         }
     }
 
+    // Warm ambient shadow under the card (New style only); follows the card's
+    // entrance fade/scale.
+    RectangularShadow {
+        anchors.fill: card
+        radius: card.radius
+        blur: Theme.cardShadowBlur
+        offset.y: Theme.cardShadowOffset
+        color: Theme.cardShadow
+        visible: Theme.glass
+        opacity: card.opacity
+        scale: card.scale
+    }
+
     Rectangle {
         id: card
 
@@ -97,6 +127,8 @@ PanelWindow {
         height: column.implicitHeight + 2 * root.cardPadding
         radius: Theme.shapeXL
         color: Theme.surfaceContainerHigh
+        border.width: Theme.hairlineWidth
+        border.color: Theme.hairline
 
         scale: root.shown ? 1 : 0.92
         opacity: root.shown ? 1 : 0

@@ -33,6 +33,7 @@ Singleton {
         reloadableId: "shell-state"
         property bool barHidden
         property bool launcherFullscreen
+        property string styleMode
     }
 
     readonly property bool barHidden: props.barHidden
@@ -40,6 +41,15 @@ Singleton {
     // Launcher appearance: fullscreen = icon grid over the whole output,
     // classic = the centered search card (see modules/Launcher.qml).
     readonly property bool launcherFullscreen: props.launcherFullscreen
+
+    // Style pack for the whole shell: "m3" = M3 Expressive with the matugen
+    // palette (default), "new" = graphite acrylic (see style/Theme.qml).
+    // Normalized, so a fresh install or a stale value reads as "m3".
+    readonly property string styleMode: props.styleMode === "new" ? "new" : "m3"
+
+    function setStyleMode(name: string): void {
+        props.styleMode = name === "new" ? "new" : "m3";
+    }
 
     function toggleQuickSettings(screenName: string): void {
         root.quickSettingsScreen = root.quickSettingsScreen === screenName ? "" : screenName;
@@ -127,6 +137,11 @@ Singleton {
         // Launcher view, so scripts can flip it: `qs ipc call settings launcherView true`.
         function launcherView(fullscreen: bool): void {
             root.setLauncherFullscreen(fullscreen);
+        }
+
+        // Style pack, so scripts can flip it: `qs ipc call settings style new`.
+        function style(name: string): void {
+            root.setStyleMode(name);
         }
     }
 

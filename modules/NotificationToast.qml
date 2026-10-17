@@ -30,14 +30,34 @@ PanelWindow {
 
     exclusionMode: ExclusionMode.Ignore
     color: "transparent"
-    // Height-aware: while the last toast fades out the column collapses and
-    // the surface unmaps instead of lingering at zero size.
+    // The service drops the last popup once the exit animation has played
+    // (leaveTimer) and the surface follows; gating on column.implicitHeight
+    // here would deadlock — an unmapped window is never polished, so the
+    // positioner never measures its cards and the height stays 0.
     visible: Notifications.popupScreen === root.modelData.name
-        && Notifications.popups.length > 0 && column.implicitHeight > 0.001
+        && Notifications.popups.length > 0
 
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "quickshell:notifications"
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+
+    // Acrylic behind the toast stack (New style only). The cards slide in with
+    // a translate; this stand-in doesn't, so the region stays on the final
+    // rect. Sized off the column because a positioner's own height stays 0.
+    Item {
+        id: blurAnchor
+
+        width: column.width
+        height: column.implicitHeight
+    }
+
+    BackgroundEffect.blurRegion: Theme.glass ? blurRegion : null
+
+    Region {
+        id: blurRegion
+
+        Region { item: blurAnchor; radius: Theme.shapeXL }
+    }
 
     implicitWidth: 360
     implicitHeight: column.implicitHeight
@@ -91,6 +111,8 @@ PanelWindow {
         height: implicitHeight * collapse
         radius: Theme.shapeXL
         color: Theme.surfaceContainerHigh
+        border.width: Theme.hairlineWidth
+        border.color: Theme.hairline
         clip: true
 
         // Exit-animation progress: 1 at rest, 0 once the card has collapsed.

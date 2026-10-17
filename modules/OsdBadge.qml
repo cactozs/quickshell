@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import Quickshell.Wayland
 import QtQuick
+import QtQuick.Effects
 import QtQuick.Layouts
 import "../services"
 import "../style"
@@ -40,6 +41,35 @@ PanelWindow {
     // Empty input region: every click passes through to the window below.
     mask: Region {}
 
+    // Acrylic behind the pill (New style only).
+    BackgroundEffect.blurRegion: Theme.glass ? blurRegion : null
+
+    // Unscaled twin of the pill for the blur region: it only rebuilds on
+    // x/y/w/h changes, so it must not see the entrance scale.
+    Item {
+        id: blurAnchor
+        anchors.fill: pill
+    }
+
+    Region {
+        id: blurRegion
+
+        Region { item: blurAnchor; radius: pill.radius }
+    }
+
+    // Warm ambient shadow under the pill (New style only); follows the pill's
+    // entrance fade/scale.
+    RectangularShadow {
+        anchors.fill: pill
+        radius: pill.radius
+        blur: Theme.cardShadowBlur
+        offset.y: Theme.cardShadowOffset
+        color: Theme.cardShadow
+        visible: Theme.glass
+        opacity: pill.opacity
+        scale: pill.scale
+    }
+
     Rectangle {
         id: pill
 
@@ -54,6 +84,8 @@ PanelWindow {
 
         radius: Theme.shapeXXL
         color: Theme.surfaceContainerHigh
+        border.width: Theme.hairlineWidth
+        border.color: Theme.hairline
 
         opacity: Osd.shown ? 1 : 0
         scale: Osd.shown ? 1 : 0.85

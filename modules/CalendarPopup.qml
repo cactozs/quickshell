@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import Quickshell
 import QtQuick
+import QtQuick.Effects
 import "../style"
 
 // Month calendar popup for the bar's date chip: fixed-cell grid (Monday-first)
@@ -39,6 +40,19 @@ PopupWindow {
     implicitWidth: column.implicitWidth + 2 * root.pad
     implicitHeight: column.implicitHeight + 2 * root.pad
 
+    // Warm ambient shadow under the surface (New style only); follows its
+    // entrance fade/scale. No acrylic: blur needs a panel window, not a popup.
+    RectangularShadow {
+        anchors.fill: surface
+        radius: surface.radius
+        blur: Theme.cardShadowBlur
+        offset.y: Theme.cardShadowOffset
+        color: Theme.cardShadow
+        visible: Theme.glass
+        opacity: surface.opacity
+        scale: surface.scale
+    }
+
     function build(): void {
         const now = new Date();
         const y = now.getFullYear();
@@ -63,6 +77,8 @@ PopupWindow {
         anchors.fill: parent
         radius: Theme.shapeLG
         color: Theme.surfaceContainerHighest
+        border.width: Theme.hairlineWidth
+        border.color: Theme.hairline
 
         opacity: root.shown ? 1 : 0
         scale: root.shown ? 1 : 0.92

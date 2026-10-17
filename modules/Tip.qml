@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import Quickshell
 import QtQuick
+import QtQuick.Effects
 import "../style"
 
 // M3 plain tooltip: surface container, extra-small corner, no border; fades
@@ -26,12 +27,26 @@ PopupWindow {
     implicitWidth: label.implicitWidth + 16
     implicitHeight: label.implicitHeight + 12
 
+    // Warm ambient shadow under the tooltip (New style only); follows its fade.
+    // No acrylic: blur is only available on panel windows, not popups.
+    RectangularShadow {
+        anchors.fill: surface
+        radius: surface.radius
+        blur: Theme.cardShadowBlur
+        offset.y: Theme.cardShadowOffset
+        color: Theme.cardShadow
+        visible: Theme.glass
+        opacity: surface.opacity
+    }
+
     Rectangle {
         id: surface
 
         anchors.fill: parent
         radius: Theme.shapeXS
         color: Theme.surfaceContainerHighest
+        border.width: Theme.hairlineWidth
+        border.color: Theme.hairline
 
         opacity: root.shown ? 1 : 0
 
