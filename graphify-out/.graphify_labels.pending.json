@@ -28,5 +28,6 @@
   "32": "handleLine() event dispatch",
   "33": "CalcRow.qml",
   "34": "SystemTheme.qml",
-  "35": "LazyOverlay.qml"
+  "35": "LazyOverlay.qml",
+  "36": "GlassEdge.qml"
 }

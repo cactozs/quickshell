@@ -21,9 +21,12 @@ PanelWindow {
         right: true
     }
 
-    // Under "new" the surface grows around the islands so the shadow has
-    // room to render; the band mask keeps that extra area click-through. Under
-    // "m3" these collapse to the old numbers and the surface is just the bar.
+    // Under "new" the surface grows downwards around the islands so the shadow
+    // has room to render; the band mask keeps that extra area click-through.
+    // Left and right there is no such room on purpose: the islands keep only
+    // barMargin to the screen edge (like under "m3"), and what the shadow would
+    // paint past the edge is clipped, exactly as it already is above them.
+    // Under "m3" both numbers collapse to the old ones.
     readonly property int bandTop: Theme.glass ? Theme.barMargin : 0
     readonly property int shadowInset: Theme.glass ? Theme.cardShadowBlur + Theme.cardShadowOffset : 0
 
@@ -142,7 +145,6 @@ PanelWindow {
             id: leftIsland
 
             anchors.left: parent.left
-            anchors.leftMargin: root.shadowInset
             anchors.top: parent.top
             anchors.topMargin: root.bandTop
             width: Math.min(leftRow.implicitWidth + 2 * Theme.barPadding, Math.floor(root.width * 0.3))
@@ -152,16 +154,7 @@ PanelWindow {
             border.width: Theme.hairlineWidth
             border.color: Theme.hairline
 
-            // Inner 1px rim: the glass edge. No-op under m3.
-            Rectangle {
-                anchors.fill: parent
-                anchors.margins: 1
-                radius: Math.max(0, parent.radius - 1)
-                color: "transparent"
-                border.width: Theme.hairlineWidth
-                border.color: Theme.cardRim
-                z: 1
-            }
+            GlassEdge {}
 
             clip: true
 
@@ -222,16 +215,7 @@ PanelWindow {
             border.width: Theme.hairlineWidth
             border.color: Theme.hairline
 
-            // Inner 1px rim: the glass edge. No-op under m3.
-            Rectangle {
-                anchors.fill: parent
-                anchors.margins: 1
-                radius: Math.max(0, parent.radius - 1)
-                color: "transparent"
-                border.width: Theme.hairlineWidth
-                border.color: Theme.cardRim
-                z: 1
-            }
+            GlassEdge {}
 
             Behavior on color {
                 ColorAnimation {
@@ -269,7 +253,6 @@ PanelWindow {
             id: rightIsland
 
             anchors.right: parent.right
-            anchors.rightMargin: root.shadowInset
             anchors.top: parent.top
             anchors.topMargin: root.bandTop
             width: rightRow.implicitWidth + 2 * Theme.barPadding
@@ -279,16 +262,7 @@ PanelWindow {
             border.width: Theme.hairlineWidth
             border.color: Theme.hairline
 
-            // Inner 1px rim: the glass edge. No-op under m3.
-            Rectangle {
-                anchors.fill: parent
-                anchors.margins: 1
-                radius: Math.max(0, parent.radius - 1)
-                color: "transparent"
-                border.width: Theme.hairlineWidth
-                border.color: Theme.cardRim
-                z: 1
-            }
+            GlassEdge {}
 
             Behavior on color {
                 ColorAnimation {

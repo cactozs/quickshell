@@ -53,9 +53,10 @@ Item {
 
         // M3E shape morph: full pill at rest; the press pulls the corners
         // inward (round button -> extra-large-increased, chip -> medium).
+        // Under "new" a chip rests at chipRadius instead of a pill.
         radius: clickArea.pressed
-            ? (root.round ? Theme.shapeLGI : Theme.shapeMD)
-            : Theme.shapeFull
+            ? (root.round ? Theme.shapeLGI : Theme.chipRadiusPressed)
+            : (root.round ? Theme.shapeFull : Theme.chipRadius)
         color: root.containerColor
 
         Behavior on radius {

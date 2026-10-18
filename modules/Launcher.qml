@@ -489,16 +489,9 @@ PanelWindow {
         border.width: root.fullscreen ? 0 : Theme.hairlineWidth
         border.color: Theme.hairline
 
-        // Inner 1px rim: the glass edge. No-op under m3 and on the fullscreen grid.
-        Rectangle {
-            anchors.fill: parent
-            anchors.margins: 1
-            radius: Math.max(0, parent.radius - 1)
-            color: "transparent"
-            border.width: Theme.hairlineWidth
-            border.color: Theme.cardRim
+        // Glass dressing: stays off on the fullscreen grid.
+        GlassEdge {
             visible: !root.fullscreen
-            z: 1
         }
 
         scale: root.shown ? 1 : 0.9

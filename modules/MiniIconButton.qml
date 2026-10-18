@@ -25,7 +25,7 @@ Item {
         anchors.centerIn: parent
         width: 32
         height: 32
-        radius: tap.pressed ? Theme.shapeMD : Theme.shapeFull
+        radius: tap.pressed ? Theme.chipRadiusPressed : Theme.chipRadius
         color: "transparent"
         scale: tap.pressed ? 0.94 : 1
 

@@ -46,7 +46,7 @@ Item {
         width: root.activeCell !== null ? root.activeCell.width : 0
         visible: root.activeCell !== null
 
-        radius: root.activePressed ? Theme.shapeMD : Theme.shapeFull
+        radius: root.activePressed ? Theme.chipRadiusPressed : Theme.chipRadius
         color: Theme.secondaryContainer
 
         Behavior on x {
@@ -122,7 +122,7 @@ Item {
                     anchors.centerIn: parent
                     width: parent.width
                     height: Theme.chipHeight
-                    radius: Theme.shapeFull
+                    radius: Theme.chipRadius
                     color: "transparent"
 
                     StateLayer {

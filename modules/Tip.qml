@@ -44,20 +44,13 @@ PopupWindow {
 
         anchors.fill: parent
         radius: Theme.shapeXS
-        color: Theme.surfaceContainerHighest
+        // No acrylic: blur is only available on panel windows, not popups, so
+        // the chip veil would leave it readable through. A solid tone instead.
+        color: Theme.popupSurface
         border.width: Theme.hairlineWidth
         border.color: Theme.hairline
 
-        // Inner 1px rim: the glass edge. No-op under m3.
-        Rectangle {
-            anchors.fill: parent
-            anchors.margins: 1
-            radius: Math.max(0, parent.radius - 1)
-            color: "transparent"
-            border.width: Theme.hairlineWidth
-            border.color: Theme.cardRim
-            z: 1
-        }
+        GlassEdge {}
 
         opacity: root.shown ? 1 : 0
 

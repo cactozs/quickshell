@@ -151,8 +151,11 @@ Singleton {
     // "New" pack: near-black/graphite surfaces, soft light-gray typography and
     // muted secondary labels. Container tones carry acrylic alpha (the windows
     // blur what is behind them, see BackgroundEffect in the modules) — kept low
-    // enough that the blur reads. Accents (primary/secondary/tertiary and their
-    // containers) are left to matugen.
+    // enough that the blur reads, high enough that small text stays legible
+    // over a bright wallpaper. Accents (primary/secondary/tertiary and their
+    // containers) are left to matugen; the surfaces take a hint of it, see
+    // glassTintAmount. surface_container_highest is not listed: the chip tone
+    // is the veil below, layered over whatever palette is active.
     readonly property var newScheme: ({
         "surface": "#ff0f1013",
         "on_surface": "#ffe2e4e8",
@@ -162,9 +165,8 @@ Singleton {
         "surface_bright": "#ff3a3f47",
         "surface_container_lowest": "#ff0b0c0f",
         "surface_container_low": "#ff14161a",
-        "surface_container": "#cc17191e",
-        "surface_container_high": "#cc1c1f25",
-        "surface_container_highest": "#d924282e",
+        "surface_container": "#c717191e",
+        "surface_container_high": "#c71c1f25",
         "outline": "#ff3c4149",
         "outline_variant": "#26ffffff",
         "scrim": "#ff000000",
@@ -182,9 +184,8 @@ Singleton {
         "surface_bright": "#fffcfdff",
         "surface_container_lowest": "#ffffffff",
         "surface_container_low": "#fffafbfd",
-        "surface_container": "#ccf6f7fa",
-        "surface_container_high": "#ccf0f2f6",
-        "surface_container_highest": "#d9eaecf1",
+        "surface_container": "#c7f6f7fa",
+        "surface_container_high": "#c7f0f2f6",
         "outline": "#ffa7adb6",
         "outline_variant": "#26000000",
         "scrim": "#ff000000",
@@ -349,10 +350,25 @@ Singleton {
     readonly property var activeM3: root.light ? root.m3LightScheme : root.m3Scheme
 
     // The "new" pack layers its neutral surfaces on the wallpaper palette only;
-    // a picked color scheme owns the surfaces.
-    readonly property var scheme: root.glass && ShellState.colorScheme === "matugen"
-        ? Object.assign({}, root.activeScheme, root.light ? root.newLightScheme : root.newScheme)
-        : root.activeScheme
+    // a picked color scheme owns the surfaces. Under glass the chips and fields
+    // become a veil instead of a solid tone (so the acrylic reads through
+    // them), and the matugen surfaces take a hint of the accent, so the glass
+    // belongs to the wallpaper.
+    readonly property var scheme: {
+        const matugenGlass = root.glass && ShellState.colorScheme === "matugen";
+        const base = matugenGlass
+            ? Object.assign({}, root.activeScheme, root.light ? root.newLightScheme : root.newScheme)
+            : root.activeScheme;
+        if (!root.glass)
+            return base;
+        const glassScheme = Object.assign({}, base, { "surface_container_highest": root.chipVeil });
+        if (matugenGlass) {
+            const accent = glassScheme.primary;
+            for (const key of root.glassSurfaceKeys)
+                glassScheme[key] = root.mixColor(glassScheme[key], accent, root.glassTintAmount);
+        }
+        return glassScheme;
+    }
 
     // Both palette files stay watched: the dark one feeds the bar in dark mode
     // and is what triggers the light pass, the light one feeds it in light mode.
@@ -422,6 +438,26 @@ Singleton {
         if (value.length === 9 && value.charAt(0) === "#")
             return "#" + value.slice(7, 9) + value.slice(1, 7);
         return value;
+    }
+
+    // Mixes `over` into `base` by `amount` (0..1), keeping base's alpha. Both
+    // are "#rrggbb" or "#aarrggbb"; used to pull the glass toward the accent.
+    function mixColor(base: string, over: string, amount: real): string {
+        const a = root.parseHex(base);
+        const b = root.parseHex(over);
+        const channels = [];
+        for (let i = 0; i < 4; i++) {
+            const v = i === 0 ? a[i] : Math.round(a[i] + (b[i] - a[i]) * amount);
+            channels.push(v < 16 ? "0" + v.toString(16) : v.toString(16));
+        }
+        return "#" + channels.join("");
+    }
+
+    // "#rrggbb"/"#aarrggbb" -> [alpha, red, green, blue].
+    function parseHex(value: string): var {
+        const h = value.charAt(0) === "#" ? value.slice(1) : value;
+        const v = parseInt(h.length === 8 ? h : "ff" + h, 16);
+        return [(v >>> 24) & 255, (v >>> 16) & 255, (v >>> 8) & 255, v & 255];
     }
 
     function applyGeneratedScheme(): void {
@@ -541,18 +577,51 @@ Singleton {
     // Bar islands stop being pills under "new".
     readonly property int barRadius: root.glass ? 12 : shapeFull
 
+    // Chips and icon buttons stop being pills too: 10/30 is the same
+    // proportion as the islands' 12/36, so the two read as one family. The
+    // pressed value is what the M3E corner morph springs to. Under m3 these
+    // are the pill/medium pair the morph always used.
+    readonly property int chipRadius: root.glass ? 10 : shapeFull
+    readonly property int chipRadiusPressed: root.glass ? 8 : shapeMD
+
     // Hairline edges: 0 width under m3, so borders can be added unconditionally.
     readonly property int hairlineWidth: root.glass ? 1 : 0
     // Outer edge stays faint; the bright edge is cardRim, one pixel inside it.
-    // On paper surfaces both flip to black alphas, otherwise they vanish.
+    // Both modes are lit from above, so the bevel is white in both: over
+    // graphite it is the visible edge, over paper a faint lift.
     readonly property color hairline: root.glass ? (root.light ? "#14000000" : "#14ffffff") : "transparent"
-    readonly property color cardRim: root.glass ? (root.light ? "#26000000" : "#26ffffff") : "transparent"
+    readonly property color cardRim: root.glass ? (root.light ? "#33ffffff" : "#26ffffff") : "transparent"
 
     // Neutral drop shadow under cards, as RectangularShadow args. Invisible
     // over dark wallpaper, which is why every surface also draws cardRim.
-    readonly property color cardShadow: root.glass ? "#66000000" : "transparent"
-    readonly property int cardShadowBlur: 22
-    readonly property int cardShadowOffset: 5
+    readonly property color cardShadow: root.glass ? "#59000000" : "transparent"
+    readonly property int cardShadowBlur: 28
+    readonly property int cardShadowOffset: 6
+
+    // Glass dressing, drawn by modules/GlassEdge.qml inside every card: a 1px
+    // specular line along the top edge, next to the rim above. Transparent
+    // under m3, so it can be added unconditionally like the hairline.
+    readonly property color glassSpecular: root.glass ? (root.light ? "#a6ffffff" : "#33ffffff") : "transparent"
+
+    // Chips, fields and slider tracks: a veil over the surface instead of an
+    // opaque tone, so the blurred backdrop reads through them too. Replaces
+    // surface_container_highest in `scheme`; unused under m3.
+    readonly property color chipVeil: root.light ? "#1f000000" : "#1fffffff"
+
+    // Opaque twin of that tone for the windows that cannot blur (popups: the
+    // tooltip and the calendar popup) — the veil would show the desktop
+    // through them, unblurred. Under m3 both are just the scheme tone.
+    readonly property color popupSurface: root.glass
+        ? (root.light ? "#fff0f2f6" : "#ff1c1f25")
+        : scheme.surface_container_highest
+
+    // How much of the wallpaper accent is mixed into the glass surfaces.
+    readonly property real glassTintAmount: 0.04
+    readonly property var glassSurfaceKeys: [
+        "surface", "surface_dim", "surface_bright", "surface_variant",
+        "surface_container_lowest", "surface_container_low",
+        "surface_container", "surface_container_high"
+    ]
 
 
     // ---- motion ----------------------------------------------------------------
