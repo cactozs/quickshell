@@ -7,8 +7,8 @@ import QtQuick.Effects
 import "../services"
 import "../style"
 
-// M3 Expressive bar: three floating islands (surfaceContainer sides, raised
-// clock hero) hosting the niri workspaces, window title, clock and status chips.
+// M3 Expressive bar: three floating islands (all surfaceContainer) hosting the
+// niri workspaces, window title, clock and status chips.
 PanelWindow {
     id: root
 
@@ -199,7 +199,7 @@ PanelWindow {
             }
         }
 
-        // center island: clock hero, raised one tonal step over the sides
+        // center island: clock hero, same surface as the sides
         RectangularShadow {
             anchors.fill: centerIsland
             radius: centerIsland.radius
@@ -218,7 +218,7 @@ PanelWindow {
             width: centerRow.implicitWidth + 2 * Theme.barPadding
             height: Theme.barHeight
             radius: Theme.barRadius
-            color: Theme.surfaceContainerHigh
+            color: Theme.surfaceContainer
             border.width: Theme.hairlineWidth
             border.color: Theme.hairline
 
