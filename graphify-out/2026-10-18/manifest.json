@@ -1,0 +1,314 @@
+{
+  "style/Colors.json": {
+    "mtime": 1792250132.2510293,
+    "seen": 1792250836.298068,
+    "ast_hash": "20a86263c94c244abf91ebfed16ec199",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1792248915.2841187,
+    "seen": 1792249053.771386,
+    "ast_hash": "2e202374174397dc5c3bb865acb68acc",
+    "semantic_hash": ""
+  },
+  "modules/Backlight.qml": {
+    "mtime": 1792250463.402615,
+    "seen": 1792250836.2980962,
+    "ast_hash": "d2593191c84f46020b156314fe29765a",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/Bar.qml": {
+    "mtime": 1792250463.4113586,
+    "seen": 1792250836.2981064,
+    "ast_hash": "81e915bf96723869ede4d06f52980a5e",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/Battery.qml": {
+    "mtime": 1792250463.4031727,
+    "seen": 1792250836.2981157,
+    "ast_hash": "70e20429e9463eb81967d124651189aa",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/ClipboardLauncher.qml": {
+    "mtime": 1792250463.4038832,
+    "seen": 1792250836.2981324,
+    "ast_hash": "932156ede5a48907070c1e9c868ee974",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/DateClock.qml": {
+    "mtime": 1792250463.4043446,
+    "seen": 1792250836.2981398,
+    "ast_hash": "57aa2c635ce98c5e6fc05c157fda883f",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/IconButton.qml": {
+    "mtime": 1792250463.4045582,
+    "seen": 1792250836.2981467,
+    "ast_hash": "8741cb3e5368755634589a66dc29565a",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/KeyboardLayout.qml": {
+    "mtime": 1792250463.4047542,
+    "seen": 1792250836.2981534,
+    "ast_hash": "38efca893e4632cd3c20895eb5d2dc8c",
+    "semantic_hash": "38efca893e4632cd3c20895eb5d2dc8c",
+    "language": "language=.md"
+  },
+  "modules/Launcher.qml": {
+    "mtime": 1792250463.4049487,
+    "seen": 1792250836.2981606,
+    "ast_hash": "5ad1b110531922b101692e2fc26e8ddc",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/LayoutBadge.qml": {
+    "mtime": 1792250463.4053736,
+    "seen": 1792250836.2981675,
+    "ast_hash": "3b8126479510aeab71c22f797201c1ed",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/PowerButton.qml": {
+    "mtime": 1792250463.406997,
+    "seen": 1792250836.2982078,
+    "ast_hash": "f2d979b362af61dd778120325290af75",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/StateLayer.qml": {
+    "mtime": 1792250463.4079514,
+    "seen": 1792250836.2982268,
+    "ast_hash": "069063d4c85155296ffe167092295be4",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/SystemStats.qml": {
+    "mtime": 1792250463.4083998,
+    "seen": 1792250836.2982395,
+    "ast_hash": "18f8da5b099d3fc499851b6959c2053d",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/TimeClock.qml": {
+    "mtime": 1792250463.4085484,
+    "seen": 1792250836.298246,
+    "ast_hash": "417edd266e594fe1f0c99a61e7826b34",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/Tip.qml": {
+    "mtime": 1792250463.4086666,
+    "seen": 1792250836.2982526,
+    "ast_hash": "db570f0bc996d0a5b5bafae11dd0df4a",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/Volume.qml": {
+    "mtime": 1792250463.4088516,
+    "seen": 1792250836.2982588,
+    "ast_hash": "4009685ca980caac795d7dcf2edf7566",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/WindowTitle.qml": {
+    "mtime": 1792250463.409853,
+    "seen": 1792250836.298292,
+    "ast_hash": "2d6f9e3c6448f3082bdb41221f1bd084",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/Workspaces.qml": {
+    "mtime": 1792250463.4100416,
+    "seen": 1792250836.298298,
+    "ast_hash": "48df2bb0e7d4709a32ffcdee76adf2db",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "services/Niri.qml": {
+    "mtime": 1792160538.789359,
+    "seen": 1792160669.6078284,
+    "ast_hash": "86c558999951557210e52693f0c1f558",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "services/ShellState.qml": {
+    "mtime": 1792248862.2603137,
+    "seen": 1792249053.771709,
+    "ast_hash": "e81eb71f6b6cb444ee21113086e8bf18",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "services/SystemMonitor.qml": {
+    "mtime": 1792251416.457291,
+    "seen": 1792251716.514083,
+    "ast_hash": "305c78a4f3e591af4e58f03349dc1297",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "shell.qml": {
+    "mtime": 1792248870.3792808,
+    "seen": 1792249053.7717376,
+    "ast_hash": "32eab91d7cd716aa953fca95726ca6df",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "style/Theme.qml": {
+    "mtime": 1792250708.9704013,
+    "seen": 1792250836.2983885,
+    "ast_hash": "9368e86804b4d32b30d544be8086442c",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/CalendarPopup.qml": {
+    "mtime": 1792250463.4035978,
+    "seen": 1792250836.298125,
+    "ast_hash": "4b27dd4a28ad3f221bdc692ac94677ec",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/OsdBadge.qml": {
+    "mtime": 1792250463.4067895,
+    "seen": 1792250836.298201,
+    "ast_hash": "74ba4db65c14e75ef4c7e19f7be1b235",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "services/Osd.qml": {
+    "mtime": 1792124123.2719269,
+    "seen": 1792124388.6042123,
+    "ast_hash": "94738ab369e46f8c2aced3a5bcd04c77",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/MiniIconButton.qml": {
+    "mtime": 1792250463.405657,
+    "seen": 1792250836.2981746,
+    "ast_hash": "48b5132d56c7c04df5859576f17aa29c",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/NotificationBell.qml": {
+    "mtime": 1792250463.4058208,
+    "seen": 1792250836.298181,
+    "ast_hash": "4bb318b63990b482620cb129e9620f97",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/NotificationCenter.qml": {
+    "mtime": 1792250463.4060783,
+    "seen": 1792250836.2981882,
+    "ast_hash": "f4a767cba75c5f26526eac83b4bc1573",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/NotificationToast.qml": {
+    "mtime": 1792250463.4063537,
+    "seen": 1792250836.2981946,
+    "ast_hash": "becf66405c4061db3f7b14bf7e6d26e4",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "services/Notifications.qml": {
+    "mtime": 1792237221.2151124,
+    "seen": 1792237379.8922908,
+    "ast_hash": "8af733323c0eae6d09c32f9ea116a90e",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/QuickSettings.qml": {
+    "mtime": 1792250463.40718,
+    "seen": 1792250836.298214,
+    "ast_hash": "8537f41abdd659bf3b42788d48d13375",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "services/Brightness.qml": {
+    "mtime": 1792157453.8772774,
+    "seen": 1792157791.6277795,
+    "ast_hash": "34d414d19976deff24ead243abc0a2d8",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "services/NightLight.qml": {
+    "mtime": 1792158305.309931,
+    "seen": 1792158356.8190274,
+    "ast_hash": "dd16ce65aab08bdd017a72ccb3ec5c55",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/WeatherPopup.qml": {
+    "mtime": 1792250463.4096024,
+    "seen": 1792250836.2982855,
+    "ast_hash": "b662bafb63f80242b6e03f15932ef806",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "services/Weather.qml": {
+    "mtime": 1792163342.875796,
+    "seen": 1792163417.3201935,
+    "ast_hash": "725fe4a591f2989037da7b63f94707b8",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "services/AppUsage.qml": {
+    "mtime": 1792228001.276481,
+    "seen": 1792228427.6233387,
+    "ast_hash": "373fcc815656b8a85f736e2adc79a97d",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/SystemPopup.qml": {
+    "mtime": 1792250463.4081764,
+    "seen": 1792250836.298233,
+    "ast_hash": "bfff828b062b12b9eda691d397024419",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "readme.md": {
+    "mtime": 1792249889.7771509,
+    "seen": 1792250836.2983046,
+    "ast_hash": "e431f6a9f424c63a3d4dc650a4e5fbca",
+    "semantic_hash": ""
+  },
+  "modules/Settings.qml": {
+    "mtime": 1792250463.4077337,
+    "seen": 1792250836.2982204,
+    "ast_hash": "127aad1715a90cd9a6872c23a4b3a74b",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/WallpaperDrop.qml": {
+    "mtime": 1792250463.4091296,
+    "seen": 1792250836.298266,
+    "ast_hash": "7d766557d9f4301a98decb8f3c5e0451",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/WallpaperDropArea.qml": {
+    "mtime": 1792250463.4089916,
+    "seen": 1792250836.2982726,
+    "ast_hash": "d76eaf819d350a830ed28c0eeb6792ac",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/WallpaperManager.qml": {
+    "mtime": 1792251416.457291,
+    "seen": 1792251716.5139894,
+    "ast_hash": "523c6a89939b438d57f91a70de658e1d",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "services/Wallpapers.qml": {
+    "mtime": 1792251425.6673384,
+    "seen": 1792251716.5140896,
+    "ast_hash": "50cdca46afc4989a8a5963b4a9bc9569",
+    "semantic_hash": "",
+    "language": "language=.md"
+  }
+}

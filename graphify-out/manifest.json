@@ -1,8 +1,8 @@
 {
   "style/Colors.json": {
-    "mtime": 1792250132.2510293,
-    "seen": 1792250836.298068,
-    "ast_hash": "20a86263c94c244abf91ebfed16ec199",
+    "mtime": 1792294257.0710297,
+    "seen": 1792296423.8280115,
+    "ast_hash": "09b7600c8a75fe698920e1c0c56510a8",
     "semantic_hash": ""
   },
   "AGENTS.md": {
@@ -61,9 +61,9 @@
     "language": "language=.md"
   },
   "modules/Launcher.qml": {
-    "mtime": 1792250463.4049487,
-    "seen": 1792250836.2981606,
-    "ast_hash": "5ad1b110531922b101692e2fc26e8ddc",
+    "mtime": 1792296412.8922577,
+    "seen": 1792296423.8281777,
+    "ast_hash": "71a44c0420b1d2f24e7a14542d6e6e04",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -159,9 +159,9 @@
     "language": "language=.md"
   },
   "style/Theme.qml": {
-    "mtime": 1792250708.9704013,
-    "seen": 1792250836.2983885,
-    "ast_hash": "9368e86804b4d32b30d544be8086442c",
+    "mtime": 1792294821.6393867,
+    "seen": 1792296423.8284242,
+    "ast_hash": "7fcb6cee4abb2f7bab5b81faa840a652",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -271,9 +271,9 @@
     "language": "language=.md"
   },
   "readme.md": {
-    "mtime": 1792249889.7771509,
-    "seen": 1792250836.2983046,
-    "ast_hash": "e431f6a9f424c63a3d4dc650a4e5fbca",
+    "mtime": 1792251883.355627,
+    "seen": 1792296423.8283398,
+    "ast_hash": "c11acf6b774e9c7b34cb588b54794d86",
     "semantic_hash": ""
   },
   "modules/Settings.qml": {
@@ -308,6 +308,13 @@
     "mtime": 1792251425.6673384,
     "seen": 1792251716.5140896,
     "ast_hash": "50cdca46afc4989a8a5963b4a9bc9569",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/CalcRow.qml": {
+    "mtime": 1792296391.9783213,
+    "seen": 1792296423.8281045,
+    "ast_hash": "5627b9f71efb787b4b6e3e7fb119ad1b",
     "semantic_hash": "",
     "language": "language=.md"
   }

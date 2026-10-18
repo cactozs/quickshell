@@ -47,6 +47,11 @@ PanelWindow {
     readonly property string query: input.text
     property int currentIndex: 0
 
+    // The query as arithmetic ("" when it is not an expression); the
+    // calculator row shows it above the app results.
+    readonly property string calcResult: root.calculate(root.query)
+    readonly property bool calcActive: root.calcResult !== ""
+
     // Most-launched first while the query is empty (favorites pinned on
     // top, alphabetical on ties), scored matches otherwise. Only the
     // visible instance bothers computing
@@ -140,16 +145,163 @@ PanelWindow {
         return score;
     }
 
+    // ---- calculator -------------------------------------------------------------
+
+    // Arithmetic over the whole query; "" unless it parses as an expression
+    // (needs a digit and, without a leading "=", an operator). `x%` is a
+    // percent, `x % y` a remainder -- the difference is whether a factor
+    // follows. Trigonometry works in degrees (sin(30) = 0.5); constants,
+    // variables and units are not supported.
+    function calculate(raw: string): string {
+        // Typographic operators and the comma decimal separator are free.
+        let s = raw.trim().toLowerCase().replace(/,/g, ".").replace(/×/g, "*").replace(/÷/g, "/").replace(/−/g, "-");
+        const forced = s.startsWith("=");
+        if (forced)
+            s = s.slice(1).trim();
+        if (s === "" || !/[0-9]/.test(s) || !forced && !/[+\-*/%^(]/.test(s))
+            return "";
+
+        const functions = {
+            sqrt: Math.sqrt, cbrt: Math.cbrt, abs: Math.abs, exp: Math.exp,
+            ln: Math.log, log: Math.log10, log2: Math.log2,
+            round: Math.round, floor: Math.floor, ceil: Math.ceil,
+            sin: x => Math.sin(x * Math.PI / 180), cos: x => Math.cos(x * Math.PI / 180),
+            tan: x => Math.tan(x * Math.PI / 180), asin: x => Math.asin(x) * 180 / Math.PI,
+            acos: x => Math.acos(x) * 180 / Math.PI, atan: x => Math.atan(x) * 180 / Math.PI
+        };
+
+        let pos = 0;
+
+        // Unannotated on purpose: qmlsc cannot type nested functions and
+        // rejects annotated calls to them with AOT errors on every reload.
+        function skip() {
+            while (s.charAt(pos) === " ")
+                pos++;
+        }
+
+        // A factor starts with a digit, a point, a bracket or a function name.
+        function startsFactor() {
+            return /[0-9.a-z(]/.test(s.charAt(pos));
+        }
+
+        function primary() {
+            skip();
+            const c = s.charAt(pos);
+            if (c === "(") {
+                pos++;
+                const v = expression();
+                skip();
+                if (s.charAt(pos) !== ")")
+                    return NaN;
+                pos++;
+                return v;
+            }
+            const name = /^[a-z]+/.exec(s.slice(pos));
+            if (name) {
+                const fn = functions[name[0]];
+                pos += name[0].length;
+                skip();
+                if (!fn || s.charAt(pos) !== "(")
+                    return NaN;
+                pos++;
+                const v = expression();
+                skip();
+                if (s.charAt(pos) !== ")")
+                    return NaN;
+                pos++;
+                return fn(v);
+            }
+            const number = /^[0-9]*\.?[0-9]+/.exec(s.slice(pos));
+            if (!number)
+                return NaN;
+            pos += number[0].length;
+            return Number(number[0]);
+        }
+
+        function postfix() {
+            let v = primary();
+            for (;;) {
+                skip();
+                if (s.charAt(pos) !== "%")
+                    return v;
+                pos++;
+                skip();
+                if (startsFactor())
+                    return v % unary();
+                v /= 100;
+            }
+        }
+
+        function power() {
+            const base = postfix();
+            skip();
+            if (s.charAt(pos) !== "^")
+                return base;
+            pos++;
+            return Math.pow(base, unary());
+        }
+
+        function unary() {
+            skip();
+            const c = s.charAt(pos);
+            if (c === "-" || c === "+") {
+                pos++;
+                return c === "-" ? -unary() : unary();
+            }
+            return power();
+        }
+
+        function term() {
+            let v = unary();
+            for (;;) {
+                skip();
+                const c = s.charAt(pos);
+                if (c !== "*" && c !== "/")
+                    return v;
+                pos++;
+                const r = unary();
+                v = c === "*" ? v * r : v / r;
+            }
+        }
+
+        function expression() {
+            let v = term();
+            for (;;) {
+                skip();
+                const c = s.charAt(pos);
+                if (c !== "+" && c !== "-")
+                    return v;
+                pos++;
+                const r = term();
+                v = c === "+" ? v + r : v - r;
+            }
+        }
+
+        const value = expression();
+        skip();
+        if (pos !== s.length || !Number.isFinite(value))
+            return "";
+        return String(parseFloat(value.toPrecision(12)));
+    }
+
     // ---- actions ----------------------------------------------------------------
 
+    // The calculator row owns index -1; the app rows keep 0..n-1.
     function moveFocus(delta: int): void {
-        const count = root.results.length;
-        if (count === 0)
+        const lowest = root.calcActive ? -1 : 0;
+        const highest = root.results.length - 1;
+        if (highest < lowest)
             return;
-        root.currentIndex = Math.max(0, Math.min(count - 1, root.currentIndex + delta));
+        root.currentIndex = Math.max(lowest, Math.min(highest, root.currentIndex + delta));
     }
 
     function activate(index: int): void {
+        // The calculator row is a read-out; Enter only dismisses the launcher.
+        if (index < 0) {
+            ShellState.closeLauncher();
+            return;
+        }
+
         const entry = root.results[index];
         if (!entry)
             return;
@@ -447,7 +599,8 @@ PanelWindow {
                     focus: root.shown
 
                     onAccepted: root.activate(root.currentIndex)
-                    onTextChanged: root.currentIndex = 0
+                    // A fresh expression selects its own result row.
+                    onTextChanged: root.currentIndex = root.calculate(input.text) !== "" ? -1 : 0
 
                     Keys.onEscapePressed: ShellState.closeLauncher()
                     Keys.onUpPressed: root.moveFocus(-root.focusStep)
@@ -501,14 +654,18 @@ PanelWindow {
             Item {
                 id: resultsArea
 
+                // The calculator row adds its own height (plus the gap) on top
+                // of the app rows; the list below is pushed down by the same.
+                readonly property int calcHeight: root.calcActive ? root.rowHeight + root.rowSpacing : 0
+
                 width: parent.width
-                implicitHeight: root.results.length > 0
+                implicitHeight: resultsArea.calcHeight + (root.results.length > 0
                     ? root.results.length * (root.rowHeight + root.rowSpacing) - root.rowSpacing
-                    : 72
+                    : (root.calcActive ? 0 : 72))
                 // Classic: capped list. Fullscreen: everything the card has
                 // left below the search field and the footer.
                 height: root.fullscreen
-                    ? Math.max(0, root.height - 2 * root.cardPadding - searchBar.implicitHeight - footer.implicitHeight - 2 * column.spacing)
+                    ? Math.max(0, root.height - 2 * root.cardPadding - searchBar.implicitHeight - footer.implicitHeight - 2 * column.spacing - resultsArea.calcHeight)
                     : Math.min(implicitHeight, root.listMaxHeight)
 
                 // Re-scoring on each keystroke changes the row count; animate
@@ -521,10 +678,25 @@ PanelWindow {
                     }
                 }
 
+                CalcRow {
+                    width: resultsArea.width
+                    height: root.rowHeight
+                    visible: root.calcActive
+                    result: root.calcResult
+                    expression: root.query
+                    selected: root.currentIndex < 0
+                    onHovered: root.currentIndex = -1
+                    onActivated: ShellState.closeLauncher()
+                }
+
                 ListView {
                     id: list
 
-                    anchors.fill: parent
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.topMargin: resultsArea.calcHeight
+                    anchors.bottom: parent.bottom
                     visible: !root.fullscreen && root.results.length > 0
                     clip: true
                     boundsBehavior: Flickable.StopAtBounds
@@ -555,7 +727,11 @@ PanelWindow {
                 GridView {
                     id: grid
 
-                    anchors.fill: parent
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.topMargin: resultsArea.calcHeight
+                    anchors.bottom: parent.bottom
                     visible: root.fullscreen && root.results.length > 0
                     clip: true
                     cellWidth: root.tileCellWidth
@@ -573,7 +749,7 @@ PanelWindow {
 
                 Text {
                     anchors.centerIn: parent
-                    visible: root.results.length === 0
+                    visible: root.results.length === 0 && !root.calcActive
                     text: "Ничего не найдено"
                     color: Theme.surfaceVariantText
                     font.family: Theme.fontFamily

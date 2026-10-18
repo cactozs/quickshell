@@ -319,6 +319,7 @@ Singleton {
     readonly property string iconClock: "\uE8B5" // schedule
     readonly property string iconMonitoring: "\uF190" // monitoring
     readonly property string iconApps: "\uE5C3" // apps
+    readonly property string iconCalculate: "\uEA5F" // calculate
     readonly property string iconSearch: "\uE8B6" // search
     readonly property string iconClose: "\uE5CD" // close
     readonly property string iconClipboard: "\uE14F" // content_paste
