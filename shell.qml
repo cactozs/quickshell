@@ -20,10 +20,19 @@ ShellRoot {
         WallpaperDrop {}
     }
 
+    // Every other overlay is built the first time it is opened and dropped again
+    // once it has been closed for a while (LazyOverlay): a dormant window was
+    // 2-4 MB each, an open-then-closed one left its scene behind as well.
+    // LayoutBadge stays eager — it has no state to key on, only an event inside
+    // itself (a keyboard layout switch).
+
     Variants {
         model: Quickshell.screens
 
-        QuickSettings {}
+        LazyOverlay {
+            source: Component { QuickSettings {} }
+            active: ShellState.quickSettingsScreen === modelData.name
+        }
     }
 
     Variants {
@@ -35,54 +44,82 @@ ShellRoot {
     Variants {
         model: Quickshell.screens
 
-        OsdBadge {}
+        LazyOverlay {
+            source: Component { OsdBadge {} }
+            active: Osd.shown
+        }
     }
 
     Variants {
         model: Quickshell.screens
 
-        Launcher {}
+        LazyOverlay {
+            source: Component { Launcher {} }
+            active: ShellState.launcherScreen === modelData.name
+        }
     }
 
     Variants {
         model: Quickshell.screens
 
-        ClipboardLauncher {}
+        LazyOverlay {
+            source: Component { ClipboardLauncher {} }
+            active: ShellState.clipboardScreen === modelData.name
+        }
     }
 
     Variants {
         model: Quickshell.screens
 
-        NotificationToast {}
+        LazyOverlay {
+            source: Component { NotificationToast {} }
+            active: Notifications.popupScreen === modelData.name
+                && Notifications.popups.length > 0
+        }
     }
 
     Variants {
         model: Quickshell.screens
 
-        NotificationCenter {}
+        LazyOverlay {
+            source: Component { NotificationCenter {} }
+            active: ShellState.notificationScreen === modelData.name
+        }
     }
 
     Variants {
         model: Quickshell.screens
 
-        WeatherPopup {}
+        LazyOverlay {
+            source: Component { WeatherPopup {} }
+            active: ShellState.weatherScreen === modelData.name
+        }
     }
 
     Variants {
         model: Quickshell.screens
 
-        SystemPopup {}
+        LazyOverlay {
+            source: Component { SystemPopup {} }
+            active: ShellState.systemScreen === modelData.name
+        }
     }
 
     Variants {
         model: Quickshell.screens
 
-        Settings {}
+        LazyOverlay {
+            source: Component { Settings {} }
+            active: ShellState.settingsScreen === modelData.name
+        }
     }
 
     Variants {
         model: Quickshell.screens
 
-        WallpaperManager {}
+        LazyOverlay {
+            source: Component { WallpaperManager {} }
+            active: ShellState.wallpaperScreen === modelData.name
+        }
     }
 }

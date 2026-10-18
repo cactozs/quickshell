@@ -413,14 +413,24 @@ PanelWindow {
         Region { item: blurAnchor; radius: card.radius }
     }
 
+    // What opening the launcher does. A lazily built window (LazyOverlay) is
+    // born already open, so its onShownChanged never fires; both paths call this.
+    function openInit(): void {
+        input.text = "";
+        root.currentIndex = 0;
+        focusKick.restart();
+    }
+
+    Component.onCompleted: {
+        if (root.shown)
+            root.openInit();
+    }
+
     onShownChanged: {
-        if (root.shown) {
-            input.text = "";
-            root.currentIndex = 0;
-            focusKick.restart();
-        } else {
+        if (root.shown)
+            root.openInit();
+        else
             root.resetDrag();
-        }
     }
 
     // Layer surfaces take a moment to gain keyboard focus; make sure the

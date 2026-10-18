@@ -20,6 +20,16 @@ Singleton {
     // [{ path, name, folder }], folder is relative to rootDir ("" at the top).
     property var entries: []
 
+    // Source path -> cached preview (see `thumbs`); a path missing from the map
+    // (preview not built yet, or no magick) falls back to the original file.
+    property var thumbs: ({})
+
+    readonly property string thumbDir: Quickshell.env("HOME") + "/.cache/quickshell/wallpapers"
+
+    function thumbFor(path: string): string {
+        return root.thumbs[path] ?? path;
+    }
+
     Component.onCompleted: root.reload()
 
     function reload(): void {
@@ -48,6 +58,20 @@ Singleton {
         if (out.length === root.entries.length && out.every((e, i) => e.path === root.entries[i].path))
             return;
         root.entries = out;
+        if (!thumbs.running)
+            thumbs.running = true;
+    }
+
+    // Preview paths as "source\tpreview" lines from `thumbs`.
+    function parseThumbs(text: string): void {
+        const out = {};
+        const lines = text.split("\n");
+        for (let i = 0; i < lines.length; i++) {
+            const tab = lines[i].indexOf("\t");
+            if (tab > 0)
+                out[lines[i].slice(0, tab)] = lines[i].slice(tab + 1);
+        }
+        root.thumbs = out;
     }
 
     function isFavorite(path: string): bool {
@@ -83,6 +107,30 @@ Singleton {
         stdout: StdioCollector {
             waitForEnd: true
             onStreamFinished: root.parse(text)
+        }
+    }
+
+    // The grid previews 4K files, and Qt decodes a PNG at full size before
+    // scaling it down, so the first open cost ~120 MB of peak RSS. One
+    // background loop keeps 720px JPEG previews in the cache dir instead and
+    // prints the ones it has; it rebuilds only previews older than their
+    // source. Runs once per new wallpaper list, not on every menu open.
+    // shortcut: without magick nothing is printed and the tiles load the
+    // originals, as before; a wiped cache is only rebuilt on the next scan.
+    Process {
+        id: thumbs
+
+        command: ["sh", "-c",
+            "d=$1; shift; mkdir -p \"$d\" 2>/dev/null; " +
+            "for f in \"$@\"; do " +
+            "t=\"$d/$(printf '%s' \"$f\" | tr '/' '_').jpg\"; " +
+            "[ -f \"$t\" ] && [ \"$t\" -nt \"$f\" ] || magick \"$f\" -resize 720x720\\> -quality 85 \"$t\" 2>/dev/null; " +
+            "[ -f \"$t\" ] && printf '%s\\t%s\\n' \"$f\" \"$t\"; " +
+            "done", "sh", root.thumbDir].concat(root.entries.map(entry => entry.path))
+
+        stdout: StdioCollector {
+            waitForEnd: true
+            onStreamFinished: root.parseThumbs(text)
         }
     }
 

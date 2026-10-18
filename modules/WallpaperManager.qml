@@ -229,17 +229,27 @@ PanelWindow {
         Region { item: blurAnchor; radius: card.radius }
     }
 
+    // What opening the manager does. A lazily built window (LazyOverlay) is
+    // born already open, so its onShownChanged never fires; both paths call this.
+    function openInit(): void {
+        input.text = "";
+        root.folderFilter = "";
+        root.starOnly = false;
+        root.currentIndex = 0;
+        root.autoScroll = true;
+        Wallpapers.reload();
+        root.queryCurrent();
+        focusKick.restart();
+    }
+
+    Component.onCompleted: {
+        if (root.shown)
+            root.openInit();
+    }
+
     onShownChanged: {
-        if (root.shown) {
-            input.text = "";
-            root.folderFilter = "";
-            root.starOnly = false;
-            root.currentIndex = 0;
-            root.autoScroll = true;
-            Wallpapers.reload();
-            root.queryCurrent();
-            focusKick.restart();
-        }
+        if (root.shown)
+            root.openInit();
     }
 
     // Layer surfaces take a moment to gain keyboard focus; make sure the
@@ -610,9 +620,9 @@ PanelWindow {
 
             Image {
                 anchors.fill: parent
-                source: "file://" + tile.modelData.path
-                // Downscale while decoding, so full-size images never reach
-                // memory (2x of the plate keeps them crisp).
+                // 720px preview from the cache (Wallpapers.thumbs), the original
+                // until one exists. sourceSize keeps it crisp at 2x the plate.
+                source: "file://" + Wallpapers.thumbFor(tile.modelData.path)
                 sourceSize.width: 2 * plate.width
                 sourceSize.height: 2 * plate.height
                 fillMode: Image.PreserveAspectCrop

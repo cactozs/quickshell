@@ -57,6 +57,13 @@ PanelWindow {
         Region { item: blurAnchor; radius: card.radius }
     }
 
+    // A lazily built window (LazyOverlay) is born already open, where
+    // onShownChanged never fires, so the focus kick runs on creation as well.
+    Component.onCompleted: {
+        if (root.shown)
+            focusKick.restart();
+    }
+
     onShownChanged: {
         if (root.shown)
             focusKick.restart();

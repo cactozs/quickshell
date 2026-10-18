@@ -269,13 +269,26 @@ PanelWindow {
         Region { item: blurAnchor; radius: card.radius }
     }
 
-    onShownChanged: {
+    // What opening the panel does. A lazily built window (LazyOverlay) is born
+    // already open, so its onShownChanged never fires; both paths call this.
+    function openInit(): void {
         if (root.wifiDevice)
-            root.wifiDevice.scannerEnabled = root.shown;
+            root.wifiDevice.scannerEnabled = true;
+        NightLight.recheck();
+        focusKick.restart();
+    }
+
+    Component.onCompleted: {
+        if (root.shown)
+            root.openInit();
+    }
+
+    onShownChanged: {
         if (root.shown) {
-            NightLight.recheck();
-            focusKick.restart();
+            root.openInit();
         } else {
+            if (root.wifiDevice)
+                root.wifiDevice.scannerEnabled = false;
             root.powerExpanded = false;
             root.wifiExpanded = false;
             root.pskTarget = null;

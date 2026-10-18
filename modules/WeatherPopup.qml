@@ -53,11 +53,21 @@ PanelWindow {
         Region { item: blurAnchor; radius: card.radius }
     }
 
+    // What opening the popup does. A lazily built window (LazyOverlay) is born
+    // already open, so its onShownChanged never fires; both paths call this.
+    function openInit(): void {
+        Weather.refresh();
+        focusKick.restart();
+    }
+
+    Component.onCompleted: {
+        if (root.shown)
+            root.openInit();
+    }
+
     onShownChanged: {
-        if (root.shown) {
-            Weather.refresh();
-            focusKick.restart();
-        }
+        if (root.shown)
+            root.openInit();
     }
 
     // Layer surfaces take a moment to gain keyboard focus; make sure the key

@@ -58,11 +58,21 @@ PanelWindow {
         Region { item: blurAnchor; radius: card.radius }
     }
 
+    // What opening the center does. A lazily built window (LazyOverlay) is born
+    // already open, so its onShownChanged never fires; both paths call this.
+    function openInit(): void {
+        Notifications.markAllSeen();
+        focusKick.restart();
+    }
+
+    Component.onCompleted: {
+        if (root.shown)
+            root.openInit();
+    }
+
     onShownChanged: {
-        if (root.shown) {
-            Notifications.markAllSeen();
-            focusKick.restart();
-        }
+        if (root.shown)
+            root.openInit();
     }
 
     // Arrivals while the center is open are seen immediately.
