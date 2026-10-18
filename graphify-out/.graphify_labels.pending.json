@@ -26,5 +26,6 @@
   "30": "WallpaperManager.qml",
   "31": "Wallpapers.qml",
   "32": "handleLine() event dispatch",
-  "33": "CalcRow.qml"
+  "33": "CalcRow.qml",
+  "34": "SystemTheme.qml"
 }

@@ -39,10 +39,13 @@ sudo pacman -S nvidia-utils wlsunset swayidle playerctl papirus-icon-theme
 | `wl-clipboard` | `wl-paste --watch cliphist store` at startup, `wl-copy` on paste-back |
 | `brightnessctl` | backlight chip and quick settings slider (`services/Brightness.qml`) |
 | `curl` | weather chip, open-meteo.com (`services/Weather.qml:64`) |
-| `matugen` | generates `style/Colors.json` (SchemeExpressive) from the wallpaper |
+| `matugen` | generates `style/Colors.json` (dark) from the wallpaper (SchemeContent), and `style/ColorsLight.json` (light) through the second `matugen -m light` pass the shell runs (`~/.config/matugen/light.toml`) |
 | `awww` | wallpaper; `awww-daemon` at startup, `awww img` routed through matugen by the `/usr/local/bin/awww` shim |
+| `gtk3` / `gtk4` | GTK colors: `~/.config/gtk-3.0/gtk.css` and `gtk-4.0/gtk.css`, written from the shell palette (`services/SystemTheme.qml`) |
+| `ghostty` | terminal; the shell writes `~/.config/ghostty/themes/Quickshell` and reloads it with `SIGUSR2` |
+| `qt6ct` | Qt palette: the shell writes `~/.config/qt6ct/colors/matugen.conf`; niri sets `QT_QPA_PLATFORMTHEME=qt6ct` |
 | `ttf-material-symbols-variable` | every icon (`Theme.iconFont`) |
-| `ttf-nerd-fonts-symbols` | "Symbols Nerd Font" (`Theme.nerdFont`), the one ornament glyph Material Symbols doesn't carry (`modules/Settings.qml:249`) |
+| `ttf-nerd-fonts-symbols` | "Symbols Nerd Font" (`Theme.nerdFont`), the one ornament glyph Material Symbols doesn't carry (`modules/Settings.qml:319`) |
 | `hyprlock` | "Блокировка" in the power menu, `Super+Alt+L` |
 | `pipewire` + `wireplumber` | volume chip, slider, mute (`Quickshell.Services.Pipewire`) |
 | `upower` | battery chip (`Quickshell.Services.UPower`) |
@@ -71,7 +74,7 @@ Without niri/jq, drop `toggleOn $(…)` for `toggle` — it opens on the first s
 | target | functions |
 |---|---|
 | `launcher`, `clipboard`, `center` (notifications) | `toggle`, `toggleOn <output>`, `close` |
-| `settings` (quick settings) | the same + `launcherView <bool>`, `style <m3\|new>` |
+| `settings` (quick settings) | the same + `launcherView <bool>`, `style <m3\|new>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>` |
 | `wallpaper` (manager) | the same + `random` — applies a random wallpaper without opening the panel |
 | `bar` | `toggle` |
 | `notifs` | `toggleDnd`, `dnd`, `clear` |
@@ -80,6 +83,8 @@ Without niri/jq, drop `toggleOn $(…)` for `toggle` — it opens on the first s
 
 Notes:
 
+- The shell themes the whole desktop, not just itself: «Тема» and «Цвета» in the settings menu (or `qs ipc call settings theme light`, `… colorscheme gruvbox`) also rewrite the GTK3/GTK4 `gtk.css`, the ghostty theme, the qt6ct palette, the niri border colors and `gsettings color-scheme`; `services/SystemTheme.qml` is the single writer. These files are generated — hand edits survive until the next theme change. Two pieces of one-time plumbing are expected on the user's side: `theme = Quickshell` in `~/.config/ghostty/config`, and `color_scheme_path=/…/qt6ct/colors/matugen.conf` in `qt6ct.conf` (Qt apps pick a new palette up on restart). Alacritty, btop and yazi keep their own hand-written colors.
+- Light mode is a second matugen pass: `~/.config/matugen/light.toml` writes `style/ColorsLight.json` (`matugen -m light` is CLI-only, a template can't ask for another mode), and the shell reruns it whenever the dark palette is newer — on a wallpaper change, or after a shell start. Its `[config]` source-color settings must stay identical to `config.toml`, and it deliberately has no `[config.wallpaper]`, so regenerating light colors never re-applies the wallpaper.
 - The UI font is **Google Sans** (`Theme.fontFamily`); no Arch package — install it by hand, otherwise text falls back to the default sans.
 - The wallpaper manager lists `~/Pictures/Wallpapers` recursively (change `services/Wallpapers.qml:18` for another folder); the scan result is cached, so reopening the menu no longer re-decodes all previews; favorites go to `wallpaper-favorites.json` next to the config — runtime state, don't commit it, and are pinned first in the grid.
 - Dropping an image file onto the bare desktop or the bar sets it as the wallpaper (`modules/WallpaperDrop.qml`).

@@ -1,8 +1,8 @@
 {
   "style/Colors.json": {
-    "mtime": 1792250132.2510293,
-    "seen": 1792250836.298068,
-    "ast_hash": "20a86263c94c244abf91ebfed16ec199",
+    "mtime": 1792296694.151263,
+    "seen": 1792296922.9917657,
+    "ast_hash": "41bbdb4e9590d0ee8d3ac4009ed7a633",
     "semantic_hash": ""
   },
   "AGENTS.md": {
@@ -19,9 +19,9 @@
     "language": "language=.md"
   },
   "modules/Bar.qml": {
-    "mtime": 1792250463.4113586,
-    "seen": 1792250836.2981064,
-    "ast_hash": "81e915bf96723869ede4d06f52980a5e",
+    "mtime": 1792296868.9775476,
+    "seen": 1792296922.991808,
+    "ast_hash": "df5d333903c1c7531fbb7ac2b3a2204e",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -61,9 +61,9 @@
     "language": "language=.md"
   },
   "modules/Launcher.qml": {
-    "mtime": 1792250463.4049487,
-    "seen": 1792250836.2981606,
-    "ast_hash": "5ad1b110531922b101692e2fc26e8ddc",
+    "mtime": 1792296412.8922577,
+    "seen": 1792296423.8281777,
+    "ast_hash": "71a44c0420b1d2f24e7a14542d6e6e04",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -138,9 +138,9 @@
     "language": "language=.md"
   },
   "services/ShellState.qml": {
-    "mtime": 1792248862.2603137,
-    "seen": 1792249053.771709,
-    "ast_hash": "e81eb71f6b6cb444ee21113086e8bf18",
+    "mtime": 1792297532.8094895,
+    "seen": 1792297970.979304,
+    "ast_hash": "76c16a26814523f900724979d31ae0c6",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -152,16 +152,16 @@
     "language": "language=.md"
   },
   "shell.qml": {
-    "mtime": 1792248870.3792808,
-    "seen": 1792249053.7717376,
+    "mtime": 1792297962.1803806,
+    "seen": 1792297970.9793308,
     "ast_hash": "32eab91d7cd716aa953fca95726ca6df",
     "semantic_hash": "",
     "language": "language=.md"
   },
   "style/Theme.qml": {
-    "mtime": 1792250708.9704013,
-    "seen": 1792250836.2983885,
-    "ast_hash": "9368e86804b4d32b30d544be8086442c",
+    "mtime": 1792297553.2143908,
+    "seen": 1792297970.9793377,
+    "ast_hash": "df0e45fef6b07ac11fd63d2332e2f1a8",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -271,15 +271,15 @@
     "language": "language=.md"
   },
   "readme.md": {
-    "mtime": 1792249889.7771509,
-    "seen": 1792250836.2983046,
-    "ast_hash": "e431f6a9f424c63a3d4dc650a4e5fbca",
+    "mtime": 1792251883.355627,
+    "seen": 1792296423.8283398,
+    "ast_hash": "c11acf6b774e9c7b34cb588b54794d86",
     "semantic_hash": ""
   },
   "modules/Settings.qml": {
-    "mtime": 1792250463.4077337,
-    "seen": 1792250836.2982204,
-    "ast_hash": "127aad1715a90cd9a6872c23a4b3a74b",
+    "mtime": 1792297556.9943724,
+    "seen": 1792297970.9791725,
+    "ast_hash": "46c14336d6f29870283138f16f1cb3bb",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -308,6 +308,13 @@
     "mtime": 1792251425.6673384,
     "seen": 1792251716.5140896,
     "ast_hash": "50cdca46afc4989a8a5963b4a9bc9569",
+    "semantic_hash": "",
+    "language": "language=.md"
+  },
+  "modules/CalcRow.qml": {
+    "mtime": 1792296391.9783213,
+    "seen": 1792296423.8281045,
+    "ast_hash": "5627b9f71efb787b4b6e3e7fb119ad1b",
     "semantic_hash": "",
     "language": "language=.md"
   }

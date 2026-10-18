@@ -38,6 +38,7 @@ Singleton {
         property bool launcherFullscreen
         property string styleMode
         property string colorScheme
+        property string themeMode
     }
 
     readonly property bool barHidden: props.barHidden
@@ -64,6 +65,15 @@ Singleton {
 
     function setColorScheme(name: string): void {
         props.colorScheme = name === "oled" || name === "gruvbox" ? name : "matugen";
+    }
+
+    // Theme mode for the whole shell: "dark" (default) or "light". Picks the
+    // palette file in style/Theme.qml and, with it, the system theme written by
+    // services/SystemTheme.qml. Normalized like the others.
+    readonly property string themeMode: props.themeMode === "light" ? "light" : "dark"
+
+    function setThemeMode(name: string): void {
+        props.themeMode = name === "light" ? "light" : "dark";
     }
 
     function toggleQuickSettings(screenName: string): void {
@@ -170,6 +180,11 @@ Singleton {
         // Color scheme, so scripts can flip it: `qs ipc call settings colorscheme oled`.
         function colorscheme(name: string): void {
             root.setColorScheme(name);
+        }
+
+        // Theme mode, so scripts can flip it: `qs ipc call settings theme light`.
+        function theme(name: string): void {
+            root.setThemeMode(name);
         }
     }
 

@@ -1,7 +1,13 @@
 import Quickshell
+import QtQuick
 import "modules"
+import "services"
 
 ShellRoot {
+    // Writes the palette onto GTK, Qt, ghostty and the niri border (singletons
+    // are instantiated lazily, this is what pulls SystemTheme in).
+    Component.onCompleted: SystemTheme.sync()
+
     Variants {
         model: Quickshell.screens
 

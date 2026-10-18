@@ -240,6 +240,33 @@ PanelWindow {
                 }
             }
 
+            // ---- theme mode -----------------------------------------------------
+
+            RowLayout {
+                width: parent.width
+                spacing: 8
+
+                Text {
+                    Layout.fillWidth: true
+                    text: "Тема"
+                    color: Theme.surfaceText
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeBodyLarge
+                }
+
+                SettingSegment {
+                    label: "Тёмная"
+                    selected: !Theme.light
+                    onClicked: ShellState.setThemeMode("dark")
+                }
+
+                SettingSegment {
+                    label: "Светлая"
+                    selected: Theme.light
+                    onClicked: ShellState.setThemeMode("light")
+                }
+            }
+
             // ---- color scheme ---------------------------------------------------
 
             RowLayout {
