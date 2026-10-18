@@ -19,6 +19,10 @@ import "../services"
 // an inner rim and a neutral drop shadow, while the accents stay
 // wallpaper-derived. Every style-dependent token hangs off `glass`, so the M3
 // look is untouched.
+//
+// ShellState.colorScheme picks the palette source: "matugen" (the file above),
+// "oled" (strict black/white) or "gruvbox" (Gruvbox dark). The fixed packs
+// replace the "new" surfaces as well, so a picked scheme always shows.
 Singleton {
     id: root
 
@@ -101,9 +105,92 @@ Singleton {
         "shadow": "#ff000000"
     })
 
-    readonly property var scheme: root.glass
-        ? Object.assign({}, root.m3Scheme, root.newScheme)
+    // "Oled" pack: true black surfaces, white foreground and accents (strict
+    // monochrome). Containers stay near-black grays so stacked cards keep
+    // their layers.
+    readonly property var oledScheme: ({
+        "primary": "#ffffff",
+        "on_primary": "#000000",
+        "primary_container": "#1c1c1c",
+        "on_primary_container": "#ffffff",
+        "secondary": "#ffffff",
+        "on_secondary": "#000000",
+        "secondary_container": "#1c1c1c",
+        "on_secondary_container": "#ffffff",
+        "tertiary": "#ffffff",
+        "on_tertiary": "#000000",
+        "tertiary_container": "#1c1c1c",
+        "on_tertiary_container": "#ffffff",
+        "error": "#ffffff",
+        "on_error": "#000000",
+        "error_container": "#1c1c1c",
+        "on_error_container": "#ffffff",
+        "surface": "#000000",
+        "on_surface": "#ffffff",
+        "surface_variant": "#141414",
+        "on_surface_variant": "#c0c0c0",
+        "surface_dim": "#000000",
+        "surface_bright": "#303030",
+        "surface_container_lowest": "#000000",
+        "surface_container_low": "#000000",
+        "surface_container": "#0a0a0a",
+        "surface_container_high": "#141414",
+        "surface_container_highest": "#1c1c1c",
+        "outline": "#3a3a3a",
+        "outline_variant": "#1f1f1f",
+        "scrim": "#000000",
+        "shadow": "#000000"
+    })
+
+    // "Gruvbox" pack: Gruvbox dark. Bright accents on dim-accent containers
+    // (the classic gruvbox fill), bg0..bg3 for the surface ladder.
+    readonly property var gruvboxScheme: ({
+        "primary": "#fabd2f",
+        "on_primary": "#282828",
+        "primary_container": "#d79921",
+        "on_primary_container": "#282828",
+        "secondary": "#8ec07c",
+        "on_secondary": "#282828",
+        "secondary_container": "#689d6a",
+        "on_secondary_container": "#282828",
+        "tertiary": "#d3869b",
+        "on_tertiary": "#282828",
+        "tertiary_container": "#b16286",
+        "on_tertiary_container": "#282828",
+        "error": "#fb4934",
+        "on_error": "#282828",
+        "error_container": "#cc241d",
+        "on_error_container": "#fbf1c7",
+        "surface": "#282828",
+        "on_surface": "#ebdbb2",
+        "surface_variant": "#504945",
+        "on_surface_variant": "#bdae93",
+        "surface_dim": "#1d2021",
+        "surface_bright": "#3c3836",
+        "surface_container_lowest": "#1d2021",
+        "surface_container_low": "#282828",
+        "surface_container": "#32302f",
+        "surface_container_high": "#3c3836",
+        "surface_container_highest": "#504945",
+        "outline": "#928374",
+        "outline_variant": "#504945",
+        "scrim": "#000000",
+        "shadow": "#000000"
+    })
+
+    // Palette source (ShellState.colorScheme). The fixed packs are merged over
+    // the baseline, so roles they do not list keep sane defaults.
+    readonly property var activeScheme: ShellState.colorScheme === "oled"
+        ? Object.assign({}, root.baselineScheme, root.oledScheme)
+        : ShellState.colorScheme === "gruvbox"
+        ? Object.assign({}, root.baselineScheme, root.gruvboxScheme)
         : root.m3Scheme
+
+    // The "new" pack layers its graphite surfaces on the wallpaper palette
+    // only; a picked color scheme owns the surfaces.
+    readonly property var scheme: root.glass && ShellState.colorScheme === "matugen"
+        ? Object.assign({}, root.activeScheme, root.newScheme)
+        : root.activeScheme
 
     FileView {
         id: colorsFile

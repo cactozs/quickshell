@@ -37,6 +37,7 @@ Singleton {
         property bool barHidden
         property bool launcherFullscreen
         property string styleMode
+        property string colorScheme
     }
 
     readonly property bool barHidden: props.barHidden
@@ -52,6 +53,17 @@ Singleton {
 
     function setStyleMode(name: string): void {
         props.styleMode = name === "new" ? "new" : "m3";
+    }
+
+    // Palette source for the whole shell: "matugen" = generated from the
+    // wallpaper (default), "oled" = strict black/white, "gruvbox" = Gruvbox
+    // dark (see style/Theme.qml). Normalized like styleMode.
+    readonly property string colorScheme: props.colorScheme === "oled" || props.colorScheme === "gruvbox"
+        ? props.colorScheme
+        : "matugen"
+
+    function setColorScheme(name: string): void {
+        props.colorScheme = name === "oled" || name === "gruvbox" ? name : "matugen";
     }
 
     function toggleQuickSettings(screenName: string): void {
@@ -153,6 +165,11 @@ Singleton {
         // Style pack, so scripts can flip it: `qs ipc call settings style new`.
         function style(name: string): void {
             root.setStyleMode(name);
+        }
+
+        // Color scheme, so scripts can flip it: `qs ipc call settings colorscheme oled`.
+        function colorscheme(name: string): void {
+            root.setColorScheme(name);
         }
     }
 

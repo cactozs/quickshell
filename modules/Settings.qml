@@ -10,8 +10,8 @@ import "../style"
 
 // Settings menu: a centered card over a full-screen scrim, unlike the bar's
 // docked panels. Opened from the "Настройки" tile in the quick settings;
-// Esc or a click outside dismisses it. Three sections: the launcher view, the
-// shell-wide style pack and the wallpaper manager shortcut.
+// Esc or a click outside dismisses it. Four sections: the launcher view, the
+// shell-wide style pack, the color scheme and the wallpaper manager shortcut.
 PanelWindow {
     id: root
 
@@ -237,6 +237,39 @@ PanelWindow {
                     label: "New"
                     selected: ShellState.styleMode === "new"
                     onClicked: ShellState.setStyleMode("new")
+                }
+            }
+
+            // ---- color scheme ---------------------------------------------------
+
+            RowLayout {
+                width: parent.width
+                spacing: 8
+
+                Text {
+                    Layout.fillWidth: true
+                    text: "Цвета"
+                    color: Theme.surfaceText
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeBodyLarge
+                }
+
+                SettingSegment {
+                    label: "Matugen"
+                    selected: ShellState.colorScheme === "matugen"
+                    onClicked: ShellState.setColorScheme("matugen")
+                }
+
+                SettingSegment {
+                    label: "OLED"
+                    selected: ShellState.colorScheme === "oled"
+                    onClicked: ShellState.setColorScheme("oled")
+                }
+
+                SettingSegment {
+                    label: "Gruvbox"
+                    selected: ShellState.colorScheme === "gruvbox"
+                    onClicked: ShellState.setColorScheme("gruvbox")
                 }
             }
 
