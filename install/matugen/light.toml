@@ -1,0 +1,21 @@
+# Light twin of the palette in config.toml. matugen picks the mode from the
+# command line only (`--mode`), per-template mode is ignored, so the light
+# palette needs its own config: the Quickshell shell runs
+#   matugen -m light image <wallpaper> -c ~/.config/matugen/light.toml
+# whenever the dark Colors.json was rewritten after ColorsLight.json.
+#
+# No [config.wallpaper] here on purpose: this pass regenerates colors only, it
+# must not re-apply the wallpaper (the main pass already did).
+#
+# Keep the source-color settings in sync with config.toml, otherwise the light
+# palette picks a different source color and the two schemes drift apart.
+
+[config]
+version_check = false
+source_color_index = 0
+fallback_color = "#6750A4"
+
+[templates.quickshell]
+input_path = "templates/quickshell.json"
+output_path = "~/.config/quickshell/style/ColorsLight.json"
+type = "SchemeContent"

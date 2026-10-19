@@ -1,0 +1,33 @@
+# Material You colors for the Quickshell bar.
+#
+# Workflow:
+#   matugen image /path/to/wallpaper.png
+# sets the wallpaper (awww) and regenerates
+# ~/.config/quickshell/style/Colors.json, which the bar watches live.
+# `awww img <file>` works too: the /usr/local/bin/awww shim routes it here.
+#
+# Install: cp -r install/matugen/. ~/.config/matugen/
+# The output_path points at ~/.config/quickshell — change it if the shell
+# config lives somewhere else.
+
+[config]
+version_check = false
+# 0 = most dominant color of the image, so the scheme follows the
+# wallpaper's main tones instead of the most saturated pixel detail.
+source_color_index = 0
+fallback_color = "#6750A4"
+
+[config.wallpaper]
+set = true
+# Absolute path: the /usr/local/bin/awww shim routes `awww img` back into
+# matugen, so a relative lookup here would loop.
+command = "/usr/sbin/awww img --transition-type center {{ image }}"
+
+[templates.quickshell]
+input_path = "templates/quickshell.json"
+output_path = "~/.config/quickshell/style/Colors.json"
+# SchemeContent keeps the hues close to the source color; Expressive
+# rotated accents to unrelated hues (green/mint from a salmon source).
+type = "SchemeContent"
+# If live updates ever stop working, add:
+# post_hook = "quickshell --reload"

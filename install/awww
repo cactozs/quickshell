@@ -1,0 +1,17 @@
+#!/bin/sh
+# Wallpapers set as `awww img <file>` go through matugen, which applies the
+# image (via the real /usr/sbin/awww) and regenerates
+# ~/.config/quickshell/style/Colors.json; the Quickshell bar watches that
+# file and recolors live.
+#
+# Only plain `awww img <existing-file>` is intercepted. Everything else
+# (query/restore/pause, extra flags, `0xRRGGBB` colors, `-` from stdin)
+# reaches the real binary unchanged, just without regenerating colors.
+#
+# Install: sudo install -m755 install/awww /usr/local/bin/awww
+# /usr/local/bin comes before /usr/bin in PATH, so the shim wins.
+if [ $# -eq 2 ] && [ "$1" = img ] && [ -f "$2" ]; then
+    matugen image "$2" && exit 0
+    # matugen failed to read the image: still set the wallpaper.
+fi
+exec /usr/sbin/awww "$@"
