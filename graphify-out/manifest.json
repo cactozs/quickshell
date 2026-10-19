@@ -1,14 +1,14 @@
 {
   "style/Colors.json": {
-    "mtime": 1792381884.1344078,
-    "seen": 1792382104.2893252,
-    "ast_hash": "41bbdb4e9590d0ee8d3ac4009ed7a633",
+    "mtime": 1792383691.779252,
+    "seen": 1792385223.8994148,
+    "ast_hash": "6e803e7275078d9aaf64dae55f991475",
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1792383375.7154047,
-    "seen": 1792383380.2719631,
-    "ast_hash": "d19a01fe844daac0323ae4eca1cf6f45",
+    "mtime": 1792385179.0328202,
+    "seen": 1792385223.8994422,
+    "ast_hash": "702178c1fa0e30b58cf258130d32e851",
     "semantic_hash": ""
   },
   "modules/Backlight.qml": {
@@ -138,9 +138,9 @@
     "language": "language=.md"
   },
   "services/ShellState.qml": {
-    "mtime": 1792382929.799295,
-    "seen": 1792383380.2722592,
-    "ast_hash": "de93500a0cea187bac6400e48d30c9b2",
+    "mtime": 1792384723.2604382,
+    "seen": 1792385223.899821,
+    "ast_hash": "e7a98fc1257971bf71f1176bbb594196",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -271,15 +271,15 @@
     "language": "language=.md"
   },
   "readme.md": {
-    "mtime": 1792382929.799295,
-    "seen": 1792383380.2722106,
-    "ast_hash": "79fc67808389db9d75ca1104197acc9b",
+    "mtime": 1792385189.9599779,
+    "seen": 1792385223.8997698,
+    "ast_hash": "41af223eb15c5221a912c6262d2d3260",
     "semantic_hash": ""
   },
   "modules/Settings.qml": {
-    "mtime": 1792382929.799295,
-    "seen": 1792383380.2721262,
-    "ast_hash": "f97873a4be220d501007949be1663220",
+    "mtime": 1792384797.205441,
+    "seen": 1792385223.8996537,
+    "ast_hash": "374eaa76a59ffc62ef0a918cc03991b2",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -319,15 +319,15 @@
     "language": "language=.md"
   },
   "style/ColorsLight.json": {
-    "mtime": 1792381890.5226865,
-    "seen": 1792382104.2893429,
-    "ast_hash": "9cc3b93423412241b8ad44a31d231ab8",
+    "mtime": 1792383692.8052683,
+    "seen": 1792385223.8994315,
+    "ast_hash": "a7d11ffe72049cae290bcd018c03ccf4",
     "semantic_hash": ""
   },
   "services/SystemTheme.qml": {
-    "mtime": 1792299541.766703,
-    "seen": 1792299910.6554675,
-    "ast_hash": "965d7af3cd72f94361dd59d00cf60fe7",
+    "mtime": 1792385135.0611877,
+    "seen": 1792385223.8998346,
+    "ast_hash": "050be5e7d9f30814aacea730927541ef",
     "semantic_hash": "",
     "language": "language=.md"
   },

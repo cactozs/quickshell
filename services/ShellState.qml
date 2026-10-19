@@ -39,6 +39,7 @@ Singleton {
         property string styleMode
         property string colorScheme
         property string themeMode
+        property string blurSource
     }
 
     readonly property bool barHidden: props.barHidden
@@ -46,6 +47,19 @@ Singleton {
     // Launcher appearance: fullscreen = icon grid over the whole output,
     // classic = the centered search card (see modules/Launcher.qml).
     readonly property bool launcherFullscreen: props.launcherFullscreen
+
+    // What the compositor blurs behind the acrylic plates ("Блюр" in the
+    // settings menu): "wallpaper" = the wallpaper alone, niri's xray and the
+    // default; "window" = whatever sits under the plate, windows included. The
+    // choice is niri policy, so services/SystemTheme.qml writes it into the
+    // niri config and reads it back from there at startup — that file is what
+    // carries the setting across a reboot, this property is the live copy.
+    // Normalized like the other modes.
+    readonly property string blurSource: props.blurSource === "window" ? "window" : "wallpaper"
+
+    function setBlurSource(name: string): void {
+        props.blurSource = name === "window" ? "window" : "wallpaper";
+    }
 
     // Style pack for the whole shell: "m3" = M3 Expressive with the matugen
     // palette (default), "blur" = that pack with acrylic backdrops and the
@@ -189,6 +203,11 @@ Singleton {
         // Theme mode, so scripts can flip it: `qs ipc call settings theme light`.
         function theme(name: string): void {
             root.setThemeMode(name);
+        }
+
+        // Blur source, so scripts can flip it: `qs ipc call settings blur window`.
+        function blur(name: string): void {
+            root.setBlurSource(name);
         }
     }
 

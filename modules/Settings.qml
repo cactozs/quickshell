@@ -10,8 +10,9 @@ import "../style"
 
 // Settings menu: a centered card over a full-screen scrim, unlike the bar's
 // docked panels. Opened from the "Настройки" tile in the quick settings;
-// Esc or a click outside dismisses it. Four sections: the launcher view, the
-// shell-wide style pack, the color scheme and the wallpaper manager shortcut.
+// Esc or a click outside dismisses it. Five sections: the launcher view, the
+// shell-wide style pack, the blur source (hidden while nothing blurs), the
+// color scheme and the wallpaper manager shortcut.
 PanelWindow {
     id: root
 
@@ -241,6 +242,37 @@ PanelWindow {
                     label: "New"
                     selected: ShellState.styleMode === "new"
                     onClicked: ShellState.setStyleMode("new")
+                }
+            }
+
+            // ---- blur source ----------------------------------------------------
+
+            // Only the blur styles have anything to blur, so the row is hidden
+            // under M3 Inspired: its surfaces are opaque and no window requests
+            // a background effect (the niri rule stays inert by itself).
+            RowLayout {
+                width: parent.width
+                spacing: 8
+                visible: ShellState.styleMode !== "m3"
+
+                Text {
+                    Layout.fillWidth: true
+                    text: "Блюр"
+                    color: Theme.surfaceText
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeBodyLarge
+                }
+
+                SettingSegment {
+                    label: "Обои"
+                    selected: ShellState.blurSource === "wallpaper"
+                    onClicked: ShellState.setBlurSource("wallpaper")
+                }
+
+                SettingSegment {
+                    label: "Окна"
+                    selected: ShellState.blurSource === "window"
+                    onClicked: ShellState.setBlurSource("window")
                 }
             }
 

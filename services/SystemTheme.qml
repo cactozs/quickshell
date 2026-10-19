@@ -20,12 +20,14 @@ import "../style"
 //   ~/.config/gtk-4.0/gtk.css             GTK4 colors + libadwaita :root vars
 //   ~/.config/ghostty/themes/Quickshell   theme file (`theme = Quickshell`)
 //   ~/.config/qt6ct/colors/matugen.conf   Qt palette (`color_scheme_path`)
-//   ~/.config/niri/layout.kdl             border/focus-ring color lines, in place
+//   ~/.config/niri/quickshell.kdl         border/focus-ring colors + blur source
+//                                         (needs `include "quickshell.kdl"` in
+//                                         config.kdl, after layout.kdl)
 //
 // plus `gsettings ... color-scheme`, which is what libadwaita apps read for
 // their own light/dark base, and a ghostty config reload so a running terminal
 // recolors without a restart. The one-time plumbing (ghostty theme name, the
-// qt6ct path) is documented in the readme.
+// qt6ct path, the niri include) is documented in the readme.
 Singleton {
     id: root
 
@@ -257,9 +259,12 @@ Singleton {
 
     // ---- niri -----------------------------------------------------------------
 
-    // niri reloads its config on save, so no explicit reload is needed. Only the
-    // color lines of layout.kdl are rewritten in place: `on`, `width` and the
-    // gradients' angles stay whatever the user set.
+    // niri reads two things from the shell: the focus-ring/border colors and the
+    // blur source ("Блюр" in the settings menu). Both go into one generated file,
+    // quickshell.kdl, which config.kdl includes after layout.kdl: includes are
+    // positional in niri, so ours has to come later to win, and niri live-reloads
+    // on save. Gradients are written whole — niri replaces a gradient node
+    // instead of merging its properties, so the angles live here, in the file.
     readonly property color niriActive: Theme.primary
     readonly property color niriInactive: root.alpha(Theme.primary, 0.35)
     readonly property color niriUrgent: Theme.error
@@ -268,73 +273,57 @@ Singleton {
     readonly property color niriInactiveFrom: root.alpha(Theme.surfaceVariantText, 0.70)
     readonly property color niriInactiveTo: root.alpha(Theme.surface, 0.70)
 
-    // Rebuilt on every palette change, so a write can be skipped when nothing moved.
-    readonly property string niriSignature: [
-        rgba(root.niriActive),
-        rgba(root.niriInactive),
-        rgba(root.niriUrgent),
-        rgba(root.niriActiveFrom),
-        rgba(root.niriActiveTo),
-        rgba(root.niriInactiveFrom),
-        rgba(root.niriInactiveTo)
-    ].join(" ")
+    // The blur source is niri policy, not something a client can ask for, and it
+    // has to outlive the shell process: quickshell.kdl holds it and is read back
+    // once at startup (sync). The file must not be written before that read — the
+    // first evaluation of niriText would overwrite the stored choice with the
+    // default — hence the arm-on-sync guard on the writer.
+    property bool niriArmed: false
 
-    // First token of a line, comments stripped: "active-color", "layout", ...
-    function niriKey(line: string): string {
-        let code = line;
-        const comment = code.indexOf("//");
-        if (comment >= 0)
-            code = code.slice(0, comment);
-        code = code.trim();
-        if (code === "")
-            return "";
-        const space = code.indexOf(" ");
-        return space < 0 ? code : code.slice(0, space);
-    }
-
-    function setQuoted(line: string, value: string): string {
-        const open = line.indexOf('"');
-        const close = line.lastIndexOf('"');
-        if (open < 0 || close <= open)
-            return line;
-        return line.slice(0, open + 1) + value + line.slice(close);
-    }
-
-    function setAttr(line: string, name: string, value: string): string {
-        const at = line.indexOf(name + "=");
-        if (at < 0)
-            return line;
-        const open = line.indexOf('"', at);
-        const close = open < 0 ? -1 : line.indexOf('"', open + 1);
-        if (close < 0)
-            return line;
-        return line.slice(0, open + 1) + value + line.slice(close);
-    }
-
-    function niriThemed(text: string): string {
-        const named = {
-            "active-color": root.niriActive,
-            "inactive-color": root.niriInactive,
-            "urgent-color": root.niriUrgent
-        };
-        const lines = text.split("\n");
+    function adoptBlurSource(): void {
+        const lines = niriFile.text().split("\n");
         for (let i = 0; i < lines.length; i++) {
-            const key = root.niriKey(lines[i]);
-            if (named[key] !== undefined) {
-                lines[i] = root.setQuoted(lines[i], rgba(named[key]));
-                continue;
-            }
-            if (key === "active-gradient" || key === "inactive-gradient") {
-                const active = key === "active-gradient";
-                let line = root.setAttr(lines[i], "from",
-                    rgba(active ? root.niriActiveFrom : root.niriInactiveFrom));
-                line = root.setAttr(line, "to",
-                    rgba(active ? root.niriActiveTo : root.niriInactiveTo));
-                lines[i] = line;
+            const line = lines[i].trim();
+            if (line.indexOf("xray ") === 0) {
+                ShellState.setBlurSource(line.slice(5).trim() === "false" ? "window" : "wallpaper");
+                return;
             }
         }
-        return lines.join("\n");
     }
+
+    readonly property string niriText: [
+        "// Generated by quickshell (services/SystemTheme.qml) — edits are overwritten.",
+        "",
+        "layout {",
+        "    focus-ring {",
+        "        active-gradient from=\"" + rgba(root.niriActiveFrom) + "\" to=\""
+            + rgba(root.niriActiveTo) + "\" angle=180",
+        "        inactive-gradient from=\"" + rgba(root.niriInactiveFrom) + "\" to=\""
+            + rgba(root.niriInactiveTo) + "\" angle=45 relative-to=\"workspace-view\"",
+        "    }",
+        "",
+        "    border {",
+        "        active-color \"" + rgba(root.niriActive) + "\"",
+        "        inactive-color \"" + rgba(root.niriInactive) + "\"",
+        "        urgent-color \"" + rgba(root.niriUrgent) + "\"",
+        "        active-gradient from=\"" + rgba(root.niriActiveFrom) + "\" to=\""
+            + rgba(root.niriActiveTo) + "\" angle=150",
+        "        inactive-gradient from=\"" + rgba(root.niriInactiveFrom) + "\" to=\""
+            + rgba(root.niriInactiveTo) + "\" angle=150",
+        "    }",
+        "}",
+        "",
+        "layer-rule {",
+        "    // \"Блюр\" in the settings menu: xray blurs the wallpaper alone, false",
+        "    // blurs whatever is under the plate, windows included.",
+        "    match namespace=\"^quickshell:\"",
+        "",
+        "    background-effect {",
+        "        xray " + (ShellState.blurSource === "window" ? "false" : "true"),
+        "    }",
+        "}",
+        ""
+    ].join("\n")
 
     // ---- writers --------------------------------------------------------------
 
@@ -351,15 +340,6 @@ Singleton {
             return false;
         view.setText(text);
         return true;
-    }
-
-    function writeNiri(): void {
-        const text = niriFile.text();
-        if (text.trim() === "")
-            return;
-        const themed = root.niriThemed(text);
-        if (themed !== text)
-            niriFile.setText(themed);
     }
 
     function reloadGhostty(): void {
@@ -381,7 +361,11 @@ Singleton {
         root.writeTo(gtk4File, root.gtk4Text);
         root.writeTo(qt6ctFile, root.qt6ctText);
         root.reloadGhostty();
-        root.writeNiri();
+        // The blur choice is read back before the writer is armed: quickshell.kdl
+        // is the record, the shell must not overwrite it with the default.
+        root.adoptBlurSource();
+        root.niriArmed = true;
+        root.writeTo(niriFile, root.niriText);
         root.applyColorScheme();
     }
 
@@ -389,7 +373,7 @@ Singleton {
     onGtk4TextChanged: root.writeTo(gtk4File, root.gtk4Text)
     onQt6ctTextChanged: root.writeTo(qt6ctFile, root.qt6ctText)
     onGhosttyTextChanged: root.reloadGhostty()
-    onNiriSignatureChanged: root.writeNiri()
+    onNiriTextChanged: if (root.niriArmed) root.writeTo(niriFile, root.niriText)
     onLightChanged: root.applyColorScheme()
 
     FileView {
@@ -427,7 +411,7 @@ Singleton {
     FileView {
         id: niriFile
 
-        path: root.home + "/.config/niri/layout.kdl"
+        path: root.home + "/.config/niri/quickshell.kdl"
         blockLoading: true
         printErrors: false
     }
