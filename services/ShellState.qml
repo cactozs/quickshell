@@ -39,6 +39,7 @@ Singleton {
         property string styleMode
         property string colorScheme
         property string themeMode
+        property string fontMode
         property string blurSource
     }
 
@@ -92,6 +93,15 @@ Singleton {
 
     function setThemeMode(name: string): void {
         props.themeMode = name === "light" ? "light" : "dark";
+    }
+
+    // UI font: "material" = Google Sans (default, the M3 look), "mono" =
+    // JetBrainsMono Nerd Font Mono (see style/Theme.qml). Normalized like the
+    // other modes.
+    readonly property string fontMode: props.fontMode === "mono" ? "mono" : "material"
+
+    function setFontMode(name: string): void {
+        props.fontMode = name === "mono" ? "mono" : "material";
     }
 
     function toggleQuickSettings(screenName: string): void {
@@ -208,6 +218,11 @@ Singleton {
         // Blur source, so scripts can flip it: `qs ipc call settings blur window`.
         function blur(name: string): void {
             root.setBlurSource(name);
+        }
+
+        // Font family, so scripts can flip it: `qs ipc call settings font mono`.
+        function font(name: string): void {
+            root.setFontMode(name);
         }
     }
 

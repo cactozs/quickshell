@@ -17,7 +17,7 @@ Rules:
 Pure QML Wayland shell for niri. No build, no tests, no lint.
 - Entry: `shell.qml` — `Variants { model: Quickshell.screens }` per overlay. Add new overlays there.
 - `services/*.qml` = `pragma Singleton` global state, accessed by filename. `modules/*.qml` = windows/widgets. `style/Theme.qml` = M3 Expressive tokens.
-- Run/verify: `quickshell` (run); config hot-reloads on save (`qs log` to watch the running instance — its stderr goes to /dev/null under niri). Exercise state live: `qs ipc call <settings|launcher|clipboard|center|wallpaper|bar> toggle` (IpcHandlers in `services/ShellState.qml`: `theme dark|light`, `style m3|blur|new`, `colorscheme matugen|oled|gruvbox`, `blur wallpaper|window`).
+- Run/verify: `quickshell` (run); config hot-reloads on save (`qs log` to watch the running instance — its stderr goes to /dev/null under niri). Exercise state live: `qs ipc call <settings|launcher|clipboard|center|wallpaper|bar> toggle` (IpcHandlers in `services/ShellState.qml`: `theme dark|light`, `style m3|blur|new`, `colorscheme matugen|oled|gruvbox`, `font material|mono`, `blur wallpaper|window`).
 - No `qmlformat`/`qmllint` in repo — verification is reload + stderr, not a check command.
 
 ## conventions

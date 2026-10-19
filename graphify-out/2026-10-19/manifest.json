@@ -6,9 +6,9 @@
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1792385179.0328202,
-    "seen": 1792385223.8994422,
-    "ast_hash": "702178c1fa0e30b58cf258130d32e851",
+    "mtime": 1792415001.1086683,
+    "seen": 1792415660.7555356,
+    "ast_hash": "13ee538be10030010456a155ada633c4",
     "semantic_hash": ""
   },
   "modules/Backlight.qml": {
@@ -271,9 +271,9 @@
     "language": "language=.md"
   },
   "readme.md": {
-    "mtime": 1792385189.9599779,
-    "seen": 1792385223.8997698,
-    "ast_hash": "41af223eb15c5221a912c6262d2d3260",
+    "mtime": 1792415696.1914275,
+    "seen": 1792415705.419872,
+    "ast_hash": "e9dfd9216f93dffe638c0d99aeb92811",
     "semantic_hash": ""
   },
   "modules/Settings.qml": {
@@ -344,5 +344,17 @@
     "ast_hash": "2bbe53a52e9f4ca8ea615b12f2d62c96",
     "semantic_hash": "",
     "language": "language=.md"
+  },
+  "install/awww": {
+    "mtime": 1792415453.4266634,
+    "seen": 1792415660.7554474,
+    "ast_hash": "be3eff031b0fec28428aa4161b44228d",
+    "semantic_hash": ""
+  },
+  "install/matugen/templates/quickshell.json": {
+    "mtime": 1792415450.9566576,
+    "seen": 1792415660.7554653,
+    "ast_hash": "fe3b20e1ab038568b85b7e0ef08bc4f0",
+    "semantic_hash": ""
   }
 }

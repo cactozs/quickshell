@@ -682,7 +682,10 @@ Singleton {
 
     // ---- typography ------------------------------------------------------------
 
-    readonly property string fontFamily: "Google Sans"
+    // ShellState.fontMode: "material" = Google Sans, "mono" =
+    // JetBrainsMono Nerd Font Mono (the fontconfig family name — a missing
+    // font falls back to the default sans). Icons keep Theme.iconFont.
+    readonly property string fontFamily: ShellState.fontMode === "mono" ? "JetBrainsMono Nerd Font Mono" : "Google Sans"
     readonly property string iconFont: "Material Symbols Rounded"
     // Nerd Font symbols-only family; used by the few glyphs (like md-ornament
     // below) that Material Symbols does not carry.

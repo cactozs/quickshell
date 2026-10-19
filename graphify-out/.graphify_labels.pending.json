@@ -1,6 +1,7 @@
 {
   "1": "LayoutBadge (keyboard-layout HUD)",
   "4": "PowerButton (tonal power toggle)",
+  "5": "SystemStats (CPU/GPU/RAM chip)",
   "8": "CalendarPopup.qml",
   "9": "OsdBadge.qml",
   "10": "Osd.qml",
@@ -25,7 +26,6 @@
   "29": "WallpaperDropArea.qml",
   "30": "WallpaperManager.qml",
   "31": "Wallpapers.qml",
-  "32": "handleLine() event dispatch",
   "33": "CalcRow.qml",
   "34": "SystemTheme.qml",
   "35": "LazyOverlay.qml",

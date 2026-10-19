@@ -33,7 +33,8 @@ Cloning somewhere else works, but two paths stay hardcoded to `$HOME/.config/qui
 
 ```sh
 sudo pacman -S quickshell niri alacritty jq cliphist wl-clipboard brightnessctl \
-    curl fd ripgrep matugen awww ttf-material-symbols-variable ttf-nerd-fonts-symbols hyprlock \
+    curl fd ripgrep matugen awww ttf-material-symbols-variable ttf-nerd-fonts-symbols \
+    ttf-jetbrains-mono-nerd hyprlock \
     pipewire wireplumber upower networkmanager ghostty qt6ct gtk3 gtk4
 ```
 
@@ -47,7 +48,16 @@ sudo pacman -S nvidia-utils wlsunset swayidle playerctl papirus-icon-theme image
 
 ### 3. fonts
 
-Material Symbols (every icon) and Symbols Nerd Font (the one ornament glyph Material Symbols does not carry) come from pacman. The UI font, **Google Sans**, has no Arch package:
+Material Symbols (every icon) and Symbols Nerd Font (the one ornament glyph Material Symbols does not carry) come from pacman. The **Monospace** option in the settings menu («Шрифт») is **JetBrainsMono Nerd Font Mono**, also from pacman:
+
+```sh
+sudo pacman -S ttf-jetbrains-mono-nerd
+fc-list | grep -i "jetbrainsmono nerd font mono"
+```
+
+The last line has to print the family. Without it the shell falls back to the default sans in monospace mode.
+
+The default UI font, **Google Sans** (the **Material** option), has no Arch package:
 
 ```sh
 mkdir -p ~/.local/share/fonts
@@ -263,7 +273,7 @@ Afterwards put `spawn-at-startup "quickshell"` in niri's autostart (step 6) and 
 
 | symptom | cause | fix |
 |---|---|---|
-| the text is in the default sans | Google Sans is not installed | step 3 |
+| the text is in the default sans | Google Sans (or JetBrainsMono Nerd Font Mono, in monospace mode) is not installed | step 3 |
 | the bar stays on the default purple | matugen never ran, or `output_path` points elsewhere | step 4, `matugen image <file>` |
 | the wallpaper changes but the colors do not | the `awww` shim is missing | step 5 |
 | a panel opens on the wrong monitor | `toggle` opens on the first screen | `toggleOn $(niri msg --json focused-output \| jq -r .name)` |
@@ -296,6 +306,7 @@ Wayland + niri, Arch package names. The install commands are in [installation](#
 | `qt6ct` | Qt palette: the shell writes `~/.config/qt6ct/colors/matugen.conf`; niri sets `QT_QPA_PLATFORMTHEME=qt6ct` |
 | `ttf-material-symbols-variable` | every icon (`Theme.iconFont`) |
 | `ttf-nerd-fonts-symbols` | "Symbols Nerd Font" (`Theme.nerdFont`), the one ornament glyph Material Symbols doesn't carry (`modules/Settings.qml:319`) |
+| `ttf-jetbrains-mono-nerd` | "JetBrainsMono Nerd Font Mono", the **Monospace** option of the «Шрифт» setting (`Theme.fontFamily`) |
 | `hyprlock` | "Блокировка" in the power menu, `Super+Alt+L` |
 | `pipewire` + `wireplumber` | volume chip, slider, mute (`Quickshell.Services.Pipewire`) |
 | `upower` | battery chip (`Quickshell.Services.UPower`) |
@@ -325,7 +336,7 @@ Without niri/jq, drop `toggleOn $(…)` for `toggle` — it opens on the first s
 | target | functions |
 |---|---|
 | `launcher`, `clipboard`, `center` (notifications) | `toggle`, `toggleOn <output>`, `close` |
-| `settings` (quick settings) | the same + `launcherView <bool>`, `style <m3\|blur\|new>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `blur <wallpaper\|window>` |
+| `settings` (quick settings) | the same + `launcherView <bool>`, `style <m3\|blur\|new>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono>`, `blur <wallpaper\|window>` |
 | `wallpaper` (manager) | the same + `random` — applies a random wallpaper without opening the panel |
 | `bar` | `toggle` |
 | `notifs` | `toggleDnd`, `dnd`, `clear` |
@@ -337,7 +348,7 @@ Notes:
 - The shell themes the whole desktop, not just itself: «Тема» and «Цвета» in the settings menu (or `qs ipc call settings theme light`, `… colorscheme gruvbox`) also rewrite the GTK3/GTK4 `gtk.css`, the ghostty theme, the qt6ct palette, the niri border colors and `gsettings color-scheme`; `services/SystemTheme.qml` is the single writer. These files are generated — hand edits survive until the next theme change. Three pieces of one-time plumbing are expected on the user's side: `theme = Quickshell` in `~/.config/ghostty/config`, `color_scheme_path=/…/qt6ct/colors/matugen.conf` in `qt6ct.conf` (Qt apps pick a new palette up on restart), and `include "quickshell.kdl"` in `~/.config/niri/config.kdl` — after `layout.kdl`, since niri merges includes positionally and the colors in `quickshell.kdl` (niri border + focus-ring, generated) have to come later to win. Alacritty, btop and yazi keep their own hand-written colors.
 - «Блюр» in the settings menu picks what the compositor blurs behind the acrylic plates (the `M3 Blur` and `New` styles paint such plates; under `M3 Inspired` the row is hidden because nothing blurs there). «Обои» is niri's xray blur — the wallpaper alone, the default — and «Окна» blurs what actually sits under the plate, windows included. It lands in the same generated `~/.config/niri/quickshell.kdl` as a `layer-rule` for the shell's namespaces (`qs ipc call settings blur window` also works), and the shell reads the choice back from that file at startup, so it survives a reboot.
 - Light mode is a second matugen pass: `~/.config/matugen/light.toml` writes `style/ColorsLight.json` (`matugen -m light` is CLI-only, a template can't ask for another mode), and the shell reruns it whenever the dark palette is newer — on a wallpaper change, or after a shell start. Its `[config]` source-color settings must stay identical to `config.toml`, and it deliberately has no `[config.wallpaper]`, so regenerating light colors never re-applies the wallpaper.
-- The UI font is **Google Sans** (`Theme.fontFamily`); no Arch package — install it by hand, otherwise text falls back to the default sans.
+- The UI font is switchable in the settings menu («Шрифт»): **Material** is **Google Sans** (`Theme.fontFamily`), **Monospace** is **JetBrainsMono Nerd Font Mono**. Google Sans has no Arch package — install it by hand, otherwise text falls back to the default sans; the monospace family comes from `ttf-jetbrains-mono-nerd` (step 3). Icons stay in Material Symbols in both modes.
 - The wallpaper manager lists `~/Pictures/Wallpapers` recursively (change `services/Wallpapers.qml:18` for another folder); the scan result is cached, so reopening the menu no longer re-decodes all previews; favorites go to `wallpaper-favorites.json` next to the config — runtime state, don't commit it, and are pinned first in the grid.
 - Dropping an image file onto the bare desktop or the bar sets it as the wallpaper (`modules/WallpaperDrop.qml`).
 - MPRIS players (mpv, browsers, Spotify…) are what the media tile talks to; nothing to install for it.

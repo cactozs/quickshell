@@ -138,9 +138,9 @@
     "language": "language=.md"
   },
   "services/ShellState.qml": {
-    "mtime": 1792384723.2604382,
-    "seen": 1792385223.899821,
-    "ast_hash": "e7a98fc1257971bf71f1176bbb594196",
+    "mtime": 1792417093.3432796,
+    "seen": 1792417527.7424521,
+    "ast_hash": "26ca6640b8ebba69e86ca5d1c693e26e",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -152,16 +152,16 @@
     "language": "language=.md"
   },
   "shell.qml": {
-    "mtime": 1792319530.088661,
-    "seen": 1792319725.7560627,
+    "mtime": 1792417367.063483,
+    "seen": 1792417527.7424953,
     "ast_hash": "c5c2548abea1ee3dd441e0cf86502dab",
     "semantic_hash": "",
     "language": "language=.md"
   },
   "style/Theme.qml": {
-    "mtime": 1792382863.3789961,
-    "seen": 1792383380.2722983,
-    "ast_hash": "7f7ae3e6cb8943746c82492a881b7107",
+    "mtime": 1792417515.1160393,
+    "seen": 1792417527.7425032,
+    "ast_hash": "cb6c2ba1259a8dfe1c840f65ee562cf2",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -271,15 +271,15 @@
     "language": "language=.md"
   },
   "readme.md": {
-    "mtime": 1792415696.1914275,
-    "seen": 1792415705.419872,
-    "ast_hash": "e9dfd9216f93dffe638c0d99aeb92811",
+    "mtime": 1792417515.1160393,
+    "seen": 1792417527.7424033,
+    "ast_hash": "fa586b85c1c48bf6df5bad1aa3467562",
     "semantic_hash": ""
   },
   "modules/Settings.qml": {
-    "mtime": 1792384797.205441,
-    "seen": 1792385223.8996537,
-    "ast_hash": "374eaa76a59ffc62ef0a918cc03991b2",
+    "mtime": 1792417103.1634712,
+    "seen": 1792417527.7423143,
+    "ast_hash": "116bd674473b9b378429c6dbec00bb29",
     "semantic_hash": "",
     "language": "language=.md"
   },
