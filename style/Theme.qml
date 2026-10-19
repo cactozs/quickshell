@@ -20,12 +20,14 @@ import "../services"
 // watched, so a wallpaper change recolors the bar in either mode; switching
 // ShellState.themeMode just swaps which file feeds the tokens.
 //
-// Two style packs share these tokens (ShellState.styleMode, switched in the
-// settings menu): "m3" is the wallpaper palette above; "new" swaps in fixed
-// graphite surfaces with acrylic alpha, flat text tones, a hairline edge with
-// an inner rim and a neutral drop shadow, while the accents stay
-// wallpaper-derived. Every style-dependent token hangs off `glass`, so the M3
-// look is untouched.
+// Three style packs share these tokens (ShellState.styleMode, switched in the
+// settings menu): "m3" is the wallpaper palette above; "blur" keeps that
+// palette and the M3 shape scale but turns the backdrops acrylic and asks the
+// compositor to blur behind them; "new" swaps in fixed graphite surfaces with
+// the same acrylic alpha, flat text tones, a hairline edge with an inner rim
+// and a neutral drop shadow, while the accents stay wallpaper-derived. Tokens
+// only the dressing needs hang off `glass`, the acrylic ones off `blur`, so the
+// M3 look is untouched.
 //
 // ShellState.colorScheme picks the palette source: "matugen" (the file above),
 // "oled" (strict black/white) or "gruvbox" (Gruvbox). Each fixed pack has a
@@ -35,6 +37,10 @@ Singleton {
     id: root
 
     readonly property bool glass: ShellState.styleMode === "new"
+
+    // Translucent backdrops plus the compositor blur behind them ("New" carries
+    // it with the graphite palette, "blur" with the wallpaper one).
+    readonly property bool blur: ShellState.styleMode === "new" || ShellState.styleMode === "blur"
 
     // ShellState.themeMode, resolved: "dark" unless the user picked light.
     readonly property bool light: ShellState.themeMode === "light"
@@ -353,16 +359,21 @@ Singleton {
     // a picked color scheme owns the surfaces. Under glass the chips and fields
     // become a veil instead of a solid tone (so the acrylic reads through
     // them), and the matugen surfaces take a hint of the accent, so the glass
-    // belongs to the wallpaper.
+    // belongs to the wallpaper. "Blur" is the same acrylic ladder — the same
+    // veil and the same roles and alpha as the graphite pack — laid over
+    // whatever palette is active.
     readonly property var scheme: {
         const matugenGlass = root.glass && ShellState.colorScheme === "matugen";
         const base = matugenGlass
             ? Object.assign({}, root.activeScheme, root.light ? root.newLightScheme : root.newScheme)
             : root.activeScheme;
-        if (!root.glass)
+        if (!root.blur)
             return base;
         const glassScheme = Object.assign({}, base, { "surface_container_highest": root.chipVeil });
-        if (matugenGlass) {
+        if (!root.glass) {
+            for (const key of root.acrylicSurfaceKeys)
+                glassScheme[key] = root.withAlpha(glassScheme[key], root.acrylicAlpha);
+        } else if (matugenGlass) {
             const accent = glassScheme.primary;
             for (const key of root.glassSurfaceKeys)
                 glassScheme[key] = root.mixColor(glassScheme[key], accent, root.glassTintAmount);
@@ -458,6 +469,14 @@ Singleton {
         const h = value.charAt(0) === "#" ? value.slice(1) : value;
         const v = parseInt(h.length === 8 ? h : "ff" + h, 16);
         return [(v >>> 24) & 255, (v >>> 16) & 255, (v >>> 8) & 255, v & 255];
+    }
+
+    // Same color, new alpha — the acrylic ladder laid over a palette that ships
+    // opaque (matugen's hex has no alpha byte).
+    function withAlpha(value: string, alpha: real): string {
+        const c = root.parseHex(value);
+        c[0] = Math.round(alpha * 255);
+        return "#" + c.map((byte) => (byte < 16 ? "0" : "") + byte.toString(16)).join("");
     }
 
     function applyGeneratedScheme(): void {
@@ -608,12 +627,18 @@ Singleton {
     // surface_container_highest in `scheme`; unused under m3.
     readonly property color chipVeil: root.light ? "#1f000000" : "#1fffffff"
 
+    // The "blur" pack's acrylic ladder: the roles the windows are built from
+    // (bar islands, cards), at the alpha the graphite pack ships as c7.
+    readonly property real acrylicAlpha: 0.78
+    readonly property var acrylicSurfaceKeys: ["surface_container", "surface_container_high"]
+
     // Opaque twin of that tone for the windows that cannot blur (popups: the
     // tooltip and the calendar popup) — the veil would show the desktop
-    // through them, unblurred. Under m3 both are just the scheme tone.
+    // through them, unblurred. Taken from the palette and not from `scheme`,
+    // which "blur" has turned into that veil; under m3 the two are the same.
     readonly property color popupSurface: root.glass
         ? (root.light ? "#fff0f2f6" : "#ff1c1f25")
-        : scheme.surface_container_highest
+        : root.activeScheme.surface_container_highest
 
     // How much of the wallpaper accent is mixed into the glass surfaces.
     readonly property real glassTintAmount: 0.04

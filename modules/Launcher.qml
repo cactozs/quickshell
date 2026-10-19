@@ -396,9 +396,9 @@ PanelWindow {
     WlrLayershell.namespace: "quickshell:launcher"
     WlrLayershell.keyboardFocus: root.shown ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
-    // Acrylic behind the search card (New style only). The fullscreen grid is
+    // Acrylic behind the search card (New and Blur). The fullscreen grid is
     // opaque, so it gets no blur region.
-    BackgroundEffect.blurRegion: Theme.glass && !root.fullscreen ? blurRegion : null
+    BackgroundEffect.blurRegion: Theme.blur && !root.fullscreen ? blurRegion : null
 
     // Unscaled twin of the card for the blur region: it only rebuilds on
     // x/y/w/h changes, so it must not see the entrance scale.
@@ -485,7 +485,7 @@ PanelWindow {
         height: root.fullscreen ? root.height : column.implicitHeight + 2 * root.cardPadding
         radius: root.fullscreen ? 0 : Theme.shapeXL
         // The fullscreen grid must stay opaque, so it skips the acrylic tone.
-        color: root.fullscreen && Theme.glass ? Theme.surface : Theme.surfaceContainerHigh
+        color: root.fullscreen && Theme.blur ? Theme.surface : Theme.surfaceContainerHigh
         border.width: root.fullscreen ? 0 : Theme.hairlineWidth
         border.color: Theme.hairline
 

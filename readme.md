@@ -74,7 +74,7 @@ Without niri/jq, drop `toggleOn $(…)` for `toggle` — it opens on the first s
 | target | functions |
 |---|---|
 | `launcher`, `clipboard`, `center` (notifications) | `toggle`, `toggleOn <output>`, `close` |
-| `settings` (quick settings) | the same + `launcherView <bool>`, `style <m3\|new>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>` |
+| `settings` (quick settings) | the same + `launcherView <bool>`, `style <m3\|blur\|new>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>` |
 | `wallpaper` (manager) | the same + `random` — applies a random wallpaper without opening the panel |
 | `bar` | `toggle` |
 | `notifs` | `toggleDnd`, `dnd`, `clear` |

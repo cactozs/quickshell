@@ -61,8 +61,8 @@ PanelWindow {
         height: Theme.barHeight
     }
 
-    // Acrylic behind the three islands (New style only).
-    BackgroundEffect.blurRegion: Theme.glass ? blurRegion : null
+    // Acrylic behind the three islands (New and Blur).
+    BackgroundEffect.blurRegion: Theme.blur ? blurRegion : null
 
     // Unscaled twins of the islands for the blur region: it only rebuilds on
     // x/y/w/h changes, so it must not see the islands' entrance translate.

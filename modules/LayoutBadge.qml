@@ -83,8 +83,8 @@ PanelWindow {
         onTriggered: root.hide()
     }
 
-    // Acrylic behind the pill (New style only).
-    BackgroundEffect.blurRegion: Theme.glass ? blurRegion : null
+    // Acrylic behind the pill (New and Blur).
+    BackgroundEffect.blurRegion: Theme.blur ? blurRegion : null
 
     // Unscaled twin of the pill for the blur region: it only rebuilds on
     // x/y/w/h changes, so it must not see the entrance scale/translate.

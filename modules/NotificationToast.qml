@@ -51,7 +51,7 @@ PanelWindow {
         height: column.implicitHeight
     }
 
-    BackgroundEffect.blurRegion: Theme.glass ? blurRegion : null
+    BackgroundEffect.blurRegion: Theme.blur ? blurRegion : null
 
     Region {
         id: blurRegion

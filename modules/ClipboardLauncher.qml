@@ -196,8 +196,8 @@ PanelWindow {
     WlrLayershell.namespace: "quickshell:clipboard"
     WlrLayershell.keyboardFocus: root.shown ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
-    // Acrylic behind the card (New style only).
-    BackgroundEffect.blurRegion: Theme.glass ? blurRegion : null
+    // Acrylic behind the card (New and Blur).
+    BackgroundEffect.blurRegion: Theme.blur ? blurRegion : null
 
     // Unscaled twin of the card for the blur region: it only rebuilds on
     // x/y/w/h changes, so it must not see the entrance scale.
@@ -519,8 +519,14 @@ PanelWindow {
                     width: 240
                     height: menuColumn.implicitHeight + 12
                     radius: Theme.shapeLG
-                    color: Theme.surfaceContainerHighest
+                    // Floats over the entries, so it cannot take the chip veil
+                    // (the rows would read through it): the solid tone instead.
+                    color: Theme.popupSurface
+                    border.width: Theme.hairlineWidth
+                    border.color: Theme.hairline
                     transformOrigin: Item.BottomRight
+
+                    GlassEdge {}
 
                     visible: root.menuOpen
                     opacity: root.menuOpen ? 1 : 0
