@@ -314,13 +314,16 @@ Singleton {
         "}",
         "",
         "layer-rule {",
-        "    // \"Блюр\" in the settings menu: xray blurs the wallpaper alone, false",
-        "    // blurs whatever is under the plate, windows included.",
-        "    match namespace=\"^quickshell:\"",
-        "",
-        "    background-effect {",
-        "        xray " + (ShellState.blurSource === "window" ? "false" : "true"),
-        "    }",
+        "    // \"Блюр\" in the settings menu. \"Обои\" writes nothing: niri already",
+        "    // x-ray-blurs whatever blur a client asks for (wallpaper alone), and an",
+        "    // explicit `xray true` would also paint the wallpaper behind surfaces",
+        "    // that ask for no effect (the full-screen transparent popups under M3),",
+        "    // hiding the windows underneath. \"Окна\" needs the rule to turn that",
+        "    // default xray off, so what sits under the plate, windows included, blurs.",
+        "    match namespace=\"^quickshell:\""
+            + (ShellState.blurSource === "window"
+                ? "\n\n    background-effect {\n        xray false\n    }"
+                : ""),
         "}",
         ""
     ].join("\n")
