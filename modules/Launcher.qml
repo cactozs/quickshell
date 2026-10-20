@@ -24,7 +24,9 @@ PanelWindow {
     readonly property bool shown: ShellState.launcherScreen === root.modelData.name
 
     // Apps with Terminal=true in their desktop entry run through this.
-    readonly property var terminalCommand: ["alacritty", "-e"]
+    // $TERMINAL wins (e.g. ghostty), alacritty is the fallback. Split on
+    // spaces so `TERMINAL="ghostty --class=foo"` also works.
+    readonly property var terminalCommand: (Quickshell.env("TERMINAL") || "alacritty").split(" ").concat(["-e"])
 
     readonly property bool fullscreen: ShellState.launcherFullscreen
 

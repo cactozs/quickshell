@@ -9,6 +9,8 @@
 #
 # Keep the source-color settings in sync with config.toml, otherwise the light
 # palette picks a different source color and the two schemes drift apart.
+# install.sh rewrites output_path and input_path to the actual repository
+# location.
 
 [config]
 version_check = false

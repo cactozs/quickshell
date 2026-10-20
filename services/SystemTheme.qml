@@ -16,22 +16,32 @@ import "../style"
 // (GTK, niri) are not woken for nothing. Generated content is deterministic, so
 // a hand-edited file is simply regenerated on the next theme change.
 //
-//   ~/.config/gtk-3.0/gtk.css             GTK3 colors
-//   ~/.config/gtk-4.0/gtk.css             GTK4 colors + libadwaita :root vars
-//   ~/.config/ghostty/themes/Quickshell   theme file (`theme = Quickshell`)
-//   ~/.config/qt6ct/colors/matugen.conf   Qt palette (`color_scheme_path`)
-//   ~/.config/niri/quickshell.kdl         border/focus-ring colors + blur source
-//                                         (needs `include "quickshell.kdl"` in
-//                                         config.kdl, after layout.kdl)
+//   $XDG_CONFIG_HOME/gtk-3.0/gtk.css             GTK3 colors
+//   $XDG_CONFIG_HOME/gtk-4.0/gtk.css             GTK4 colors + libadwaita :root vars
+//   $XDG_CONFIG_HOME/ghostty/themes/Quickshell   theme file (`theme = Quickshell`)
+//   $XDG_CONFIG_HOME/qt6ct/colors/matugen.conf   Qt palette (`color_scheme_path`)
+//   $XDG_CONFIG_HOME/niri/quickshell.kdl         border/focus-ring colors + blur source
+//                                                (needs `include "quickshell.kdl"` in
+//                                                config.kdl, after layout.kdl)
+//
+// $XDG_CONFIG_HOME defaults to ~/.config; see SystemTheme.configHome.
 //
 // plus `gsettings ... color-scheme`, which is what libadwaita apps read for
 // their own light/dark base, and a ghostty config reload so a running terminal
 // recolors without a restart. The one-time plumbing (ghostty theme name, the
-// qt6ct path, the niri include) is documented in the readme.
+// qt6ct path, the niri include) is documented in README.md.
 Singleton {
     id: root
 
     readonly property string home: Quickshell.env("HOME")
+
+    // XDG config home: GTK, ghostty, qt6ct and niri follow it instead of
+    // assuming ~/.config. Defaults to ~/.config.
+    readonly property string configHome: {
+        const xdg = Quickshell.env("XDG_CONFIG_HOME");
+        return xdg && xdg.length > 0 ? xdg : root.home + "/.config";
+    }
+
     readonly property bool light: Theme.light
 
     // ---- color formats --------------------------------------------------------
@@ -382,7 +392,7 @@ Singleton {
     FileView {
         id: gtk3File
 
-        path: root.home + "/.config/gtk-3.0/gtk.css"
+        path: root.configHome + "/gtk-3.0/gtk.css"
         blockLoading: true
         printErrors: false
     }
@@ -390,7 +400,7 @@ Singleton {
     FileView {
         id: gtk4File
 
-        path: root.home + "/.config/gtk-4.0/gtk.css"
+        path: root.configHome + "/gtk-4.0/gtk.css"
         blockLoading: true
         printErrors: false
     }
@@ -398,7 +408,7 @@ Singleton {
     FileView {
         id: ghosttyFile
 
-        path: root.home + "/.config/ghostty/themes/Quickshell"
+        path: root.configHome + "/ghostty/themes/Quickshell"
         blockLoading: true
         printErrors: false
     }
@@ -406,7 +416,7 @@ Singleton {
     FileView {
         id: qt6ctFile
 
-        path: root.home + "/.config/qt6ct/colors/matugen.conf"
+        path: root.configHome + "/qt6ct/colors/matugen.conf"
         blockLoading: true
         printErrors: false
     }
@@ -414,7 +424,7 @@ Singleton {
     FileView {
         id: niriFile
 
-        path: root.home + "/.config/niri/quickshell.kdl"
+        path: root.configHome + "/niri/quickshell.kdl"
         blockLoading: true
         printErrors: false
     }

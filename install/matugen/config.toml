@@ -3,12 +3,13 @@
 # Workflow:
 #   matugen image /path/to/wallpaper.png
 # sets the wallpaper (awww) and regenerates
-# ~/.config/quickshell/style/Colors.json, which the bar watches live.
+# <quickshell>/style/Colors.json, which the bar watches live.
 # `awww img <file>` works too: the /usr/local/bin/awww shim routes it here.
 #
-# Install: cp -r install/matugen/. ~/.config/matugen/
-# The output_path points at ~/.config/quickshell — change it if the shell
-# config lives somewhere else.
+# Install: ./install.sh (or `cp -r install/matugen/. ~/.config/matugen/`)
+# install.sh rewrites output_path and input_path to the actual repository
+# location. If you copy the files by hand, change output_path if the shell
+# config does not live in ~/.config/quickshell.
 
 [config]
 version_check = false
@@ -21,7 +22,7 @@ fallback_color = "#6750A4"
 set = true
 # Absolute path: the /usr/local/bin/awww shim routes `awww img` back into
 # matugen, so a relative lookup here would loop.
-command = "/usr/sbin/awww img --transition-type center {{ image }}"
+command = "/usr/bin/awww img --transition-type center {{ image }}"
 
 [templates.quickshell]
 input_path = "templates/quickshell.json"

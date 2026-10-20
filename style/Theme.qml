@@ -14,11 +14,12 @@ import "../services"
 // Material baseline dark scheme below is used as-is.
 //
 // Light and dark are two matugen files: Colors.json (dark, written by the
-// wallpaper pass in ~/.config/matugen/config.toml) and ColorsLight.json (light,
-// written by the second `matugen -m light` run below — matugen takes the mode
-// from the command line only, a per-template `mode` is ignored). Both files are
-// watched, so a wallpaper change recolors the bar in either mode; switching
-// ShellState.themeMode just swaps which file feeds the tokens.
+// wallpaper pass in $XDG_CONFIG_HOME/matugen/config.toml, default ~/.config)
+// and ColorsLight.json (light, written by the second `matugen -m light` run
+// below — matugen takes the mode from the command line only, a per-template
+// `mode` is ignored). Both files are watched, so a wallpaper change recolors
+// the bar in either mode; switching ShellState.themeMode just swaps which file
+// feeds the tokens.
 //
 // Four style packs share these tokens (ShellState.styleMode, switched in the
 // settings menu): "m3" is the wallpaper palette above; "blur" keeps that
@@ -37,6 +38,21 @@ import "../services"
 // they replace the "new" surfaces as well, so a picked scheme always shows.
 Singleton {
     id: root
+
+    // XDG config home, so a shell that lives outside ~/.config/quickshell
+    // still finds the matugen light pass. Defaults to ~/.config.
+    readonly property string configHome: {
+        const xdg = Quickshell.env("XDG_CONFIG_HOME");
+        return xdg && xdg.length > 0 ? xdg : Quickshell.env("HOME") + "/.config";
+    }
+
+    readonly property string matugenDir: root.configHome + "/matugen"
+
+    // Quote a path for the POSIX shell in lightPassScript. Paths with spaces
+    // or quotes are rare, but a config directory is user input all the same.
+    function shQuote(value: string): string {
+        return "'" + value.replace(/'/g, "'\\''") + "'";
+    }
 
     readonly property bool glass: ShellState.styleMode === "new"
 
@@ -504,12 +520,12 @@ Singleton {
     // change, or a shell start after one — and exits at once otherwise. The
     // light file is written by this pass only, so there is no loop.
     readonly property string lightPassScript: [
-        "dark=" + Quickshell.env("HOME") + "/.config/quickshell/style/Colors.json",
-        "light=" + Quickshell.env("HOME") + "/.config/quickshell/style/ColorsLight.json",
+        "dark=" + root.shQuote(Quickshell.shellPath("style/Colors.json")),
+        "light=" + root.shQuote(Quickshell.shellPath("style/ColorsLight.json")),
         "[ \"$light\" -nt \"$dark\" ] && exit 0",
         "img=$(awww query 2>/dev/null | sed -n 's/.*currently displaying: image: //p' | head -1)",
         "[ -n \"$img\" ] || exit 0",
-        "exec matugen -m light image \"$img\" -c " + Quickshell.env("HOME") + "/.config/matugen/light.toml"
+        "exec matugen -m light image \"$img\" -c " + root.shQuote(root.matugenDir + "/light.toml")
     ].join("\n")
 
     Process {
