@@ -1,7 +1,7 @@
 {
   "style/Colors.json": {
-    "mtime": 1792504382.9439147,
-    "seen": 1792505194.2860756,
+    "mtime": 1792510567.1750505,
+    "seen": 1792512235.4890504,
     "ast_hash": "de25042f95b1c60b4afde0c28c049d51",
     "semantic_hash": ""
   },
@@ -201,9 +201,9 @@
     "language": "language=.md"
   },
   "modules/NotificationCenter.qml": {
-    "mtime": 1792503057.2657278,
-    "seen": 1792503302.368302,
-    "ast_hash": "4ef5b81dc9cdcd24569e99f13958239e",
+    "mtime": 1792512227.728502,
+    "seen": 1792512235.4892151,
+    "ast_hash": "a8263f959e69872d8c8021996677a909",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -313,9 +313,9 @@
     "language": "language=.md"
   },
   "style/ColorsLight.json": {
-    "mtime": 1792505187.242683,
-    "seen": 1792505194.2860856,
-    "ast_hash": "e2569a4b49fac994fefffe9a29bc8ba0",
+    "mtime": 1792510568.738038,
+    "seen": 1792512235.4890604,
+    "ast_hash": "10c6e10d8679c710a05fe906a5572e50",
     "semantic_hash": ""
   },
   "services/SystemTheme.qml": {

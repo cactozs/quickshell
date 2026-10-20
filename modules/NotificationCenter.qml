@@ -21,7 +21,7 @@ PanelWindow {
 
     readonly property int cardWidth: 380
     readonly property int cardPadding: 16
-    readonly property int rowHeight: 64
+    readonly property int rowPadding: 10
     readonly property int rowSpacing: 2
     readonly property int maxListHeight: Math.floor(root.height * 0.55)
 
@@ -237,10 +237,12 @@ PanelWindow {
                 id: listArea
 
                 width: parent.width
-                implicitHeight: Notifications.history.length > 0
-                    ? Notifications.history.length * (root.rowHeight + root.rowSpacing) - root.rowSpacing
+                // The delegates' real heights: history.length * rowHeight can
+                // drift from the rows (font/style change, longer text) and the
+                // card then clipped the last one.
+                height: Notifications.history.length > 0
+                    ? Math.min(list.contentHeight, root.maxListHeight)
                     : 72
-                height: Math.min(implicitHeight, root.maxListHeight)
 
                 // Arrivals and dismissals resize the list; animate the height
                 // so the card grows and shrinks smoothly.
@@ -291,7 +293,7 @@ PanelWindow {
         readonly property bool hovered: rowHover.hovered
 
         width: listArea.width
-        height: root.rowHeight
+        height: textColumn.implicitHeight + 2 * root.rowPadding
         radius: Theme.shapeLG
         color: "transparent"
 
@@ -330,6 +332,8 @@ PanelWindow {
         }
 
         Column {
+            id: textColumn
+
             anchors.left: iconBox.right
             anchors.leftMargin: 12
             anchors.right: dismissButton.left
@@ -349,6 +353,7 @@ PanelWindow {
                 font.family: Theme.fontFamily
                 font.pixelSize: Theme.fontSizeLabelMedium
                 elide: Text.ElideRight
+                maximumLineCount: 1
             }
 
             Text {
@@ -359,6 +364,7 @@ PanelWindow {
                 font.pixelSize: Theme.fontSizeTitleMedium
                 font.weight: Font.Medium
                 elide: Text.ElideRight
+                maximumLineCount: 1
             }
 
             Text {
@@ -369,6 +375,7 @@ PanelWindow {
                 font.family: Theme.fontFamily
                 font.pixelSize: Theme.fontSizeLabelMedium
                 elide: Text.ElideRight
+                maximumLineCount: 1
             }
         }
 
