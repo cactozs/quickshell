@@ -1,14 +1,14 @@
 {
   "style/Colors.json": {
-    "mtime": 1792383691.779252,
-    "seen": 1792385223.8994148,
-    "ast_hash": "6e803e7275078d9aaf64dae55f991475",
+    "mtime": 1792431081.4971864,
+    "seen": 1792469639.0089712,
+    "ast_hash": "135e683fa2d06bd43bcb2bf44f430941",
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1792415001.1086683,
-    "seen": 1792415660.7555356,
-    "ast_hash": "13ee538be10030010456a155ada633c4",
+    "mtime": 1792468838.4147933,
+    "seen": 1792469639.008992,
+    "ast_hash": "540057a2c67e943242396df9a87a1efd",
     "semantic_hash": ""
   },
   "modules/Backlight.qml": {
@@ -61,9 +61,9 @@
     "language": "language=.md"
   },
   "modules/Launcher.qml": {
-    "mtime": 1792382929.799295,
-    "seen": 1792383380.2720509,
-    "ast_hash": "c55fa964297c8162399cecb02dbcf787",
+    "mtime": 1792469329.7957406,
+    "seen": 1792469639.0090797,
+    "ast_hash": "eb820bdb74c5ec49da6d4830a002c3c9",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -138,9 +138,9 @@
     "language": "language=.md"
   },
   "services/ShellState.qml": {
-    "mtime": 1792417093.3432796,
-    "seen": 1792417527.7424521,
-    "ast_hash": "26ca6640b8ebba69e86ca5d1c693e26e",
+    "mtime": 1792468818.2815754,
+    "seen": 1792469639.0092924,
+    "ast_hash": "6903bc0a99f785a5e54dbf36d14dab9d",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -159,9 +159,9 @@
     "language": "language=.md"
   },
   "style/Theme.qml": {
-    "mtime": 1792417515.1160393,
-    "seen": 1792417527.7425032,
-    "ast_hash": "cb6c2ba1259a8dfe1c840f65ee562cf2",
+    "mtime": 1792469113.2534153,
+    "seen": 1792469639.009348,
+    "ast_hash": "a67aa0f7261a3952389d35a48d973c68",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -173,9 +173,9 @@
     "language": "language=.md"
   },
   "modules/OsdBadge.qml": {
-    "mtime": 1792382872.4530244,
-    "seen": 1792383380.2721012,
-    "ast_hash": "6e947e8edcc5b1c738f03263eb44487a",
+    "mtime": 1792469481.6570048,
+    "seen": 1792469639.0091326,
+    "ast_hash": "4ddbb10aae697efaad4e616a673c418d",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -222,9 +222,9 @@
     "language": "language=.md"
   },
   "modules/QuickSettings.qml": {
-    "mtime": 1792382872.4540243,
-    "seen": 1792383380.2721152,
-    "ast_hash": "ef086c4362615cb0a577c85ae7192665",
+    "mtime": 1792469136.9818504,
+    "seen": 1792469639.0091465,
+    "ast_hash": "479eb05a406914f6043dac60724c7dfc",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -271,15 +271,15 @@
     "language": "language=.md"
   },
   "readme.md": {
-    "mtime": 1792417515.1160393,
-    "seen": 1792417527.7424033,
-    "ast_hash": "fa586b85c1c48bf6df5bad1aa3467562",
+    "mtime": 1792417648.997739,
+    "seen": 1792469639.0092437,
+    "ast_hash": "9009b8d0b2d1ecfedf2407702333346e",
     "semantic_hash": ""
   },
   "modules/Settings.qml": {
-    "mtime": 1792417103.1634712,
-    "seen": 1792417527.7423143,
-    "ast_hash": "116bd674473b9b378429c6dbec00bb29",
+    "mtime": 1792469397.9795358,
+    "seen": 1792469639.0091534,
+    "ast_hash": "df355f81a9d5f822fa22c149071651ed",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -298,9 +298,9 @@
     "language": "language=.md"
   },
   "modules/WallpaperManager.qml": {
-    "mtime": 1792382877.3600414,
-    "seen": 1792383380.2721853,
-    "ast_hash": "7c021d5711bd7d2395530fe47b10b480",
+    "mtime": 1792469403.547842,
+    "seen": 1792469639.0092165,
+    "ast_hash": "056d76ae0bd13b495c70c7e71978aabf",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -319,9 +319,9 @@
     "language": "language=.md"
   },
   "style/ColorsLight.json": {
-    "mtime": 1792383692.8052683,
-    "seen": 1792385223.8994315,
-    "ast_hash": "a7d11ffe72049cae290bcd018c03ccf4",
+    "mtime": 1792431081.719188,
+    "seen": 1792469639.0089822,
+    "ast_hash": "c51edcd30271044f96833ad313d6b343",
     "semantic_hash": ""
   },
   "services/SystemTheme.qml": {
@@ -355,6 +355,12 @@
     "mtime": 1792415450.9566576,
     "seen": 1792415660.7554653,
     "ast_hash": "fe3b20e1ab038568b85b7e0ef08bc4f0",
+    "semantic_hash": ""
+  },
+  "final-dark.png": {
+    "mtime": 1792469556.316647,
+    "seen": 1792469639.009356,
+    "ast_hash": "19af0971ed044576e8135f0c79262d0e",
     "semantic_hash": ""
   }
 }

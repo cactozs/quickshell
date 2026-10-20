@@ -64,15 +64,16 @@ Singleton {
 
     // Style pack for the whole shell: "m3" = M3 Expressive with the matugen
     // palette (default), "blur" = that pack with acrylic backdrops and the
-    // compositor blur behind them, "new" = graphite acrylic (see
+    // compositor blur behind them, "new" = graphite acrylic, "nothing" =
+    // opaque graphite with hairline edges and one red accent (see
     // style/Theme.qml). Normalized, so a fresh install or a stale value reads
     // as "m3".
-    readonly property string styleMode: props.styleMode === "new" || props.styleMode === "blur"
+    readonly property string styleMode: props.styleMode === "new" || props.styleMode === "blur" || props.styleMode === "nothing"
         ? props.styleMode
         : "m3"
 
     function setStyleMode(name: string): void {
-        props.styleMode = name === "new" || name === "blur" ? name : "m3";
+        props.styleMode = name === "new" || name === "blur" || name === "nothing" ? name : "m3";
     }
 
     // Palette source for the whole shell: "matugen" = generated from the

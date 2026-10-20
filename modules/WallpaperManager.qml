@@ -410,7 +410,8 @@ PanelWindow {
                 width: parent.width
                 implicitHeight: 56
                 height: implicitHeight
-                radius: Theme.shapeFull
+                // Nothing keeps the field rectangular instead of the M3 pill.
+                radius: Theme.nothing ? Theme.shapeMD : Theme.shapeFull
                 color: Theme.surfaceContainerHighest
 
                 Text {

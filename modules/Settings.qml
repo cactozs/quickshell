@@ -228,7 +228,7 @@ PanelWindow {
 
                 SettingSegment {
                     label: "M3 Inspired"
-                    selected: ShellState.styleMode !== "new" && ShellState.styleMode !== "blur"
+                    selected: ShellState.styleMode === "m3"
                     onClicked: ShellState.setStyleMode("m3")
                 }
 
@@ -243,17 +243,24 @@ PanelWindow {
                     selected: ShellState.styleMode === "new"
                     onClicked: ShellState.setStyleMode("new")
                 }
+
+                SettingSegment {
+                    label: "Nothing"
+                    selected: ShellState.styleMode === "nothing"
+                    onClicked: ShellState.setStyleMode("nothing")
+                }
             }
 
             // ---- blur source ----------------------------------------------------
 
             // Only the blur styles have anything to blur, so the row is hidden
-            // under M3 Inspired: its surfaces are opaque and no window requests
-            // a background effect (the niri rule stays inert by itself).
+            // under M3 Inspired and Nothing: their surfaces are opaque and no
+            // window requests a background effect (the niri rule stays inert
+            // by itself).
             RowLayout {
                 width: parent.width
                 spacing: 8
-                visible: ShellState.styleMode !== "m3"
+                visible: ShellState.styleMode === "new" || ShellState.styleMode === "blur"
 
                 Text {
                     Layout.fillWidth: true
@@ -402,7 +409,8 @@ PanelWindow {
 
         implicitWidth: segLabel.implicitWidth + 32
         implicitHeight: 40
-        radius: Theme.shapeFull
+        // Nothing squares the segment off instead of the M3 pill.
+        radius: Theme.nothing ? Theme.shapeMD : Theme.shapeFull
         color: seg.selected ? Theme.secondaryContainer : "transparent"
         border.width: seg.selected ? 0 : 1
         border.color: Theme.outline

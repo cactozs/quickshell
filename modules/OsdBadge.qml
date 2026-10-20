@@ -134,16 +134,17 @@ PanelWindow {
             Rectangle {
                 Layout.alignment: Qt.AlignVCenter
                 Layout.preferredWidth: 160
-                Layout.preferredHeight: 12
+                // Nothing keeps the meter as a precise line instead of the capsule.
+                Layout.preferredHeight: Theme.nothing ? 4 : 12
 
-                radius: Theme.shapeFull
+                radius: Theme.nothing ? 2 : Theme.shapeFull
                 color: Theme.surfaceContainerHighest
 
                 Rectangle {
                     width: parent.width * Osd.value
                     height: parent.height
                     radius: parent.radius
-                    color: Theme.primary
+                    color: Theme.sliderColor
 
                     Behavior on width {
                         NumberAnimation {

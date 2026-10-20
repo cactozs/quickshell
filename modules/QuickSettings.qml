@@ -531,7 +531,7 @@ PanelWindow {
                     width: volumeRow.width - 32 - 40 - 20
 
                     value: root.effectiveMuted ? 0 : root.volume
-                    handleColor: root.effectiveMuted ? Theme.surfaceVariantText : Theme.primary
+                    handleColor: root.effectiveMuted ? Theme.surfaceVariantText : Theme.sliderColor
 
                     onMoved: v => {
                         if (root.sink?.ready && root.sink?.audio) {
@@ -1031,7 +1031,7 @@ PanelWindow {
         id: slider
 
         property real value: 0
-        property color handleColor: Theme.primary
+        property color handleColor: Theme.sliderColor
 
         signal moved(real position)
         signal committed(real position)
@@ -1052,8 +1052,9 @@ PanelWindow {
             anchors.verticalCenter: parent.verticalCenter
             x: slider.inset
             width: Math.max(0, parent.width - 2 * slider.inset)
-            height: 16
-            radius: Theme.shapeFull
+            // Nothing keeps the M3 track as a precise line, not a capsule.
+            height: Theme.nothing ? 4 : 16
+            radius: Theme.nothing ? 2 : Theme.shapeFull
             color: Theme.surfaceContainerHighest
 
             Rectangle {
@@ -1069,7 +1070,7 @@ PanelWindow {
                 id: thumb
 
                 width: slider.thumbWidth
-                height: 32
+                height: Theme.nothing ? 16 : 32
                 radius: Theme.shapeFull
                 x: slider.value * parent.width - width / 2
                 anchors.verticalCenter: parent.verticalCenter
