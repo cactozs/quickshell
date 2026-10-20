@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import Quickshell.Services.UPower
 import QtQuick
+import "../services"
 import "../style"
 
 // UPower chip: errorContainer fill when critically low, charging glyph and
@@ -44,7 +45,7 @@ IconButton {
 
     Tip {
         target: root
-        text: (root.remaining !== "" ? root.remaining + " remaining\n" : "") + root.percent + "%"
+        text: (root.remaining !== "" ? root.remaining + I18n.t(" remaining") + "\n" : "") + root.percent + "%"
         shown: root.hovered
     }
 }

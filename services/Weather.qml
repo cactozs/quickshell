@@ -35,6 +35,8 @@ Singleton {
 
     readonly property var weekDays: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"]
 
+    // Label sources are I18n keys (services/I18n.qml); the popup translates
+    // them at display time so they follow a live language switch.
     function condition(code: int, day: bool): var {
         if (code === 0)
             return day ? ["Ясно", Theme.iconSunny] : ["Ясная ночь", Theme.iconNightlight];

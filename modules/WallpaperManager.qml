@@ -58,7 +58,7 @@ PanelWindow {
 
     readonly property var chipModel: {
         const chips = [
-            { label: "Все", folder: "", star: false },
+            { label: I18n.t("Все"), folder: "", star: false },
             { label: "★", folder: "", star: true }
         ];
         const list = root.folders;
@@ -360,7 +360,7 @@ PanelWindow {
 
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "Обои"
+                    text: I18n.t("Обои")
                     color: Theme.surfaceText
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeTitleLarge
@@ -374,7 +374,7 @@ PanelWindow {
                     anchors.verticalCenter: parent.verticalCenter
 
                     icon: Theme.iconShuffle
-                    label: "Случайные"
+                    label: I18n.t("Случайные")
                     containerColor: Theme.secondaryContainer
                     contentColor: Theme.secondaryContainerText
 
@@ -440,7 +440,7 @@ PanelWindow {
                     anchors.right: clearButton.visible ? clearButton.left : parent.right
                     anchors.rightMargin: 16
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "Поиск обоев…"
+                    text: I18n.t("Поиск обоев…")
                     color: Theme.surfaceVariantText
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeTitleMedium
@@ -551,8 +551,8 @@ PanelWindow {
                     anchors.centerIn: parent
                     visible: root.results.length === 0
                     text: Wallpapers.entries.length === 0
-                        ? "В ~/Pictures/Wallpapers нет изображений"
-                        : "Ничего не найдено"
+                        ? I18n.t("В ~/Pictures/Wallpapers нет изображений")
+                        : I18n.t("Ничего не найдено")
                     color: Theme.surfaceVariantText
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeLabelLarge
@@ -572,7 +572,7 @@ PanelWindow {
 
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "↑↓←→ — выбор · Enter — применить · Ctrl+F — в избранное · Ctrl+R — случайные · Esc — закрыть"
+                    text: I18n.t("↑↓←→ — выбор · Enter — применить · Ctrl+F — в избранное · Ctrl+R — случайные · Esc — закрыть")
                     color: Theme.surfaceVariantText
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeLabelMedium

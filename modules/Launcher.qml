@@ -577,7 +577,7 @@ PanelWindow {
                     anchors.right: clearButton.visible ? clearButton.left : parent.right
                     anchors.rightMargin: 16
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "Поиск приложений…"
+                    text: I18n.t("Поиск приложений…")
                     color: Theme.surfaceVariantText
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeTitleMedium
@@ -756,7 +756,7 @@ PanelWindow {
                 Text {
                     anchors.centerIn: parent
                     visible: root.results.length === 0 && !root.calcActive
-                    text: "Ничего не найдено"
+                    text: I18n.t("Ничего не найдено")
                     color: Theme.surfaceVariantText
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeLabelLarge
@@ -777,8 +777,8 @@ PanelWindow {
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
                     text: root.fullscreen
-                        ? "↑↓←→ — выбор · Enter — запуск · тянуть иконку — порядок · Ctrl+F — в избранное · Esc — закрыть"
-                        : "↑↓ — выбор · Enter — запуск · Ctrl+F — в избранное · Esc — закрыть"
+                        ? I18n.t("↑↓←→ — выбор · Enter — запуск · тянуть иконку — порядок · Ctrl+F — в избранное · Esc — закрыть")
+                        : I18n.t("↑↓ — выбор · Enter — запуск · Ctrl+F — в избранное · Esc — закрыть")
                     color: Theme.surfaceVariantText
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeLabelMedium
@@ -788,7 +788,7 @@ PanelWindow {
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
                     visible: root.query.length > 0
-                    text: root.results.length + " из " + root.allEntries.length
+                    text: root.results.length + I18n.t(" из ") + root.allEntries.length
                     color: Theme.surfaceVariantText
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeLabelMedium

@@ -189,7 +189,7 @@ PanelWindow {
                     anchors.left: parent.left
                     anchors.leftMargin: 12
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "Уведомления"
+                    text: I18n.t("Уведомления")
                     color: Theme.surfaceText
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeTitleMedium
@@ -268,7 +268,7 @@ PanelWindow {
                 Text {
                     anchors.centerIn: parent
                     visible: Notifications.history.length === 0
-                    text: "Нет уведомлений"
+                    text: I18n.t("Нет уведомлений")
                     color: Theme.surfaceVariantText
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeLabelLarge

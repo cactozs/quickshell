@@ -41,6 +41,7 @@ Singleton {
         property string themeMode
         property string fontMode
         property string blurSource
+        property string language
     }
 
     readonly property bool barHidden: props.barHidden
@@ -103,6 +104,16 @@ Singleton {
 
     function setFontMode(name: string): void {
         props.fontMode = name === "mono" ? "mono" : "material";
+    }
+
+    // UI language: "ru" (default, the source strings in services/I18n.qml),
+    // "en" or "de". Normalized like the other modes.
+    readonly property string language: props.language === "en" || props.language === "de"
+        ? props.language
+        : "ru"
+
+    function setLanguage(name: string): void {
+        props.language = name === "en" || name === "de" ? name : "ru";
     }
 
     function toggleQuickSettings(screenName: string): void {
@@ -224,6 +235,11 @@ Singleton {
         // Font family, so scripts can flip it: `qs ipc call settings font mono`.
         function font(name: string): void {
             root.setFontMode(name);
+        }
+
+        // UI language, so scripts can flip it: `qs ipc call settings language en`.
+        function language(name: string): void {
+            root.setLanguage(name);
         }
     }
 

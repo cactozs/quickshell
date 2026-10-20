@@ -364,7 +364,7 @@ PanelWindow {
                     anchors.right: clearButton.visible ? clearButton.left : parent.right
                     anchors.rightMargin: 16
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "Поиск в буфере обмена…"
+                    text: I18n.t("Поиск в буфере обмена…")
                     color: Theme.surfaceVariantText
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeTitleMedium
@@ -501,7 +501,7 @@ PanelWindow {
                 Text {
                     anchors.centerIn: parent
                     visible: root.results.length === 0
-                    text: root.entries.length === 0 ? "Буфер обмена пуст" : "Ничего не найдено"
+                    text: root.entries.length === 0 ? I18n.t("Буфер обмена пуст") : I18n.t("Ничего не найдено")
                     color: Theme.surfaceVariantText
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeLabelLarge
@@ -557,8 +557,8 @@ PanelWindow {
 
                         Repeater {
                             model: [
-                                { label: "Удалить выбранную", icon: Theme.iconDelete, enabled: root.results.length > 0 },
-                                { label: "Удалить всё", icon: Theme.iconDeleteForever, enabled: root.entries.length > 0 }
+                                { label: I18n.t("Удалить выбранную"), icon: Theme.iconDelete, enabled: root.results.length > 0 },
+                                { label: I18n.t("Удалить всё"), icon: Theme.iconDeleteForever, enabled: root.entries.length > 0 }
                             ]
 
                             delegate: MenuEntry {}
@@ -581,8 +581,8 @@ PanelWindow {
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
                     text: root.menuOpen
-                        ? "↑↓ — выбор · Enter — применить · Esc — назад"
-                        : "↑↓ — выбор · Enter — копировать · Ctrl+P — действия · Esc — закрыть"
+                        ? I18n.t("↑↓ — выбор · Enter — применить · Esc — назад")
+                        : I18n.t("↑↓ — выбор · Enter — копировать · Ctrl+P — действия · Esc — закрыть")
                     color: Theme.surfaceVariantText
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeLabelMedium
@@ -592,7 +592,7 @@ PanelWindow {
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
                     visible: root.query.length > 0
-                    text: root.results.length + " из " + root.entries.length
+                    text: root.results.length + I18n.t(" из ") + root.entries.length
                     color: Theme.surfaceVariantText
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeLabelMedium

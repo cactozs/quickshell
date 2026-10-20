@@ -31,8 +31,8 @@
 - **Уведомления** — Quickshell сам является демоном уведомлений: всплывающие
   тосты, история, режим «Не беспокоить» и центр уведомлений.
 - **Быстрые настройки** — громкость, яркость, Wi-Fi, ночной свет, «Не
-  беспокоить», MPRIS-плеер, профили питания, тема/стиль/цвета/шрифт и меню
-  питания.
+  беспокоить», MPRIS-плеер, профили питания, язык интерфейса (RU/EN/DE),
+  тема/стиль/цвета/шрифт и меню питания.
 - **Менеджер обоев** — рекурсивная библиотека, кеш превью, избранное, случайные
   обои, drag-and-drop на рабочий стол или панель.
 - **OSD и системное окно** — громкость/яркость, CPU, RAM, температура и GPU.
@@ -360,7 +360,7 @@ Mod+P       repeat=false { spawn "qs" "ipc" "call" "bar" "toggle"; }
 | `launcher` | — |
 | `clipboard` | — |
 | `center` (уведомления) | — |
-| `settings` (быстрые настройки) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono>`, `blur <wallpaper\|window>` |
+| `settings` (быстрые настройки) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono>`, `blur <wallpaper\|window>`, `language <ru\|en\|de>` |
 | `wallpaper` (менеджер) | `random` |
 | `bar` | `toggle` |
 | `notifs` | `toggleDnd`, `dnd`, `clear` |
@@ -417,7 +417,8 @@ qs ipc call notifs toggleDnd
 | город погоды | `services/Weather.qml` → `lat`, `lon` |
 | терминал | `$TERMINAL`; fallback в `modules/Launcher.qml` |
 | шрифты | `style/Theme.qml` → `fontFamily`, `iconFont`, `nerdFont` |
-| стиль, палитра, тема, шрифт | меню настроек или `qs ipc call settings …` |
+| переводы интерфейса | `services/I18n.qml` |
+| стиль, палитра, тема, шрифт, язык | меню настроек или `qs ipc call settings …` |
 | конфиги matugen | `~/.config/matugen/config.toml`, `light.toml` |
 | сгенерированные цвета niri | `~/.config/niri/quickshell.kdl` |
 | запись темы рабочего стола | `services/SystemTheme.qml` |

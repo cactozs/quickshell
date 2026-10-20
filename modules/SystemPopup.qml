@@ -161,7 +161,7 @@ PanelWindow {
 
             Text {
                 width: parent.width
-                text: "Мониторинг"
+                text: I18n.t("Мониторинг")
                 color: Theme.surfaceText
                 font.family: Theme.fontFamily
                 font.pixelSize: Theme.fontSizeTitleMedium
@@ -199,7 +199,7 @@ PanelWindow {
 
                 Text {
                     width: parent.width
-                    text: "Сеть"
+                    text: I18n.t("Сеть")
                     color: Theme.surfaceText
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeLabelLarge
@@ -218,7 +218,7 @@ PanelWindow {
             Text {
                 width: parent.width
                 visible: SystemMonitor.uptime !== "" || SystemMonitor.loadAvg !== ""
-                text: "Аптайм " + SystemMonitor.uptime + (SystemMonitor.loadAvg !== "" ? " • Load " + SystemMonitor.loadAvg : "")
+                text: I18n.t("Аптайм ") + SystemMonitor.uptime + (SystemMonitor.loadAvg !== "" ? " • Load " + SystemMonitor.loadAvg : "")
                 color: Theme.surfaceVariantText
                 font.family: Theme.fontFamily
                 font.pixelSize: Theme.fontSizeLabelMedium

@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import QtQuick
 import QtQuick.Effects
+import "../services"
 import "../style"
 
 // Month calendar popup for the bar's date chip: fixed-cell grid (Monday-first)
@@ -15,11 +16,11 @@ PopupWindow {
 
     property var cal: null
 
-    readonly property var monthNames: [
+    readonly property var monthNames: I18n.t([
         "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
         "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
-    ]
-    readonly property var dayNames: ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
+    ])
+    readonly property var dayNames: I18n.t(["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"])
 
     readonly property int cell: 34
     readonly property int cellSpacing: 2

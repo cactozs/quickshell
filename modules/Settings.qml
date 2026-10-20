@@ -11,10 +11,10 @@ import "../style"
 
 // Settings menu: a centered card over a full-screen scrim, unlike the bar's
 // docked panels. Opened from the "Настройки" tile in the quick settings;
-// Esc or a click outside dismisses it. Eight sections: the launcher view, the
-// shell-wide style pack, the blur source (hidden while nothing blurs), the
-// theme mode, the color scheme, the font, the system power profile and the
-// wallpaper manager shortcut.
+// Esc or a click outside dismisses it. Nine sections: the UI language, the
+// launcher view, the shell-wide style pack, the blur source (hidden while
+// nothing blurs), the theme mode, the color scheme, the font, the system
+// power profile and the wallpaper manager shortcut.
 PanelWindow {
     id: root
 
@@ -180,11 +180,46 @@ PanelWindow {
 
             Text {
                 width: parent.width
-                text: "Настройки"
+                text: I18n.t("Настройки")
                 color: Theme.surfaceText
                 font.family: Theme.fontFamily
                 font.pixelSize: Theme.fontSizeTitleLarge
                 font.weight: Font.Medium
+            }
+
+            // ---- language -------------------------------------------------------
+
+            // Native names on purpose: they need no translation and stay
+            // readable whichever language is picked.
+            RowLayout {
+                width: parent.width
+                spacing: 8
+
+                Text {
+                    Layout.fillWidth: true
+                    text: I18n.t("Язык")
+                    color: Theme.surfaceText
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeBodyLarge
+                }
+
+                SettingSegment {
+                    label: "Русский"
+                    selected: ShellState.language === "ru"
+                    onClicked: ShellState.setLanguage("ru")
+                }
+
+                SettingSegment {
+                    label: "English"
+                    selected: ShellState.language === "en"
+                    onClicked: ShellState.setLanguage("en")
+                }
+
+                SettingSegment {
+                    label: "Deutsch"
+                    selected: ShellState.language === "de"
+                    onClicked: ShellState.setLanguage("de")
+                }
             }
 
             // ---- launcher view --------------------------------------------------
@@ -195,20 +230,20 @@ PanelWindow {
 
                 Text {
                     Layout.fillWidth: true
-                    text: "Вид лончера"
+                    text: I18n.t("Вид лончера")
                     color: Theme.surfaceText
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeBodyLarge
                 }
 
                 SettingSegment {
-                    label: "Классический"
+                    label: I18n.t("Классический")
                     selected: !ShellState.launcherFullscreen
                     onClicked: ShellState.setLauncherFullscreen(false)
                 }
 
                 SettingSegment {
-                    label: "Полноэкранный"
+                    label: I18n.t("Полноэкранный")
                     selected: ShellState.launcherFullscreen
                     onClicked: ShellState.setLauncherFullscreen(true)
                 }
@@ -222,7 +257,7 @@ PanelWindow {
 
                 Text {
                     Layout.fillWidth: true
-                    text: "Стиль"
+                    text: I18n.t("Стиль")
                     color: Theme.surfaceText
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeBodyLarge
@@ -266,20 +301,20 @@ PanelWindow {
 
                 Text {
                     Layout.fillWidth: true
-                    text: "Блюр"
+                    text: I18n.t("Блюр")
                     color: Theme.surfaceText
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeBodyLarge
                 }
 
                 SettingSegment {
-                    label: "Обои"
+                    label: I18n.t("Обои")
                     selected: ShellState.blurSource === "wallpaper"
                     onClicked: ShellState.setBlurSource("wallpaper")
                 }
 
                 SettingSegment {
-                    label: "Окна"
+                    label: I18n.t("Окна")
                     selected: ShellState.blurSource === "window"
                     onClicked: ShellState.setBlurSource("window")
                 }
@@ -293,20 +328,20 @@ PanelWindow {
 
                 Text {
                     Layout.fillWidth: true
-                    text: "Тема"
+                    text: I18n.t("Тема")
                     color: Theme.surfaceText
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeBodyLarge
                 }
 
                 SettingSegment {
-                    label: "Тёмная"
+                    label: I18n.t("Тёмная")
                     selected: !Theme.light
                     onClicked: ShellState.setThemeMode("dark")
                 }
 
                 SettingSegment {
-                    label: "Светлая"
+                    label: I18n.t("Светлая")
                     selected: Theme.light
                     onClicked: ShellState.setThemeMode("light")
                 }
@@ -320,7 +355,7 @@ PanelWindow {
 
                 Text {
                     Layout.fillWidth: true
-                    text: "Цвета"
+                    text: I18n.t("Цвета")
                     color: Theme.surfaceText
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeBodyLarge
@@ -353,7 +388,7 @@ PanelWindow {
 
                 Text {
                     Layout.fillWidth: true
-                    text: "Шрифт"
+                    text: I18n.t("Шрифт")
                     color: Theme.surfaceText
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeBodyLarge
@@ -383,26 +418,26 @@ PanelWindow {
 
                 Text {
                     Layout.fillWidth: true
-                    text: "Профиль питания"
+                    text: I18n.t("Профиль питания")
                     color: Theme.surfaceText
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeBodyLarge
                 }
 
                 SettingSegment {
-                    label: "Экономия"
+                    label: I18n.t("Экономия")
                     selected: PowerProfiles.profile === PowerProfile.PowerSaver
                     onClicked: PowerProfiles.profile = PowerProfile.PowerSaver
                 }
 
                 SettingSegment {
-                    label: "Баланс"
+                    label: I18n.t("Баланс")
                     selected: PowerProfiles.profile === PowerProfile.Balanced
                     onClicked: PowerProfiles.profile = PowerProfile.Balanced
                 }
 
                 SettingSegment {
-                    label: "Производительность"
+                    label: I18n.t("Производительность")
                     visible: PowerProfiles.hasPerformanceProfile
                     selected: PowerProfiles.profile === PowerProfile.Performance
                     onClicked: PowerProfiles.profile = PowerProfile.Performance
@@ -417,7 +452,7 @@ PanelWindow {
 
                 Text {
                     Layout.fillWidth: true
-                    text: "Обои"
+                    text: I18n.t("Обои")
                     color: Theme.surfaceText
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeBodyLarge

@@ -1,12 +1,12 @@
 # Graph Report - quickshell  (2026-10-20)
 
 ## Corpus Check
-- 55 files · ~61,830 words
+- 55 files · ~60,006 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 7 file(s) not represented in the graph (top: (none) 4, .toml 2, .conf 1)
 
 ## Summary
-- 198 nodes · 323 edges · 35 communities (8 shown, 27 thin omitted)
+- 198 nodes · 324 edges · 35 communities (8 shown, 27 thin omitted)
 - Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 5 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
@@ -31,7 +31,7 @@
 2. `note()` - 22 edges
 3. `warn()` - 20 edges
 4. `install.sh script` - 17 edges
-5. `run_checks()` - 14 edges
+5. `run_checks()` - 15 edges
 6. `Quickshell` - 14 edges
 7. `Quickshell` - 14 edges
 8. `Bar (M3 floating pill panel)` - 13 edges
@@ -47,8 +47,8 @@
   style/Theme.qml → modules/IconButton.qml
 - `KeyboardLayout (niri layout chip)` --references--> `Niri.currentLayout`  [EXTRACTED]
   modules/KeyboardLayout.qml → services/Niri.qml
-- `WindowTitle (focused window chip)` --references--> `Niri.focusedWindow`  [EXTRACTED]
-  modules/WindowTitle.qml → services/Niri.qml
+- `Material 3 Expressive design language` --rationale_for--> `StateLayer (M3 hover/press overlay)`  [INFERRED]
+  style/Theme.qml → modules/StateLayer.qml
 
 ## Import Cycles
 - None detected.
@@ -72,7 +72,7 @@ Cohesion: 0.11
 Nodes (20): activateMenu(), ClipboardLauncher (cliphist overlay), copyEntry(), deleteEntry(), MenuEntry (inline actions row), parseList(), wipeHistory(), activate() (+12 more)
 
 ### Community 3 - "install.sh"
-Cohesion: 0.22
+Cohesion: 0.23
 Nodes (37): append_if_missing(), append_niri_autostart(), append_niri_environment(), apply_ghostty(), apply_niri(), apply_qt6ct(), backup_file(), check_desktop() (+29 more)
 
 ### Community 4 - "Quickshell"
@@ -92,7 +92,7 @@ Cohesion: 0.17
 Nodes (12): 1. Clone, 2. Packages, 3. Fonts, 4. matugen, 5. The awww shim, 6. niri, 7. ghostty and Qt, 8. Wallpapers, weather and terminal (+4 more)
 
 ## Knowledge Gaps
-- **5 isolated node(s):** `TimeClock (clock chip)`, `ShellState (cross-window state singleton)`, `IPC target: bar`, `IPC target: power`, `ShellState.powerMenuScreen`
+- **5 isolated node(s):** `TimeClock (clock chip)`, `IPC target: bar`, `IPC target: power`, `ShellState.powerMenuScreen`, `ShellState (cross-window state singleton)`
   These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 94 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **27 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -101,7 +101,7 @@ _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Bar (M3 floating pill panel)` connect `Bar Status Chips` to `LayoutBadge (keyboard-layout HUD)`?**
   _High betweenness centrality (0.047) - this node is a cross-community bridge._
-- **What connects `TimeClock (clock chip)`, `ShellState (cross-window state singleton)`, `IPC target: bar` to the rest of the system?**
+- **What connects `TimeClock (clock chip)`, `IPC target: bar`, `IPC target: power` to the rest of the system?**
   _5 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Bar Status Chips` be split into smaller, more focused modules?**
   _Cohesion score 0.10114942528735632 - nodes in this community are weakly interconnected._

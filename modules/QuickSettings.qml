@@ -85,9 +85,9 @@ PanelWindow {
 
     readonly property string wifiSubtitle: {
         if (!root.wifiEnabled)
-            return "Выключен";
+            return I18n.t("Выключен");
         const conn = root.networkList.find(n => n.connected);
-        return conn ? conn.name : "Включён";
+        return conn ? conn.name : I18n.t("Включён");
     }
 
     property bool wifiExpanded: false
@@ -159,7 +159,7 @@ PanelWindow {
     readonly property var powerActions: [
         {
             icon: Theme.iconPower,
-            label: "Выключение",
+            label: I18n.t("Выключение"),
             keys: ["s", "ы"],
             command: ["systemctl", "poweroff"],
             container: Theme.errorContainer,
@@ -167,7 +167,7 @@ PanelWindow {
         },
         {
             icon: Theme.iconRestart,
-            label: "Перезагрузка",
+            label: I18n.t("Перезагрузка"),
             keys: ["r", "к"],
             command: ["systemctl", "reboot"],
             container: Theme.primaryContainer,
@@ -175,7 +175,7 @@ PanelWindow {
         },
         {
             icon: Theme.iconLogout,
-            label: "Выход",
+            label: I18n.t("Выход"),
             keys: ["e", "у"],
             command: ["niri", "msg", "action", "quit", "--skip-confirmation"],
             container: Theme.secondaryContainer,
@@ -183,7 +183,7 @@ PanelWindow {
         },
         {
             icon: Theme.iconHibernate,
-            label: "Гибернация",
+            label: I18n.t("Гибернация"),
             keys: ["h", "р"],
             command: ["systemctl", "hibernate"],
             container: Theme.tertiaryContainer,
@@ -191,7 +191,7 @@ PanelWindow {
         },
         {
             icon: Theme.iconLock,
-            label: "Блокировка",
+            label: I18n.t("Блокировка"),
             keys: ["l", "д"],
             command: ["hyprlock"],
             container: Theme.surfaceContainerHighest,
@@ -199,7 +199,7 @@ PanelWindow {
         },
         {
             icon: Theme.iconSuspend,
-            label: "Сон",
+            label: I18n.t("Сон"),
             keys: ["u", "г"],
             command: ["systemctl", "suspend"],
             container: Theme.primary,
@@ -586,7 +586,7 @@ PanelWindow {
                 QsTile {
                     width: tileGrid.tileWidth
                     icon: Theme.iconDnd
-                    title: "Не беспокоить"
+                    title: I18n.t("Не беспокоить")
                     active: Notifications.dnd
 
                     onActivated: Notifications.toggleDnd()
@@ -596,7 +596,7 @@ PanelWindow {
                     width: tileGrid.tileWidth
                     visible: NightLight.available
                     icon: Theme.iconNightlight
-                    title: "Ночной свет"
+                    title: I18n.t("Ночной свет")
                     active: NightLight.enabled
 
                     onActivated: NightLight.toggle()
@@ -605,7 +605,7 @@ PanelWindow {
                 QsTile {
                     width: tileGrid.tileWidth
                     icon: Theme.iconSettings
-                    title: "Настройки"
+                    title: I18n.t("Настройки")
 
                     onActivated: {
                         ShellState.closeQuickSettings();
@@ -649,7 +649,7 @@ PanelWindow {
                     Text {
                         width: parent.width
                         visible: !root.wifiEnabled
-                        text: "Wi-Fi выключен"
+                        text: I18n.t("Wi-Fi выключен")
                         color: Theme.surfaceVariantText
                         font.family: Theme.fontFamily
                         font.pixelSize: Theme.fontSizeLabelLarge
@@ -658,7 +658,7 @@ PanelWindow {
                     Text {
                         width: parent.width
                         visible: root.wifiEnabled && root.networkList.length === 0
-                        text: "Поиск сетей…"
+                        text: I18n.t("Поиск сетей…")
                         color: Theme.surfaceVariantText
                         font.family: Theme.fontFamily
                         font.pixelSize: Theme.fontSizeLabelLarge
@@ -719,7 +719,7 @@ PanelWindow {
                                 anchors.leftMargin: 12
                                 anchors.verticalCenter: parent.verticalCenter
                                 visible: pskInput.text.length === 0
-                                text: "Пароль"
+                                text: I18n.t("Пароль")
                                 color: Theme.surfaceVariantText
                                 font.family: Theme.fontFamily
                                 font.pixelSize: Theme.fontSizeLabelLarge
@@ -751,7 +751,7 @@ PanelWindow {
                             anchors.right: parent.right
                             anchors.rightMargin: 10
                             anchors.verticalCenter: parent.verticalCenter
-                            text: "Подключить"
+                            text: I18n.t("Подключить")
                             color: Theme.primary
                             font.family: Theme.fontFamily
                             font.pixelSize: Theme.fontSizeLabelLarge
@@ -792,7 +792,7 @@ PanelWindow {
                             id: errorText
 
                             width: parent.width
-                            text: root.wifiError
+                            text: root.wifiError !== "" ? I18n.t("Не удалось подключиться: ") + I18n.t(root.wifiError) : ""
                             color: Theme.error
                             font.family: Theme.fontFamily
                             font.pixelSize: Theme.fontSizeLabelMedium
@@ -951,7 +951,7 @@ PanelWindow {
                     anchors.left: parent.left
                     anchors.leftMargin: 12
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "Питание"
+                    text: I18n.t("Питание")
                     color: Theme.surfaceText
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeTitleMedium
@@ -1282,7 +1282,7 @@ PanelWindow {
             anchors.right: forgetButton.visible ? forgetButton.left : parent.right
             anchors.rightMargin: 8
             anchors.verticalCenter: parent.verticalCenter
-            text: row.connecting ? "Подключение…" : (row.net.connected ? "Подключено" : Math.round(row.net.signalStrength * 100) + "%")
+            text: row.connecting ? I18n.t("Подключение…") : (row.net.connected ? I18n.t("Подключено") : Math.round(row.net.signalStrength * 100) + "%")
             color: row.connecting || row.net.connected ? Theme.primary : Theme.surfaceVariantText
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSizeLabelMedium
@@ -1309,7 +1309,7 @@ PanelWindow {
             anchors.right: rowLock.visible ? rowLock.left : rowStatus.left
             anchors.rightMargin: 8
             anchors.verticalCenter: parent.verticalCenter
-            text: row.armed ? "Забыть сеть?" : row.net.name
+            text: row.armed ? I18n.t("Забыть сеть?") : row.net.name
             color: row.armed ? Theme.error : Theme.surfaceText
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSizeLabelLarge
@@ -1347,7 +1347,7 @@ PanelWindow {
             }
 
             function onConnectionFailed(reason): void {
-                root.wifiError = "Не удалось подключиться: " + root.failText(reason);
+                root.wifiError = root.failText(reason);
             }
         }
 

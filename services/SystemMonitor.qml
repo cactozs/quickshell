@@ -44,18 +44,18 @@ Singleton {
 
     readonly property string tooltip:
         "CPU\n" +
-        "Temperature: " + cpuTemp + "\n" +
-        "Usage: " + cpuUsage + "%\n" +
+        I18n.t("Temperature: ") + cpuTemp + "\n" +
+        I18n.t("Usage: ") + cpuUsage + "%\n" +
         "\n" +
         "GPU\n" +
-        "Temperature: " + gpuTemp + "\n" +
-        "Usage: " + gpuUsage + "\n" +
+        I18n.t("Temperature: ") + gpuTemp + "\n" +
+        I18n.t("Usage: ") + gpuUsage + "\n" +
         "\n" +
-        "Memory\n" +
-        "Used: " + ramUsed + " / " + ramTotal + "\n" +
-        "Usage: " + ramUsage + "%\n" +
+        I18n.t("Memory") + "\n" +
+        I18n.t("Used: ") + ramUsed + " / " + ramTotal + "\n" +
+        I18n.t("Usage: ") + ramUsage + "%\n" +
         "\n" +
-        "Network\n" +
+        I18n.t("Network") + "\n" +
         "↓ " + rxSpeed + "\n" +
         "↑ " + txSpeed
 
@@ -72,7 +72,7 @@ Singleton {
         const m = Math.floor(s % 3600 / 60);
         const hh = h < 10 ? "0" + h : "" + h;
         const mm = m < 10 ? "0" + m : "" + m;
-        return d > 0 ? d + " дн " + hh + ":" + mm : hh + ":" + mm;
+        return d > 0 ? d + I18n.t(" дн ") + hh + ":" + mm : hh + ":" + mm;
     }
 
     function pushHistory(series: var, value: int): var {

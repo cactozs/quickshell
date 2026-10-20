@@ -169,7 +169,7 @@ PanelWindow {
 
             visible: !Weather.hasData
             anchors.centerIn: parent
-            text: Weather.error !== "" ? Weather.error : "Загрузка…"
+            text: I18n.t(Weather.error !== "" ? Weather.error : "Загрузка…")
             color: Theme.surfaceVariantText
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSizeLabelLarge
@@ -206,7 +206,7 @@ PanelWindow {
                     }
 
                     Text {
-                        text: Weather.label
+                        text: I18n.t(Weather.label)
                         color: Theme.surfaceVariantText
                         font.family: Theme.fontFamily
                         font.pixelSize: Theme.fontSizeLabelLarge
@@ -215,7 +215,7 @@ PanelWindow {
             }
 
             Text {
-                text: "Ощущается " + Math.round(Weather.feels) + "° • Ветер " + Math.round(Weather.wind) + " м/с • Влажность " + Weather.humidity + "%"
+                text: I18n.t("Ощущается ") + Math.round(Weather.feels) + I18n.t("° • Ветер ") + Math.round(Weather.wind) + I18n.t(" м/с • Влажность ") + Weather.humidity + "%"
                 color: Theme.surfaceVariantText
                 font.family: Theme.fontFamily
                 font.pixelSize: Theme.fontSizeLabelMedium
@@ -280,7 +280,7 @@ PanelWindow {
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
                             width: 90
-                            text: modelData.day
+                            text: I18n.t(modelData.day)
                             color: Theme.surfaceText
                             font.family: Theme.fontFamily
                             font.pixelSize: Theme.fontSizeLabelLarge

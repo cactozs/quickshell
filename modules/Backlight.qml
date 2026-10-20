@@ -25,7 +25,7 @@ IconButton {
 
     Tip {
         target: root
-        text: "Brightness: " + Brightness.percent + "%"
+        text: I18n.t("Brightness: ") + Brightness.percent + "%"
         shown: root.hovered
     }
 }

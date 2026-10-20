@@ -30,8 +30,8 @@ English (except for the Russian README).
 - **Notifications** — Quickshell is the notification daemon; toast popups,
   history, do-not-disturb and a notification center.
 - **Quick settings** — volume, brightness, Wi-Fi, night light, do-not-disturb,
-  MPRIS media, power profiles, theme/style/colorscheme/font controls and the
-  power menu.
+  MPRIS media, power profiles, UI language (RU/EN/DE), theme/style/colorscheme/
+  font controls and the power menu.
 - **Wallpaper manager** — recursive library, cached previews, favorites,
   random wallpaper, drag-and-drop from the desktop or the bar.
 - **OSD and system popup** — volume/brightness overlay, CPU, RAM, temperature
@@ -355,7 +355,7 @@ Volume, brightness, media and lock binds do not go through the shell: use
 | `launcher` | — |
 | `clipboard` | — |
 | `center` (notifications) | — |
-| `settings` (quick settings) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono>`, `blur <wallpaper\|window>` |
+| `settings` (quick settings) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono>`, `blur <wallpaper\|window>`, `language <ru\|en\|de>` |
 | `wallpaper` (manager) | `random` |
 | `bar` | `toggle` |
 | `notifs` | `toggleDnd`, `dnd`, `clear` |
@@ -410,7 +410,8 @@ graphite acrylic, and `Nothing` is opaque graphite with hard corners.
 | weather location | `services/Weather.qml` → `lat`, `lon` |
 | terminal | `$TERMINAL`; fallback in `modules/Launcher.qml` |
 | fonts | `style/Theme.qml` → `fontFamily`, `iconFont`, `nerdFont` |
-| style, palette, light/dark, font mode | settings menu, or `qs ipc call settings …` |
+| UI translations | `services/I18n.qml` |
+| style, palette, light/dark, font mode, language | settings menu, or `qs ipc call settings …` |
 | matugen dark/light configs | `~/.config/matugen/config.toml`, `light.toml` |
 | generated niri colors | `~/.config/niri/quickshell.kdl` |
 | desktop theme writer | `services/SystemTheme.qml` |
