@@ -1,7 +1,7 @@
-# Graph Report - quickshell  (2026-10-19)
+# Graph Report - quickshell  (2026-10-20)
 
 ## Corpus Check
-- 52 files · ~38,033 words
+- 52 files · ~47,477 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 4 file(s) not represented in the graph (top: (none) 2, .toml 2)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `10ffd215`
+- Built from commit: `e0a9b852`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -37,7 +37,7 @@
 7. `LayoutBadge (keyboard-layout HUD)` - 7 edges
 8. `StateLayer (M3 hover/press overlay)` - 7 edges
 9. `Tip (M3 tooltip popup)` - 6 edges
-10. `handleLine() event dispatch` - 6 edges
+10. `Theme (M3 Expressive design tokens singleton)` - 6 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `Bar (M3 floating pill panel)` --shares_data_with--> `ShellState.barHidden`  [EXTRACTED]
@@ -97,7 +97,7 @@ Cohesion: 0.67
 Nodes (3): ShellState.barHidden, IPC target: bar, toggleBar()
 
 ## Knowledge Gaps
-- **5 isolated node(s):** `TimeClock (clock chip)`, `IPC target: bar`, `ShellState (cross-window state singleton)`, `IPC target: power`, `ShellState.powerMenuScreen`
+- **5 isolated node(s):** `TimeClock (clock chip)`, `ShellState (cross-window state singleton)`, `IPC target: bar`, `IPC target: power`, `ShellState.powerMenuScreen`
   These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 62 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **27 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -106,7 +106,7 @@ _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Bar (M3 floating pill panel)` connect `Bar Status Chips` to `ShellState.barHidden`, `SystemStats (CPU/GPU/RAM chip)`, `Niri Workspaces`, `LayoutBadge (keyboard-layout HUD)`?**
   _High betweenness centrality (0.128) - this node is a cross-community bridge._
-- **What connects `TimeClock (clock chip)`, `IPC target: bar`, `ShellState (cross-window state singleton)` to the rest of the system?**
+- **What connects `TimeClock (clock chip)`, `ShellState (cross-window state singleton)`, `IPC target: bar` to the rest of the system?**
   _5 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `installation` be split into smaller, more focused modules?**
   _Cohesion score 0.1111111111111111 - nodes in this community are weakly interconnected._

@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import Quickshell
+import Quickshell.Services.UPower
 import Quickshell.Wayland
 import QtQuick
 import QtQuick.Effects
@@ -10,9 +11,10 @@ import "../style"
 
 // Settings menu: a centered card over a full-screen scrim, unlike the bar's
 // docked panels. Opened from the "Настройки" tile in the quick settings;
-// Esc or a click outside dismisses it. Seven sections: the launcher view, the
+// Esc or a click outside dismisses it. Eight sections: the launcher view, the
 // shell-wide style pack, the blur source (hidden while nothing blurs), the
-// theme mode, the color scheme, the font and the wallpaper manager shortcut.
+// theme mode, the color scheme, the font, the system power profile and the
+// wallpaper manager shortcut.
 PanelWindow {
     id: root
 
@@ -367,6 +369,43 @@ PanelWindow {
                     label: "Monospace"
                     selected: ShellState.fontMode === "mono"
                     onClicked: ShellState.setFontMode("mono")
+                }
+            }
+
+            // ---- power profile --------------------------------------------------
+
+            // Straight from power-profiles-daemon: it is the source of truth,
+            // so there is no shell-side copy to persist. The performance
+            // segment is hidden when the daemon reports no such profile.
+            RowLayout {
+                width: parent.width
+                spacing: 8
+
+                Text {
+                    Layout.fillWidth: true
+                    text: "Профиль питания"
+                    color: Theme.surfaceText
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeBodyLarge
+                }
+
+                SettingSegment {
+                    label: "Экономия"
+                    selected: PowerProfiles.profile === PowerProfile.PowerSaver
+                    onClicked: PowerProfiles.profile = PowerProfile.PowerSaver
+                }
+
+                SettingSegment {
+                    label: "Баланс"
+                    selected: PowerProfiles.profile === PowerProfile.Balanced
+                    onClicked: PowerProfiles.profile = PowerProfile.Balanced
+                }
+
+                SettingSegment {
+                    label: "Производительность"
+                    visible: PowerProfiles.hasPerformanceProfile
+                    selected: PowerProfiles.profile === PowerProfile.Performance
+                    onClicked: PowerProfiles.profile = PowerProfile.Performance
                 }
             }
 

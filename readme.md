@@ -35,7 +35,7 @@ Cloning somewhere else works, but two paths stay hardcoded to `$HOME/.config/qui
 sudo pacman -S quickshell niri alacritty jq cliphist wl-clipboard brightnessctl \
     curl fd ripgrep matugen awww ttf-material-symbols-variable ttf-nerd-fonts-symbols \
     ttf-jetbrains-mono-nerd hyprlock \
-    pipewire wireplumber upower networkmanager ghostty qt6ct gtk3 gtk4
+    pipewire wireplumber upower power-profiles-daemon networkmanager ghostty qt6ct gtk3 gtk4
 ```
 
 `ghostty`, `qt6ct`, `gtk3` and `gtk4` are what the shell themes (step 7); the shell itself runs without them. Optional — the matching feature just disappears without them:
@@ -310,6 +310,7 @@ Wayland + niri, Arch package names. The install commands are in [installation](#
 | `hyprlock` | "Блокировка" in the power menu, `Super+Alt+L` |
 | `pipewire` + `wireplumber` | volume chip, slider, mute (`Quickshell.Services.Pipewire`) |
 | `upower` | battery chip (`Quickshell.Services.UPower`) |
+| `power-profiles-daemon` | the «Профиль питания» row in the settings menu (`PowerProfiles`) |
 | `networkmanager` | Wi-Fi tile and network list (`Quickshell.Networking`) |
 | `nvidia-utils` | GPU rows in the system popup (`nvidia-smi`, `services/SystemMonitor.qml:203`) |
 | `wlsunset` | night light tile (`services/NightLight.qml`) |
