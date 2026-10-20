@@ -483,8 +483,8 @@ PanelWindow {
 
         implicitWidth: segLabel.implicitWidth + 32
         implicitHeight: 40
-        // Nothing squares the segment off instead of the M3 pill.
-        radius: Theme.nothing ? Theme.shapeMD : Theme.shapeFull
+        // Nothing and New square the segment off instead of the M3 pill.
+        radius: Theme.nothing || Theme.glass ? Theme.shapeMD : Theme.shapeFull
         color: seg.selected ? Theme.secondaryContainer : "transparent"
         border.width: seg.selected ? 0 : 1
         border.color: Theme.outline

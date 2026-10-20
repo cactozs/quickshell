@@ -335,7 +335,8 @@ PanelWindow {
                 width: parent.width
                 implicitHeight: 56
                 height: implicitHeight
-                radius: Theme.shapeFull
+                // Nothing and New square the field off instead of the M3 pill.
+                radius: Theme.nothing || Theme.glass ? Theme.shapeMD : Theme.shapeFull
                 color: Theme.surfaceContainerHighest
 
                 Text {

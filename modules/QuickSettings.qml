@@ -1121,7 +1121,10 @@ PanelWindow {
         signal detailsToggled
 
         implicitHeight: 64
-        radius: tileTap.pressed ? Theme.shapeLGI : Theme.shapeXL
+        // New rests squarer than the M3 tile and pulls the corners in on press.
+        radius: Theme.glass
+            ? (tileTap.pressed ? Theme.shapeSM : Theme.shapeMD)
+            : (tileTap.pressed ? Theme.shapeLGI : Theme.shapeXL)
         color: tile.active ? Theme.primaryContainer : Theme.surfaceContainerHighest
         scale: tileTap.pressed ? 0.98 : 1
 
@@ -1255,7 +1258,7 @@ PanelWindow {
 
         width: ListView.view ? ListView.view.width : 0
         height: root.netRowHeight
-        radius: Theme.shapeLG
+        radius: Theme.glass ? Theme.shapeMD : Theme.shapeLG
         color: "transparent"
 
         StateLayer {
@@ -1372,7 +1375,7 @@ PanelWindow {
 
         width: parent ? parent.width : 0
         height: 48
-        radius: Theme.shapeLG
+        radius: Theme.glass ? Theme.shapeMD : Theme.shapeLG
         color: row.modelData.container
         scale: row.pressed ? 0.98 : 1
 
