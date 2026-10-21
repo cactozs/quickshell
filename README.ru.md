@@ -428,8 +428,9 @@ qs ipc call notifs toggleDnd
 | уведомления | `services/Notifications.qml` |
 | IPC-обработчики | `services/ShellState.qml` |
 
-`launcher-usage.json`, `wallpaper-favorites.json` и `.qmlls.ini` — локальное
-состояние, оно в `.gitignore`. `style/Colors.json` и `style/ColorsLight.json` —
+`launcher-usage.json`, `wallpaper-favorites.json`, `shell-state.json` и
+`.qmlls.ini` — локальное состояние, оно в `.gitignore`.
+`style/Colors.json` и `style/ColorsLight.json` —
 сгенерированные палитры, но они лежат в git, чтобы свежий клон имел рабочий
 fallback до первого запуска matugen.
 

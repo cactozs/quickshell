@@ -29,19 +29,32 @@ Singleton {
     property string settingsScreen: ""
     property string wallpaperScreen: ""
 
-    // Carried in-memory across config reloads, so a hidden bar stays hidden
-    // while editing the shell.
-    PersistentProperties {
-        id: props
-        reloadableId: "shell-state"
-        property bool barHidden
-        property bool launcherFullscreen
-        property string styleMode
-        property string colorScheme
-        property string themeMode
-        property string fontMode
-        property string blurSource
-        property string language
+    // Settings live in shell-state.json: PersistentProperties survives a config
+    // reload but not the process restarting at login. The read below is
+    // synchronous so the adapter holds the stored values before Theme and I18n
+    // read them, otherwise the first frame is the default theme.
+    FileView {
+        id: stateFile
+
+        path: Qt.resolvedUrl("../shell-state.json")
+        blockLoading: true
+        printErrors: false
+
+        Component.onCompleted: text()
+        onAdapterUpdated: writeAdapter()
+
+        JsonAdapter {
+            id: props
+
+            property bool barHidden
+            property bool launcherFullscreen
+            property string styleMode
+            property string colorScheme
+            property string themeMode
+            property string fontMode
+            property string blurSource
+            property string language
+        }
     }
 
     readonly property bool barHidden: props.barHidden
@@ -54,8 +67,8 @@ Singleton {
     // settings menu): "wallpaper" = the wallpaper alone, niri's xray and the
     // default; "window" = whatever sits under the plate, windows included. The
     // choice is niri policy, so services/SystemTheme.qml writes it into the
-    // niri config and reads it back from there at startup — that file is what
-    // carries the setting across a reboot, this property is the live copy.
+    // niri config and reads it back from there at startup — that file stays the
+    // record, this property is the live copy.
     // Normalized like the other modes.
     readonly property string blurSource: props.blurSource === "window" ? "window" : "wallpaper"
 

@@ -422,8 +422,8 @@ rim, specular, drop shadow and blur.
 | notifications | `services/Notifications.qml` |
 | IPC handlers | `services/ShellState.qml` |
 
-`launcher-usage.json`, `wallpaper-favorites.json` and `.qmlls.ini` are local
-runtime state and are gitignored. `style/Colors.json` and
+`launcher-usage.json`, `wallpaper-favorites.json`, `shell-state.json` and
+`.qmlls.ini` are local runtime state and are gitignored. `style/Colors.json` and
 `style/ColorsLight.json` are generated palettes, but they are tracked so a
 fresh clone has a usable fallback until matugen runs.
 
