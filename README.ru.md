@@ -36,8 +36,9 @@
 - **Менеджер обоев** — рекурсивная библиотека, кеш превью, избранное, случайные
   обои, drag-and-drop на рабочий стол или панель.
 - **OSD и системное окно** — громкость/яркость, CPU, RAM, температура и GPU.
-- **Четыре стиля** — `M3 Inspired`, `M3 Blur`, `New` (графитовый акрил) и
-  `Nothing` (непрозрачный графит, жёсткие углы).
+- **Пять стилей** — `M3 Inspired`, `M3 Blur`, `New` (графитовый акрил),
+  `Nothing` (непрозрачный графит, жёсткие углы) и `New Nothing` (тот же графит
+  с акриловой отделкой и блюром).
 - **Светлая и тёмная темы** — второй проход matugen пишет светлую палитру;
   переключается и оболочка, и остальной рабочий стол.
 
@@ -360,7 +361,7 @@ Mod+P       repeat=false { spawn "qs" "ipc" "call" "bar" "toggle"; }
 | `launcher` | — |
 | `clipboard` | — |
 | `center` (уведомления) | — |
-| `settings` (быстрые настройки) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono>`, `blur <wallpaper\|window>`, `language <ru\|en\|de>` |
+| `settings` (быстрые настройки) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono>`, `blur <wallpaper\|window>`, `language <ru\|en\|de>` |
 | `wallpaper` (менеджер) | `random` |
 | `bar` | `toggle` |
 | `notifs` | `toggleDnd`, `dnd`, `clear` |
@@ -406,7 +407,8 @@ qs ipc call notifs toggleDnd
 **Стили** переключаются в меню настроек или через
 `qs ipc call settings style …`. `M3 Inspired` — палитра matugen с формами M3,
 `M3 Blur` добавляет акрил и блюр композитора, `New` — графитовый акрил,
-`Nothing` — непрозрачный графит с жёсткими углами.
+`Nothing` — непрозрачный графит с жёсткими углами, а `New Nothing` — тот же
+графит и те же углы с акриловой отделкой `New`: рамка, блик, тень и блюр.
 
 ## Настройка
 

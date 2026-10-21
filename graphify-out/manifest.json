@@ -1,14 +1,14 @@
 {
   "style/Colors.json": {
-    "mtime": 1792510567.1750505,
-    "seen": 1792512235.4890504,
-    "ast_hash": "de25042f95b1c60b4afde0c28c049d51",
+    "mtime": 1792515921.6061895,
+    "seen": 1792557048.8943524,
+    "ast_hash": "6e803e7275078d9aaf64dae55f991475",
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1792501074.7071905,
-    "seen": 1792501235.914312,
-    "ast_hash": "f4e1958b3c7775fa57ff46b1f3d5b7c0",
+    "mtime": 1792555210.5579402,
+    "seen": 1792557048.894371,
+    "ast_hash": "52c32635d278328a67544cf512ba9fc6",
     "semantic_hash": ""
   },
   "modules/Backlight.qml": {
@@ -138,9 +138,9 @@
     "language": "language=.md"
   },
   "services/ShellState.qml": {
-    "mtime": 1792503274.7704575,
-    "seen": 1792503302.3684988,
-    "ast_hash": "d927d399bc46ccddd9ea7096812d13d2",
+    "mtime": 1792556538.2507155,
+    "seen": 1792557048.8946936,
+    "ast_hash": "ab6a5386876629ff3a717d8a9a22f629",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -159,9 +159,9 @@
     "language": "language=.md"
   },
   "style/Theme.qml": {
-    "mtime": 1792501538.9719193,
-    "seen": 1792501568.2739763,
-    "ast_hash": "e948e69c41016c9f09554f23986730f2",
+    "mtime": 1792555118.4710965,
+    "seen": 1792557048.8947341,
+    "ast_hash": "3a627a449a20602d2dc8782838e21015",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -271,9 +271,9 @@
     "language": "language=.md"
   },
   "modules/Settings.qml": {
-    "mtime": 1792505181.9866712,
-    "seen": 1792505194.2862825,
-    "ast_hash": "d6017f5c17fb234b2de8af58cb98f4d2",
+    "mtime": 1792556222.1272407,
+    "seen": 1792557048.8945558,
+    "ast_hash": "a69e53bf4a23c97e09a0bceec593442b",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -313,8 +313,8 @@
     "language": "language=.md"
   },
   "style/ColorsLight.json": {
-    "mtime": 1792510568.738038,
-    "seen": 1792512235.4890604,
+    "mtime": 1792515923.8091931,
+    "seen": 1792557048.8943624,
     "ast_hash": "10c6e10d8679c710a05fe906a5572e50",
     "semantic_hash": ""
   },
@@ -370,15 +370,15 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1792503094.6301,
-    "seen": 1792503302.3681426,
-    "ast_hash": "dce9b2369c197f63436b1edf414039eb",
+    "mtime": 1792555164.5384607,
+    "seen": 1792557048.8943872,
+    "ast_hash": "ef373a418722e0731c71a5a96759646f",
     "semantic_hash": ""
   },
   "README.ru.md": {
-    "mtime": 1792503094.6301,
-    "seen": 1792503302.3681505,
-    "ast_hash": "8554cc0d56f20a71e2a05ce632617622",
+    "mtime": 1792555191.086149,
+    "seen": 1792557048.8943934,
+    "ast_hash": "86d129cec65dc55645c197f89c024523",
     "semantic_hash": ""
   },
   "assets/screenshots/calendar.png": {

@@ -21,16 +21,19 @@ import "../services"
 // the bar in either mode; switching ShellState.themeMode just swaps which file
 // feeds the tokens.
 //
-// Four style packs share these tokens (ShellState.styleMode, switched in the
+// Five style packs share these tokens (ShellState.styleMode, switched in the
 // settings menu): "m3" is the wallpaper palette above; "blur" keeps that
 // palette and the M3 shape scale but turns the backdrops acrylic and asks the
 // compositor to blur behind them; "new" swaps in fixed graphite surfaces with
 // the same acrylic alpha, flat text tones, a hairline edge with an inner rim
 // and a neutral drop shadow, while the accents stay wallpaper-derived;
 // "nothing" is opaque graphite with a hairline edge, hard corners and a single
-// signal-red accent (no glass dressing, no blur). Tokens only the dressing
-// needs hang off `glass`, the acrylic ones off `blur`, the hard-edge ones off
-// `nothing`, so the M3 look is untouched.
+// signal-red accent (no glass dressing, no blur); "newNothing" is that graphite
+// and those hard corners wearing the New acrylic dressing — the same acrylic
+// alpha, rim, specular and shadow, with the compositor blur behind them. Tokens
+// only the dressing needs hang off `glass`, the acrylic ones off `blur`, the
+// hard-edge ones off `nothing`, New's own palette and opaque popups off
+// `newLook`, so the M3 look is untouched.
 //
 // ShellState.colorScheme picks the palette source: "matugen" (the file above),
 // "oled" (strict black/white) or "gruvbox" (Gruvbox). Each fixed pack has a
@@ -54,14 +57,21 @@ Singleton {
         return "'" + value.replace(/'/g, "'\\''") + "'";
     }
 
-    readonly property bool glass: ShellState.styleMode === "new"
+    // New's own palette, radii and opaque popup tone. The acrylic dressing
+    // (rim, specular, shadow, veil) is `glass` below, which "newNothing" shares.
+    readonly property bool newLook: ShellState.styleMode === "new"
+
+    // Acrylic card dressing: "new" and "newNothing".
+    readonly property bool glass: ShellState.styleMode === "new" || ShellState.styleMode === "newNothing"
 
     // Opaque graphite, hard corners, one-pixel edges, one signal-red accent.
-    readonly property bool nothing: ShellState.styleMode === "nothing"
+    // "newNothing" keeps the palette and the corners and only adds the dressing.
+    readonly property bool nothing: ShellState.styleMode === "nothing" || ShellState.styleMode === "newNothing"
 
     // Translucent backdrops plus the compositor blur behind them ("New" carries
     // it with the graphite palette, "blur" with the wallpaper one).
     readonly property bool blur: ShellState.styleMode === "new" || ShellState.styleMode === "blur"
+        || ShellState.styleMode === "newNothing"
 
     // ShellState.themeMode, resolved: "dark" unless the user picked light.
     readonly property bool light: ShellState.themeMode === "light"
@@ -222,7 +232,8 @@ Singleton {
     // "Nothing" pack: near-black graphite plates, white type, neutral grays and
     // one signal-red accent (primary) reserved for small highlights. Selection
     // is a raised graphite tone, not a red fill; containers are listed whole
-    // because the pack owns the surfaces (no chip veil here, nothing blurs).
+    // because the pack owns the surfaces (it blurs nothing by itself).
+    // "newNothing" reuses this ladder and takes the acrylic alpha in `scheme`.
     readonly property var nothingScheme: ({
         "surface": "#ff0b0b0c",
         "on_surface": "#fff2f2f2",
@@ -456,18 +467,20 @@ Singleton {
     // a picked color scheme owns the surfaces. Under glass the chips and fields
     // become a veil instead of a solid tone (so the acrylic reads through
     // them), and the matugen surfaces take a hint of the accent, so the glass
-    // belongs to the wallpaper. "Blur" is the same acrylic ladder — the same
-    // veil and the same roles and alpha as the graphite pack — laid over
-    // whatever palette is active.
+    // belongs to the wallpaper. "Blur" and "newNothing" are the same acrylic
+    // ladder — the same veil and the same roles and alpha as the graphite pack —
+    // laid over whatever palette is active; their palettes ship opaque, so the
+    // alpha is applied here (and they take no accent tint: Nothing's palette is
+    // fixed).
     readonly property var scheme: {
-        const matugenGlass = root.glass && ShellState.colorScheme === "matugen";
+        const matugenGlass = root.newLook && ShellState.colorScheme === "matugen";
         const base = matugenGlass
             ? Object.assign({}, root.activeScheme, root.light ? root.newLightScheme : root.newScheme)
             : root.activeScheme;
         if (!root.blur)
             return base;
         const glassScheme = Object.assign({}, base, { "surface_container_highest": root.chipVeil });
-        if (!root.glass) {
+        if (!root.newLook) {
             for (const key of root.acrylicSurfaceKeys)
                 glassScheme[key] = root.withAlpha(glassScheme[key], root.acrylicAlpha);
         } else if (matugenGlass) {
@@ -704,10 +717,12 @@ Singleton {
     readonly property int hairlineWidth: root.glass || root.nothing ? 1 : 0
     // Outer edge stays faint; the bright edge is cardRim, one pixel inside it.
     // Both modes are lit from above, so the bevel is white in both: over
-    // graphite it is the visible edge, over paper a faint lift.
-    readonly property color hairline: root.nothing
-        ? (root.light ? "#22000000" : "#26ffffff")
-        : root.glass ? (root.light ? "#14000000" : "#14ffffff") : "transparent"
+    // graphite it is the visible edge, over paper a faint lift. The opaque
+    // Nothing pack has no rim, so there its hairline carries the edge alone and
+    // stays brighter.
+    readonly property color hairline: root.glass
+        ? (root.light ? "#14000000" : "#14ffffff")
+        : root.nothing ? (root.light ? "#22000000" : "#26ffffff") : "transparent"
     readonly property color cardRim: root.glass ? (root.light ? "#33ffffff" : "#26ffffff") : "transparent"
 
     // Neutral drop shadow under cards, as RectangularShadow args. Invisible
@@ -737,9 +752,10 @@ Singleton {
 
     // Opaque twin of that tone for the windows that cannot blur (popups: the
     // tooltip and the calendar popup) — the veil would show the desktop
-    // through them, unblurred. Taken from the palette and not from `scheme`,
-    // which "blur" has turned into that veil; under m3 the two are the same.
-    readonly property color popupSurface: root.glass
+    // through them, unblurred. New keeps its graphite tone; every other pack
+    // takes the palette's raised container, which under "newNothing" is
+    // Nothing's opaque gray (not the veil `scheme` hands out).
+    readonly property color popupSurface: root.newLook
         ? (root.light ? "#fff0f2f6" : "#ff1c1f25")
         : root.activeScheme.surface_container_highest
 

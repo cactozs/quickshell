@@ -22,7 +22,8 @@ PanelWindow {
 
     readonly property bool shown: ShellState.settingsScreen === root.modelData.name
 
-    readonly property int cardWidth: 560
+    // Wide enough for the five style segments.
+    readonly property int cardWidth: 600
     readonly property int cardPadding: 20
 
     screen: modelData
@@ -286,6 +287,12 @@ PanelWindow {
                     selected: ShellState.styleMode === "nothing"
                     onClicked: ShellState.setStyleMode("nothing")
                 }
+
+                SettingSegment {
+                    label: "New Nothing"
+                    selected: ShellState.styleMode === "newNothing"
+                    onClicked: ShellState.setStyleMode("newNothing")
+                }
             }
 
             // ---- blur source ----------------------------------------------------
@@ -293,11 +300,11 @@ PanelWindow {
             // Only the blur styles have anything to blur, so the row is hidden
             // under M3 Inspired and Nothing: their surfaces are opaque and no
             // window requests a background effect (the niri rule stays inert
-            // by itself).
+            // by itself). Theme.blur is exactly that set.
             RowLayout {
                 width: parent.width
                 spacing: 8
-                visible: ShellState.styleMode === "new" || ShellState.styleMode === "blur"
+                visible: Theme.blur
 
                 Text {
                     Layout.fillWidth: true

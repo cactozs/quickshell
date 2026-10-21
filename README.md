@@ -36,8 +36,9 @@ English (except for the Russian README).
   random wallpaper, drag-and-drop from the desktop or the bar.
 - **OSD and system popup** — volume/brightness overlay, CPU, RAM, temperature
   and GPU rows.
-- **Four style packs** — `M3 Inspired`, `M3 Blur`, `New` (graphite acrylic) and
-  `Nothing` (opaque graphite, hard corners).
+- **Five style packs** — `M3 Inspired`, `M3 Blur`, `New` (graphite acrylic),
+  `Nothing` (opaque graphite, hard corners) and `New Nothing` (the same graphite
+  with the acrylic dressing and blur).
 - **Light and dark** — a second matugen pass writes the light palette; the
   shell switches both its own colors and the desktop.
 
@@ -355,7 +356,7 @@ Volume, brightness, media and lock binds do not go through the shell: use
 | `launcher` | — |
 | `clipboard` | — |
 | `center` (notifications) | — |
-| `settings` (quick settings) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono>`, `blur <wallpaper\|window>`, `language <ru\|en\|de>` |
+| `settings` (quick settings) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono>`, `blur <wallpaper\|window>`, `language <ru\|en\|de>` |
 | `wallpaper` (manager) | `random` |
 | `bar` | `toggle` |
 | `notifs` | `toggleDnd`, `dnd`, `clear` |
@@ -399,7 +400,9 @@ under the acrylic plates blur too. The choice is read back from
 **Style packs** are switched in the settings menu or with
 `qs ipc call settings style …`. `M3 Inspired` is the matugen palette with the
 M3 shape scale, `M3 Blur` adds acrylic plates and compositor blur, `New` is
-graphite acrylic, and `Nothing` is opaque graphite with hard corners.
+graphite acrylic, `Nothing` is opaque graphite with hard corners, and
+`New Nothing` is that graphite and those corners with the New acrylic dressing —
+rim, specular, drop shadow and blur.
 
 ## Configuration
 
