@@ -210,17 +210,17 @@ Singleton {
         // Opens on the first screen; useful for testing and scripted use.
         function toggle(): void {
             const screens = Quickshell.screens;
-            root.toggleQuickSettings(screens.length > 0 ? screens[0].name : "");
+            root.toggleSettings(screens.length > 0 ? screens[0].name : "");
         }
 
         // Toggles on a specific screen; niri keybinds pass the focused output.
         function toggleOn(screenName: string): void {
             const screens = Quickshell.screens;
-            root.toggleQuickSettings(screenName !== "" ? screenName : (screens.length > 0 ? screens[0].name : ""));
+            root.toggleSettings(screenName !== "" ? screenName : (screens.length > 0 ? screens[0].name : ""));
         }
 
         function close(): void {
-            root.closeQuickSettings();
+            root.closeSettings();
         }
 
         // Launcher view, so scripts can flip it: `qs ipc call settings launcherView true`.

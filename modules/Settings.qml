@@ -5,7 +5,6 @@ import Quickshell.Services.UPower
 import Quickshell.Wayland
 import QtQuick
 import QtQuick.Effects
-import QtQuick.Layouts
 import "../services"
 import "../style"
 
@@ -22,8 +21,8 @@ PanelWindow {
 
     readonly property bool shown: ShellState.settingsScreen === root.modelData.name
 
-    // Wide enough for the five style segments.
-    readonly property int cardWidth: 600
+    // Wide enough for the five style segments next to their label.
+    readonly property int cardWidth: 620
     readonly property int cardPadding: 20
 
     screen: modelData
@@ -192,17 +191,8 @@ PanelWindow {
 
             // Native names on purpose: they need no translation and stay
             // readable whichever language is picked.
-            RowLayout {
-                width: parent.width
-                spacing: 8
-
-                Text {
-                    Layout.fillWidth: true
-                    text: I18n.t("Язык")
-                    color: Theme.surfaceText
-                    font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSizeBodyLarge
-                }
+            SettingRow {
+                label: I18n.t("Язык")
 
                 SettingSegment {
                     label: "Русский"
@@ -225,17 +215,8 @@ PanelWindow {
 
             // ---- launcher view --------------------------------------------------
 
-            RowLayout {
-                width: parent.width
-                spacing: 8
-
-                Text {
-                    Layout.fillWidth: true
-                    text: I18n.t("Вид лончера")
-                    color: Theme.surfaceText
-                    font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSizeBodyLarge
-                }
+            SettingRow {
+                label: I18n.t("Вид лончера")
 
                 SettingSegment {
                     label: I18n.t("Классический")
@@ -252,17 +233,8 @@ PanelWindow {
 
             // ---- style pack -----------------------------------------------------
 
-            RowLayout {
-                width: parent.width
-                spacing: 8
-
-                Text {
-                    Layout.fillWidth: true
-                    text: I18n.t("Стиль")
-                    color: Theme.surfaceText
-                    font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSizeBodyLarge
-                }
+            SettingRow {
+                label: I18n.t("Стиль")
 
                 SettingSegment {
                     label: "M3 Inspired"
@@ -301,18 +273,9 @@ PanelWindow {
             // under M3 Inspired and Nothing: their surfaces are opaque and no
             // window requests a background effect (the niri rule stays inert
             // by itself). Theme.blur is exactly that set.
-            RowLayout {
-                width: parent.width
-                spacing: 8
+            SettingRow {
+                label: I18n.t("Блюр")
                 visible: Theme.blur
-
-                Text {
-                    Layout.fillWidth: true
-                    text: I18n.t("Блюр")
-                    color: Theme.surfaceText
-                    font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSizeBodyLarge
-                }
 
                 SettingSegment {
                     label: I18n.t("Обои")
@@ -329,17 +292,8 @@ PanelWindow {
 
             // ---- theme mode -----------------------------------------------------
 
-            RowLayout {
-                width: parent.width
-                spacing: 8
-
-                Text {
-                    Layout.fillWidth: true
-                    text: I18n.t("Тема")
-                    color: Theme.surfaceText
-                    font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSizeBodyLarge
-                }
+            SettingRow {
+                label: I18n.t("Тема")
 
                 SettingSegment {
                     label: I18n.t("Тёмная")
@@ -356,17 +310,8 @@ PanelWindow {
 
             // ---- color scheme ---------------------------------------------------
 
-            RowLayout {
-                width: parent.width
-                spacing: 8
-
-                Text {
-                    Layout.fillWidth: true
-                    text: I18n.t("Цвета")
-                    color: Theme.surfaceText
-                    font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSizeBodyLarge
-                }
+            SettingRow {
+                label: I18n.t("Цвета")
 
                 SettingSegment {
                     label: "Matugen"
@@ -389,17 +334,8 @@ PanelWindow {
 
             // ---- font -----------------------------------------------------------
 
-            RowLayout {
-                width: parent.width
-                spacing: 8
-
-                Text {
-                    Layout.fillWidth: true
-                    text: I18n.t("Шрифт")
-                    color: Theme.surfaceText
-                    font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSizeBodyLarge
-                }
+            SettingRow {
+                label: I18n.t("Шрифт")
 
                 SettingSegment {
                     label: "Material"
@@ -419,17 +355,8 @@ PanelWindow {
             // Straight from power-profiles-daemon: it is the source of truth,
             // so there is no shell-side copy to persist. The performance
             // segment is hidden when the daemon reports no such profile.
-            RowLayout {
-                width: parent.width
-                spacing: 8
-
-                Text {
-                    Layout.fillWidth: true
-                    text: I18n.t("Профиль питания")
-                    color: Theme.surfaceText
-                    font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSizeBodyLarge
-                }
+            SettingRow {
+                label: I18n.t("Профиль питания")
 
                 SettingSegment {
                     label: I18n.t("Экономия")
@@ -453,17 +380,8 @@ PanelWindow {
 
             // ---- wallpaper ------------------------------------------------------
 
-            RowLayout {
-                width: parent.width
-                spacing: 8
-
-                Text {
-                    Layout.fillWidth: true
-                    text: I18n.t("Обои")
-                    color: Theme.surfaceText
-                    font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSizeBodyLarge
-                }
+            SettingRow {
+                label: I18n.t("Обои")
 
                 IconButton {
                     round: true
@@ -476,6 +394,58 @@ PanelWindow {
                     }
                 }
             }
+        }
+    }
+
+    // One settings row. The label wraps instead of being squeezed under the
+    // first segment, and the segments flow onto more lines when they run out of
+    // room. A RowLayout cannot do this: it shrank the label past its text width
+    // and reported a recursive rearrange once the label wrapped.
+    component SettingRow: Item {
+        id: row
+
+        property string label: ""
+        default property alias content: options.data
+
+        // Width the segments need on one line. A Flow always packs from its own
+        // left edge, so right-aligning them means giving it exactly this width
+        // and letting it grow to the full gap only when it has to wrap.
+        readonly property real optionsWidth: {
+            let width = 0;
+            let count = 0;
+            for (let i = 0; i < options.children.length; ++i) {
+                const child = options.children[i];
+                if (!child.visible || child.width === 0)
+                    continue;
+                width += child.implicitWidth;
+                ++count;
+            }
+            return width + Math.max(0, count - 1) * options.spacing;
+        }
+
+        width: parent.width
+        height: Math.max(rowLabel.height, options.height)
+
+        Text {
+            id: rowLabel
+
+            width: Math.min(implicitWidth, row.width * 0.45)
+            anchors.verticalCenter: parent.verticalCenter
+            text: row.label
+            color: Theme.surfaceText
+            font.family: Theme.fontFamily
+            font.pixelSize: Theme.fontSizeBodyLarge
+            wrapMode: Text.WordWrap
+        }
+
+        Flow {
+            id: options
+
+            width: Math.min(Math.max(0, row.width - rowLabel.width - 8), row.optionsWidth)
+            x: row.width - width
+            anchors.verticalCenter: parent.verticalCenter
+
+            spacing: 8
         }
     }
 

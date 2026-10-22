@@ -237,6 +237,7 @@ PanelWindow {
         root.starOnly = false;
         root.currentIndex = 0;
         root.autoScroll = true;
+        chipsRow.contentX = 0;
         Wallpapers.reload();
         root.queryCurrent();
         focusKick.restart();
@@ -384,22 +385,17 @@ PanelWindow {
 
             // ---- folder chips ---------------------------------------------------
 
-            Item {
+            ListView {
                 id: chipsRow
 
                 width: parent.width
                 height: Theme.chipHeight
+                orientation: ListView.Horizontal
+                spacing: 8
                 clip: true
-
-                Row {
-                    spacing: 8
-
-                    Repeater {
-                        model: root.chipModel
-
-                        delegate: Chip {}
-                    }
-                }
+                boundsBehavior: Flickable.StopAtBounds
+                model: root.chipModel
+                delegate: Chip {}
             }
 
             // ---- search field ---------------------------------------------------
