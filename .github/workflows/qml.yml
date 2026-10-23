@@ -15,4 +15,4 @@ jobs:
       - name: Check the installer
         run: bash -n install.sh
       - name: Lint the QML
-        run: qmllint -v -I . -I /usr/lib/qt6/qml shell.qml modules/*.qml services/*.qml style/*.qml
+        run: /usr/lib/qt6/bin/qmllint -I . -I /usr/lib/qt6/qml shell.qml modules/*.qml services/*.qml style/*.qml
