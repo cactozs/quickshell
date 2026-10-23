@@ -55,8 +55,9 @@ PanelWindow {
     WlrLayershell.namespace: "quickshell:tray"
     WlrLayershell.keyboardFocus: root.shown ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
-    // Acrylic behind the card (New and Blur).
-    BackgroundEffect.blurRegion: Theme.blur ? blurRegion : null
+    // Acrylic behind the card (New and Blur). Off as soon as it closes: a
+    // compositor blur region cannot fade, so it would hang under the card.
+    BackgroundEffect.blurRegion: Theme.blur && root.shown ? blurRegion : null
 
     Item {
         id: blurAnchor

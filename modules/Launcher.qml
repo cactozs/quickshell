@@ -399,8 +399,9 @@ PanelWindow {
     WlrLayershell.keyboardFocus: root.shown ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
     // Acrylic behind the search card (New and Blur). The fullscreen grid is
-    // opaque, so it gets no blur region.
-    BackgroundEffect.blurRegion: Theme.blur && !root.fullscreen ? blurRegion : null
+    // opaque, so it gets no blur region. Off as soon as it closes: a
+    // compositor blur region cannot fade, so it would hang under the card.
+    BackgroundEffect.blurRegion: Theme.blur && !root.fullscreen && root.shown ? blurRegion : null
 
     // Unscaled twin of the card for the blur region: it only rebuilds on
     // x/y/w/h changes, so it must not see the entrance scale.
