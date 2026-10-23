@@ -116,6 +116,8 @@ Singleton {
         id: statFile
 
         path: "/proc/stat"
+        preload: false
+        blockAllReads: true
         watchChanges: false
         printErrors: false
 
@@ -143,6 +145,8 @@ Singleton {
         id: netFile
 
         path: "/proc/net/dev"
+        preload: false
+        blockAllReads: true
         watchChanges: false
         printErrors: false
 
@@ -173,6 +177,8 @@ Singleton {
         id: memFile
 
         path: "/proc/meminfo"
+        preload: false
+        blockAllReads: true
         watchChanges: false
         printErrors: false
 
@@ -198,6 +204,8 @@ Singleton {
         id: uptimeFile
 
         path: "/proc/uptime"
+        preload: false
+        blockAllReads: true
         watchChanges: false
         printErrors: false
 
@@ -212,6 +220,8 @@ Singleton {
         id: loadFile
 
         path: "/proc/loadavg"
+        preload: false
+        blockAllReads: true
         watchChanges: false
         printErrors: false
 
@@ -226,6 +236,8 @@ Singleton {
         id: thermalFile
 
         path: root.thermalPath
+        preload: false
+        blockAllReads: true
         watchChanges: false
         printErrors: false
 
@@ -295,6 +307,8 @@ Singleton {
         id: gpuBusyFile
 
         path: root.gpuBusyPath
+        preload: false
+        blockAllReads: true
         watchChanges: false
         printErrors: false
 
@@ -311,6 +325,8 @@ Singleton {
         id: gpuTempFile
 
         path: root.gpuTempPath
+        preload: false
+        blockAllReads: true
         watchChanges: false
         printErrors: false
 

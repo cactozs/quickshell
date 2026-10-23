@@ -136,8 +136,12 @@ Singleton {
 
     FileView {
         id: favFile
+        Component.onCompleted: text()
 
         path: Qt.resolvedUrl("../wallpaper-favorites.json")
+        preload: false
+        blockAllReads: true
+        blockWrites: true
         printErrors: false
         onAdapterUpdated: writeAdapter()
 

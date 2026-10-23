@@ -393,6 +393,8 @@ Singleton {
         id: gtk3File
 
         path: root.configHome + "/gtk-3.0/gtk.css"
+        preload: false
+        blockAllReads: true
         blockLoading: true
         printErrors: false
     }
@@ -401,6 +403,8 @@ Singleton {
         id: gtk4File
 
         path: root.configHome + "/gtk-4.0/gtk.css"
+        preload: false
+        blockAllReads: true
         blockLoading: true
         printErrors: false
     }
@@ -409,6 +413,8 @@ Singleton {
         id: ghosttyFile
 
         path: root.configHome + "/ghostty/themes/Quickshell"
+        preload: false
+        blockAllReads: true
         blockLoading: true
         printErrors: false
     }
@@ -417,6 +423,8 @@ Singleton {
         id: qt6ctFile
 
         path: root.configHome + "/qt6ct/colors/matugen.conf"
+        preload: false
+        blockAllReads: true
         blockLoading: true
         printErrors: false
     }
@@ -425,6 +433,8 @@ Singleton {
         id: niriFile
 
         path: root.configHome + "/niri/quickshell.kdl"
+        preload: false
+        blockAllReads: true
         blockLoading: true
         printErrors: false
     }

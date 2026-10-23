@@ -495,8 +495,11 @@ Singleton {
     // and is what triggers the light pass, the light one feeds it in light mode.
     FileView {
         id: darkColors
+        Component.onCompleted: text()
 
         path: Qt.resolvedUrl("Colors.json")
+        preload: false
+        blockAllReads: true
         watchChanges: true
         printErrors: false
 
@@ -512,6 +515,8 @@ Singleton {
         id: lightColors
 
         path: Qt.resolvedUrl("ColorsLight.json")
+        preload: false
+        blockAllReads: true
         watchChanges: true
         printErrors: false
 

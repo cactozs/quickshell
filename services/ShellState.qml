@@ -39,6 +39,9 @@ Singleton {
         id: stateFile
 
         path: Qt.resolvedUrl("../shell-state.json")
+        preload: false
+        blockAllReads: true
+        blockWrites: true
         blockLoading: true
         printErrors: false
 

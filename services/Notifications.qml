@@ -50,6 +50,9 @@ Singleton {
         id: storeFile
 
         path: Qt.resolvedUrl("../notifications.json")
+        preload: false
+        blockAllReads: true
+        blockWrites: true
         blockLoading: true
         printErrors: false
 

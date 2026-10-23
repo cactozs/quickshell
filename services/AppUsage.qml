@@ -52,8 +52,12 @@ Singleton {
 
     FileView {
         id: usageFile
+        Component.onCompleted: text()
 
         path: Qt.resolvedUrl("../launcher-usage.json")
+        preload: false
+        blockAllReads: true
+        blockWrites: true
         printErrors: false
         onAdapterUpdated: writeAdapter()
 

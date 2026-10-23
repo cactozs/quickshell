@@ -27,6 +27,9 @@ Singleton {
         id: file
 
         path: Qt.resolvedUrl(root.dir + "/pins.json")
+        preload: false
+        blockAllReads: true
+        blockWrites: true
         blockLoading: true
         printErrors: false
 
