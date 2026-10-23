@@ -1,0 +1,18 @@
+name: qml
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install tooling
+        run: pacman -Syu --noconfirm --needed quickshell qt6-declarative
+      - name: Check the installer
+        run: bash -n install.sh
+      - name: Lint the QML
+        run: qmllint -v -I . -I /usr/lib/qt6/qml shell.qml modules/*.qml services/*.qml style/*.qml

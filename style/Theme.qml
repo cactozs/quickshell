@@ -847,6 +847,15 @@ Singleton {
     readonly property string iconVolumeMute: "\uE04E" // volume_mute
     readonly property string iconVolumeOff: "\uE04F" // volume_off
     readonly property string iconVolumeUp: "\uE050" // volume_up
+    readonly property string iconMic: "\uE029" // mic
+    readonly property string iconMicOff: "\uE02B" // mic_off
+    readonly property string iconSpeaker: "\uE32D" // speaker
+    readonly property string iconHeadphones: "\uF01F" // headphones
+    readonly property string iconPin: "\uF10D" // push_pin
+    readonly property string iconTray: "\uE156" // inbox
+    readonly property string iconBack: "\uE5C4" // arrow_back
+    readonly property string iconCheck: "\uE5CA" // check
+    readonly property string iconChevronRight: "\uE5CC" // chevron_right
     readonly property string iconBrightnessLow: "\uE1AD" // brightness_low
     readonly property string iconBrightnessMedium: "\uE1AE" // brightness_medium
     readonly property string iconBrightnessHigh: "\uE1AC" // brightness_high

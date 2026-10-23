@@ -43,6 +43,29 @@ Singleton {
 
     readonly property bool dnd: props.dnd
 
+    // The history and the muted-app list outlive the process: a closed
+    // notification's object is gone after a restart, so only the plain record
+    // fields are written and the restored rows come back with `live: null`.
+    FileView {
+        id: storeFile
+
+        path: Qt.resolvedUrl("../notifications.json")
+        blockLoading: true
+        printErrors: false
+
+        Component.onCompleted: text()
+        onAdapterUpdated: writeAdapter()
+
+        JsonAdapter {
+            id: store
+
+            property var entries: []
+            property var mutedApps: []
+        }
+    }
+
+    readonly property var mutedApps: store.mutedApps ?? []
+
     // Everything ever seen, newest first; capped so a chatty app cannot grow
     // it forever. Entries are plain records (see addHistory), not live
     // Notification objects: the server destroys closed ones when the config
@@ -106,6 +129,11 @@ Singleton {
     }
 
     function handleNotification(notif: Notification): void {
+        // A muted app is dropped before tracking, so the server discards it;
+        // critical notifications still come through.
+        if (notif.urgency !== NotificationUrgency.Critical && root.isMuted(notif.appName))
+            return;
+
         notif.tracked = true;
 
         if (notif.lastGeneration) {
@@ -156,6 +184,41 @@ Singleton {
         }
         root.history = all.slice(0, root.historyLimit);
     }
+
+    // ---- persistence -------------------------------------------------------
+
+    function restore(): void {
+        const saved = store.entries ?? [];
+        root.history = saved.slice(0, root.historyLimit).map(e => ({
+            id: e.id,
+            appName: e.appName ?? "",
+            summary: e.summary ?? "",
+            body: e.body ?? "",
+            image: e.image ?? "",
+            appIcon: e.appIcon ?? "",
+            at: e.at ?? 0,
+            live: null,
+            watcher: null
+        }));
+        // Restored rows are old news; the badge counts only this session.
+        root.markAllSeen();
+    }
+
+    function persist(): void {
+        store.entries = root.history.slice(0, root.historyLimit).map(e => ({
+            id: e.id,
+            appName: e.appName,
+            summary: e.summary,
+            body: e.body,
+            image: e.image,
+            appIcon: e.appIcon,
+            at: e.at
+        }));
+    }
+
+    onHistoryChanged: root.persist()
+
+    Component.onCompleted: Qt.callLater(root.restore)
 
     function addPopup(notif: Notification): void {
         if (root.popups.includes(notif)) {
@@ -286,6 +349,24 @@ Singleton {
         props.dnd = !props.dnd;
     }
 
+    // ---- per-app mute ------------------------------------------------------
+
+    function isMuted(appName: string): bool {
+        return appName !== "" && root.mutedApps.indexOf(appName) !== -1;
+    }
+
+    function toggleMuteApp(appName: string): void {
+        if (appName === "")
+            return;
+        store.mutedApps = root.isMuted(appName)
+            ? root.mutedApps.filter(a => a !== appName)
+            : [...root.mutedApps, appName];
+    }
+
+    function unmuteAll(): void {
+        store.mutedApps = [];
+    }
+
     function markAllSeen(): void {
         const next = ({});
         for (const notif of root.history)
@@ -368,6 +449,15 @@ Singleton {
 
         function clear(): void {
             root.clearAll();
+        }
+
+        function mute(appName: string): void {
+            if (!root.isMuted(appName))
+                root.toggleMuteApp(appName);
+        }
+
+        function unmuteAll(): void {
+            root.unmuteAll();
         }
     }
 }

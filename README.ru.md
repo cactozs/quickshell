@@ -24,18 +24,24 @@
 ## Что внутри
 
 - **Панель** — рабочие пространства, заголовок окна, часы и дата, погода,
-  раскладка, громкость, яркость, батарея, уведомления и кнопка питания.
+  раскладка, громкость, яркость, батарея, уведомления, системный трей и кнопка
+  питания.
 - **Лаунчер** — приложения, арифметика и записи `Terminal=true` из `.desktop`;
   терминал настраивается через `$TERMINAL` (`alacritty` по умолчанию).
 - **История буфера обмена** — `cliphist` + `wl-clipboard`, текст и картинки.
+  Ctrl+P открывает меню действий; закрепление сохраняет декодированный снимок
+  в каталоге данных оболочки, поэтому пины переживают `cliphist wipe`.
 - **Уведомления** — Quickshell сам является демоном уведомлений: всплывающие
-  тосты, история, режим «Не беспокоить» и центр уведомлений.
-- **Быстрые настройки** — громкость, яркость, Wi-Fi, ночной свет, «Не
-  беспокоить», MPRIS-плеер, профили питания, язык интерфейса (RU/EN/DE),
-  тема/стиль/цвета/шрифт и меню питания.
+  тосты, история, переживающая перезапуск, режим «Не беспокоить», мьют
+  приложений и центр уведомлений.
+- **Быстрые настройки** — громкость, переключение аудиовыхода, мьют микрофона,
+  яркость, Wi-Fi, ночной свет, «Не беспокоить», MPRIS-плеер, профили питания,
+  язык интерфейса (RU/EN/DE), тема/стиль/цвета/шрифт и меню питания.
 - **Менеджер обоев** — рекурсивная библиотека, кеш превью, избранное, случайные
   обои, drag-and-drop на рабочий стол или панель.
-- **OSD и системное окно** — громкость/яркость, CPU, RAM, температура и GPU.
+- **OSD и системное окно** — громкость/яркость (в том числе для изменений через
+  `wpctl`/`brightnessctl`), CPU, RAM, температура и GPU (AMD через sysfs,
+  запасной вариант — `nvidia-smi`).
 - **Пять стилей** — `M3 Inspired`, `M3 Blur`, `New` (графитовый акрил),
   `Nothing` (непрозрачный графит, жёсткие углы) и `New Nothing` (тот же графит
   с акриловой отделкой и блюром).
@@ -144,7 +150,7 @@ sudo pacman -S --needed \
 
 ```sh
 sudo pacman -S papirus-icon-theme   # иконки приложений; hicolor тянет quickshell
-sudo pacman -S nvidia-utils         # строки GPU в системном окне
+sudo pacman -S nvidia-utils         # строки GPU на NVIDIA; AMD не требует пакета
 ```
 
 `imagemagick` нужен только для превью обоев 720 px. Без него менеджер грузит
@@ -327,7 +333,8 @@ quickshell
 ```
 
 Сначала запускайте в терминале. Сборки и тестов нет: ошибки QML появляются в
-stderr, а оболочка сама перезагружается при изменении файлов. Когда всё
+stderr, а оболочка сама перезагружается при изменении файлов. GitHub Actions
+запускает `qmllint` и `bash -n install.sh` на push и pull request. Когда всё
 работает, оставьте строку автозапуска в niri и остановите ручной экземпляр.
 
 ## Горячие клавиши
@@ -361,10 +368,11 @@ Mod+P       repeat=false { spawn "qs" "ipc" "call" "bar" "toggle"; }
 | `launcher` | — |
 | `clipboard` | — |
 | `center` (уведомления) | — |
+| `tray` | — |
 | `settings` (быстрые настройки) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono>`, `blur <wallpaper\|window>`, `language <ru\|en\|de>` |
 | `wallpaper` (менеджер) | `random` |
 | `bar` | `toggle` |
-| `notifs` | `toggleDnd`, `dnd`, `clear` |
+| `notifs` | `toggleDnd`, `dnd`, `clear`, `mute <app>`, `unmuteAll` |
 
 `<output>` — имя монитора (`"eDP-1"`, см. `niri msg outputs`), не номер.
 Примеры:
@@ -426,10 +434,11 @@ qs ipc call notifs toggleDnd
 | запись темы рабочего стола | `services/SystemTheme.qml` |
 | системная статистика | `services/SystemMonitor.qml` |
 | уведомления | `services/Notifications.qml` |
+| закреплённые записи буфера | `services/ClipboardPins.qml` (каталог данных оболочки) |
 | IPC-обработчики | `services/ShellState.qml` |
 
-`launcher-usage.json`, `wallpaper-favorites.json`, `shell-state.json` и
-`.qmlls.ini` — локальное состояние, оно в `.gitignore`.
+`launcher-usage.json`, `notifications.json`, `wallpaper-favorites.json`,
+`shell-state.json` и `.qmlls.ini` — локальное состояние, оно в `.gitignore`.
 `style/Colors.json` и `style/ColorsLight.json` —
 сгенерированные палитры, но они лежат в git, чтобы свежий клон имел рабочий
 fallback до первого запуска matugen.

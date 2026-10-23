@@ -8,13 +8,14 @@ import QtQuick
 // Cross-window shell state. Currently: which screen shows the quick settings,
 // which screen shows the app launcher, which one shows the clipboard history,
 // which one shows the notification center, which one shows the weather
-// popup, which one shows the settings menu and which one shows the wallpaper
-// manager (empty string = closed), plus whether the bar is hidden. The IPC
-// targets let scripts toggle them:
+// popup, which one shows the settings menu, which one shows the wallpaper
+// manager and which one shows the system tray (empty string = closed), plus
+// whether the bar is hidden. The IPC targets let scripts toggle them:
 //   qs ipc call settings toggle
 //   qs ipc call launcher toggle
 //   qs ipc call clipboard toggle
 //   qs ipc call center toggle
+//   qs ipc call tray toggle
 //   qs ipc call wallpaper toggle
 //   qs ipc call bar toggle
 Singleton {
@@ -28,6 +29,7 @@ Singleton {
     property string systemScreen: ""
     property string settingsScreen: ""
     property string wallpaperScreen: ""
+    property string trayScreen: ""
 
     // Settings live in shell-state.json: PersistentProperties survives a config
     // reload but not the process restarting at login. The read below is
@@ -196,6 +198,14 @@ Singleton {
         root.wallpaperScreen = "";
     }
 
+    function toggleTray(screenName: string): void {
+        root.trayScreen = root.trayScreen === screenName ? "" : screenName;
+    }
+
+    function closeTray(): void {
+        root.trayScreen = "";
+    }
+
     function setLauncherFullscreen(value: bool): void {
         props.launcherFullscreen = value;
     }
@@ -344,6 +354,26 @@ Singleton {
 
         function close(): void {
             root.closeNotificationCenter();
+        }
+    }
+
+    IpcHandler {
+        target: "tray"
+
+        // Opens on the first screen; useful for testing and scripted use.
+        function toggle(): void {
+            const screens = Quickshell.screens;
+            root.toggleTray(screens.length > 0 ? screens[0].name : "");
+        }
+
+        // Toggles on a specific screen; niri keybinds pass the focused output.
+        function toggleOn(screenName: string): void {
+            const screens = Quickshell.screens;
+            root.toggleTray(screenName !== "" ? screenName : (screens.length > 0 ? screens[0].name : ""));
+        }
+
+        function close(): void {
+            root.closeTray();
         }
     }
 

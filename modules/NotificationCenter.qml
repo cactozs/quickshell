@@ -336,7 +336,7 @@ PanelWindow {
 
             anchors.left: iconBox.right
             anchors.leftMargin: 12
-            anchors.right: dismissButton.left
+            anchors.right: muteButton.visible ? muteButton.left : dismissButton.left
             anchors.rightMargin: 8
             anchors.verticalCenter: parent.verticalCenter
             spacing: 1
@@ -385,6 +385,29 @@ PanelWindow {
             anchors.fill: parent
             cursorShape: row.actionable ? Qt.PointingHandCursor : Qt.ArrowCursor
             onClicked: Notifications.activate(row.entry)
+        }
+
+        MiniIconButton {
+            id: muteButton
+
+            anchors.right: dismissButton.left
+            anchors.rightMargin: 2
+            anchors.verticalCenter: parent.verticalCenter
+            visible: row.entry.appName !== ""
+            icon: Notifications.isMuted(row.entry.appName)
+                ? Theme.iconNotificationsOff
+                : Theme.iconNotifications
+            contentColor: Notifications.isMuted(row.entry.appName)
+                ? Theme.primary
+                : Theme.surfaceVariantText
+
+            onClicked: Notifications.toggleMuteApp(row.entry.appName)
+
+            Tip {
+                target: muteButton
+                text: I18n.t("Замьютить приложение")
+                shown: muteButton.hovered
+            }
         }
 
         MiniIconButton {

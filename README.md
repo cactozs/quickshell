@@ -23,19 +23,25 @@ English (except for the Russian README).
 ## What you get
 
 - **Bar** — workspaces, window title, clock/date, weather, keyboard layout,
-  volume, brightness, battery, notifications and a power button.
+  volume, brightness, battery, notifications, the system tray and a power
+  button.
 - **Launcher** — applications, arithmetic and `Terminal=true` desktop entries,
   with a configurable terminal (`$TERMINAL`, `alacritty` by default).
 - **Clipboard history** — `cliphist` + `wl-clipboard`, with images and text.
+  Ctrl+P opens the actions menu; pinning stores a decoded snapshot in the shell
+  data directory, so pins survive `cliphist wipe`.
 - **Notifications** — Quickshell is the notification daemon; toast popups,
-  history, do-not-disturb and a notification center.
-- **Quick settings** — volume, brightness, Wi-Fi, night light, do-not-disturb,
-  MPRIS media, power profiles, UI language (RU/EN/DE), theme/style/colorscheme/
-  font controls and the power menu.
+  history persisted across restarts, do-not-disturb, per-app mute and a
+  notification center.
+- **Quick settings** — volume, audio output switching, microphone mute,
+  brightness, Wi-Fi, night light, do-not-disturb, MPRIS media, power profiles,
+  UI language (RU/EN/DE), theme/style/colorscheme/font controls and the power
+  menu.
 - **Wallpaper manager** — recursive library, cached previews, favorites,
   random wallpaper, drag-and-drop from the desktop or the bar.
-- **OSD and system popup** — volume/brightness overlay, CPU, RAM, temperature
-  and GPU rows.
+- **OSD and system popup** — volume/brightness overlay (also for changes made
+  with `wpctl`/`brightnessctl`), CPU, RAM, temperature and GPU rows (AMD via
+  sysfs, `nvidia-smi` fallback).
 - **Five style packs** — `M3 Inspired`, `M3 Blur`, `New` (graphite acrylic),
   `Nothing` (opaque graphite, hard corners) and `New Nothing` (the same graphite
   with the acrylic dressing and blur).
@@ -142,7 +148,7 @@ Optional:
 
 ```sh
 sudo pacman -S papirus-icon-theme   # app icons; hicolor comes with quickshell
-sudo pacman -S nvidia-utils         # GPU rows in the system popup
+sudo pacman -S nvidia-utils         # GPU rows on NVIDIA; AMD needs no extra package
 ```
 
 `imagemagick` only builds the 720 px wallpaper previews. Without it the manager
@@ -322,8 +328,9 @@ quickshell
 ```
 
 Run it in the foreground first. There is no build and no test suite: QML errors
-appear on stderr, and the shell reloads itself when a file changes. Once it
-works, keep the niri autostart line and stop the manual instance.
+appear on stderr, and the shell reloads itself when a file changes. GitHub
+Actions runs `qmllint` and `bash -n install.sh` on pushes and pull requests.
+Once it works, keep the niri autostart line and stop the manual instance.
 
 ## Keybinds
 
@@ -356,10 +363,11 @@ Volume, brightness, media and lock binds do not go through the shell: use
 | `launcher` | — |
 | `clipboard` | — |
 | `center` (notifications) | — |
+| `tray` | — |
 | `settings` (quick settings) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono>`, `blur <wallpaper\|window>`, `language <ru\|en\|de>` |
 | `wallpaper` (manager) | `random` |
 | `bar` | `toggle` |
-| `notifs` | `toggleDnd`, `dnd`, `clear` |
+| `notifs` | `toggleDnd`, `dnd`, `clear`, `mute <app>`, `unmuteAll` |
 
 `<output>` is a monitor name (`"eDP-1"`, see `niri msg outputs`), not a number.
 Examples:
@@ -420,12 +428,13 @@ rim, specular, drop shadow and blur.
 | desktop theme writer | `services/SystemTheme.qml` |
 | system stats | `services/SystemMonitor.qml` |
 | notifications | `services/Notifications.qml` |
+| pinned clipboard entries | `services/ClipboardPins.qml` (shell data directory) |
 | IPC handlers | `services/ShellState.qml` |
 
-`launcher-usage.json`, `wallpaper-favorites.json`, `shell-state.json` and
-`.qmlls.ini` are local runtime state and are gitignored. `style/Colors.json` and
-`style/ColorsLight.json` are generated palettes, but they are tracked so a
-fresh clone has a usable fallback until matugen runs.
+`launcher-usage.json`, `notifications.json`, `wallpaper-favorites.json`,
+`shell-state.json` and `.qmlls.ini` are local runtime state and are gitignored.
+`style/Colors.json` and `style/ColorsLight.json` are generated palettes, but
+they are tracked so a fresh clone has a usable fallback until matugen runs.
 
 ## Troubleshooting
 

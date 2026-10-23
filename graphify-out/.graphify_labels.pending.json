@@ -28,8 +28,12 @@
   "29": "WallpaperDropArea.qml",
   "30": "WallpaperManager.qml",
   "31": "Wallpapers.qml",
+  "32": "Tray.qml",
   "33": "CalcRow.qml",
   "34": "SystemTheme.qml",
   "35": "LazyOverlay.qml",
-  "36": "GlassEdge.qml"
+  "36": "GlassEdge.qml",
+  "37": "TrayPopup.qml",
+  "38": "Audio.qml",
+  "39": "ClipboardPins.qml"
 }

@@ -378,6 +378,30 @@ PanelWindow {
                 }
             }
 
+            // ---- muted notification apps ---------------------------------------
+
+            SettingRow {
+                label: I18n.t("Уведомления")
+                visible: Notifications.mutedApps.length > 0
+
+                Repeater {
+                    model: Notifications.mutedApps
+
+                    delegate: SettingSegment {
+                        required property string modelData
+
+                        label: modelData
+                        selected: true
+                        onClicked: Notifications.toggleMuteApp(modelData)
+                    }
+                }
+
+                SettingSegment {
+                    label: I18n.t("Вернуть все")
+                    onClicked: Notifications.unmuteAll()
+                }
+            }
+
             // ---- wallpaper ------------------------------------------------------
 
             SettingRow {

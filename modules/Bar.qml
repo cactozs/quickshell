@@ -287,6 +287,10 @@ PanelWindow {
                 Volume {}
                 Battery {}
 
+                Tray {
+                    screenName: root.modelData.name
+                }
+
                 NotificationBell {
                     screenName: root.modelData.name
                 }

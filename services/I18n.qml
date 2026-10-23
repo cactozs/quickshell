@@ -60,6 +60,11 @@ Singleton {
             "Забыть сеть?": "Forget network?",
             "Питание": "Power",
             "Не удалось подключиться: ": "Could not connect: ",
+            "Аудиовыход": "Audio output",
+            "Микрофон": "Microphone",
+            "Нет устройства": "No device",
+            "Без звука": "Muted",
+            "Громкость: ": "Volume: ",
 
             // launcher
             "Поиск приложений…": "Search apps…",
@@ -73,6 +78,10 @@ Singleton {
             "Буфер обмена пуст": "Clipboard is empty",
             "Удалить выбранную": "Delete selected",
             "Удалить всё": "Delete all",
+            "Закрепить": "Pin",
+            "Открепить": "Unpin",
+            "Закреплённые": "Pinned",
+            "Очистить историю": "Clear history",
             "↑↓ — выбор · Enter — применить · Esc — назад": "↑↓ — select · Enter — apply · Esc — back",
             "↑↓ — выбор · Enter — копировать · Ctrl+P — действия · Esc — закрыть": "↑↓ — select · Enter — copy · Ctrl+P — actions · Esc — close",
 
@@ -127,6 +136,12 @@ Singleton {
             "Аптайм ": "Uptime ",
             "Уведомления": "Notifications",
             "Нет уведомлений": "No notifications",
+            "Замьютить приложение": "Mute app",
+            "Вернуть все": "Unmute all",
+
+            // tray
+            "Трей": "Tray",
+            "Нет приложений": "No applications",
 
             // bar
             "Brightness: ": "Brightness: ",
@@ -185,6 +200,11 @@ Singleton {
             "Забыть сеть?": "Netzwerk vergessen?",
             "Питание": "Energie",
             "Не удалось подключиться: ": "Verbindung fehlgeschlagen: ",
+            "Аудиовыход": "Audioausgabe",
+            "Микрофон": "Mikrofon",
+            "Нет устройства": "Kein Gerät",
+            "Без звука": "Stumm",
+            "Громкость: ": "Lautstärke: ",
 
             // launcher
             "Поиск приложений…": "Apps suchen…",
@@ -198,6 +218,10 @@ Singleton {
             "Буфер обмена пуст": "Zwischenablage ist leer",
             "Удалить выбранную": "Ausgewählte löschen",
             "Удалить всё": "Alles löschen",
+            "Закрепить": "Anheften",
+            "Открепить": "Loslösen",
+            "Закреплённые": "Angeheftet",
+            "Очистить историю": "Verlauf löschen",
             "↑↓ — выбор · Enter — применить · Esc — назад": "↑↓ — auswählen · Enter — übernehmen · Esc — zurück",
             "↑↓ — выбор · Enter — копировать · Ctrl+P — действия · Esc — закрыть": "↑↓ — auswählen · Enter — kopieren · Ctrl+P — Aktionen · Esc — schließen",
 
@@ -252,6 +276,12 @@ Singleton {
             "Аптайм ": "Laufzeit ",
             "Уведомления": "Benachrichtigungen",
             "Нет уведомлений": "Keine Benachrichtigungen",
+            "Замьютить приложение": "App stummschalten",
+            "Вернуть все": "Alle wieder aktivieren",
+
+            // tray
+            "Трей": "Tray",
+            "Нет приложений": "Keine Anwendungen",
 
             // bar
             "Brightness: ": "Helligkeit: ",

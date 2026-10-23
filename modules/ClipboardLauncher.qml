@@ -36,11 +36,23 @@ PanelWindow {
     property bool menuOpen: false
     property int menuIndex: 0
 
+    // Pins come first and hide the history row they were made from; a pinned
+    // entry survives `cliphist wipe`.
+    readonly property var allEntries: ClipboardPins.pins.map(p => ({
+        preview: p.preview,
+        binary: p.binary,
+        line: p.line,
+        file: p.file,
+        pinned: true
+    })).concat(root.entries.filter(e => !ClipboardPins.has(e.line)))
+
+    readonly property var currentEntry: root.results[root.currentIndex] ?? null
+
     readonly property var results: {
         if (!root.visible)
             return [];
 
-        const list = root.entries;
+        const list = root.allEntries;
         const q = root.query.toLowerCase().trim();
         if (q === "")
             return list;
@@ -128,6 +140,10 @@ PanelWindow {
             return;
 
         ShellState.closeClipboard();
+        if (entry.pinned) {
+            ClipboardPins.copy(entry);
+            return;
+        }
         // decode/delete take one `cliphist list` line on stdin; pass the line
         // as an argument so its text is never interpreted by the shell.
         Quickshell.execDetached(["sh", "-c", "printf '%s\\n' \"$0\" | cliphist decode | wl-copy", entry.line]);
@@ -139,8 +155,24 @@ PanelWindow {
             return;
 
         root.menuOpen = false;
+        if (entry.pinned) {
+            ClipboardPins.remove(entry);
+            return;
+        }
         Quickshell.execDetached(["sh", "-c", "printf '%s\\n' \"$0\" | cliphist delete", entry.line]);
         reloadDelay.restart();
+    }
+
+    function togglePin(index: int): void {
+        const entry = root.results[index];
+        if (!entry)
+            return;
+
+        root.menuOpen = false;
+        if (entry.pinned)
+            ClipboardPins.remove(entry);
+        else
+            ClipboardPins.add(entry);
     }
 
     function wipeHistory(): void {
@@ -150,7 +182,9 @@ PanelWindow {
     }
 
     function menuItemEnabled(index: int): bool {
-        return index === 0 ? root.results.length > 0 : root.entries.length > 0;
+        if (index === 2)
+            return root.entries.length > 0;
+        return root.results.length > 0;
     }
 
     function toggleMenu(): void {
@@ -160,7 +194,7 @@ PanelWindow {
     }
 
     function menuMove(delta: int): void {
-        for (let i = root.menuIndex + delta; i >= 0 && i <= 1; i += delta) {
+        for (let i = root.menuIndex + delta; i >= 0 && i <= 2; i += delta) {
             if (root.menuItemEnabled(i)) {
                 root.menuIndex = i;
                 return;
@@ -172,6 +206,8 @@ PanelWindow {
         if (!root.menuItemEnabled(root.menuIndex))
             return;
         if (root.menuIndex === 0)
+            root.togglePin(root.currentIndex);
+        else if (root.menuIndex === 1)
             root.deleteEntry(root.currentIndex);
         else
             root.wipeHistory();
@@ -502,7 +538,7 @@ PanelWindow {
                 Text {
                     anchors.centerIn: parent
                     visible: root.results.length === 0
-                    text: root.entries.length === 0 ? I18n.t("Буфер обмена пуст") : I18n.t("Ничего не найдено")
+                    text: root.allEntries.length === 0 ? I18n.t("Буфер обмена пуст") : I18n.t("Ничего не найдено")
                     color: Theme.surfaceVariantText
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeLabelLarge
@@ -558,8 +594,13 @@ PanelWindow {
 
                         Repeater {
                             model: [
+                                {
+                                    label: root.currentEntry?.pinned ? I18n.t("Открепить") : I18n.t("Закрепить"),
+                                    icon: Theme.iconPin,
+                                    enabled: root.results.length > 0
+                                },
                                 { label: I18n.t("Удалить выбранную"), icon: Theme.iconDelete, enabled: root.results.length > 0 },
-                                { label: I18n.t("Удалить всё"), icon: Theme.iconDeleteForever, enabled: root.entries.length > 0 }
+                                { label: I18n.t("Очистить историю"), icon: Theme.iconDeleteForever, enabled: root.entries.length > 0 }
                             ]
 
                             delegate: MenuEntry {}
@@ -593,7 +634,7 @@ PanelWindow {
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
                     visible: root.query.length > 0
-                    text: root.results.length + I18n.t(" из ") + root.entries.length
+                    text: root.results.length + I18n.t(" из ") + root.allEntries.length
                     color: Theme.surfaceVariantText
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeLabelMedium
@@ -653,10 +694,23 @@ PanelWindow {
         }
 
         Text {
-            anchors.left: iconBox.right
-            anchors.leftMargin: 12
+            id: pinIcon
+
             anchors.right: parent.right
             anchors.rightMargin: 12
+            anchors.verticalCenter: parent.verticalCenter
+            visible: item.modelData.pinned === true
+            text: Theme.iconPin
+            color: item.selected ? Theme.secondaryContainerText : Theme.surfaceVariantText
+            font.family: Theme.iconFont
+            font.pixelSize: Theme.iconSizeSmall
+        }
+
+        Text {
+            anchors.left: iconBox.right
+            anchors.leftMargin: 12
+            anchors.right: pinIcon.visible ? pinIcon.left : parent.right
+            anchors.rightMargin: pinIcon.visible ? 8 : 12
             anchors.verticalCenter: parent.verticalCenter
             text: item.modelData.preview
             color: item.selected ? Theme.secondaryContainerText : Theme.surfaceText
@@ -697,7 +751,7 @@ PanelWindow {
         required property var modelData
         required property int index
 
-        readonly property bool destructive: menuItem.index === 1
+        readonly property bool destructive: menuItem.index >= 1
         readonly property bool highlighted: root.menuIndex === menuItem.index
         readonly property color fgColor: menuItem.highlighted && menuItem.modelData.enabled
             ? (menuItem.destructive ? Theme.errorContainerText : Theme.secondaryContainerText)

@@ -18,9 +18,37 @@ Singleton {
     // Set while a change is in flight; the OSD pops when the new value arrives.
     property bool osdPending: false
 
+    // The first poll after startup must not pop an OSD; later changes are
+    // external (the niri brightness keys call brightnessctl directly).
+    property bool started: false
+    property int lastPercent: 0
+
     readonly property string icon: root.percent <= 33
         ? Theme.iconBrightnessLow
         : (root.percent <= 66 ? Theme.iconBrightnessMedium : Theme.iconBrightnessHigh)
+
+    onPercentChanged: {
+        if (!root.started)
+            return;
+        if (root.osdPending) {
+            root.lastPercent = root.percent;
+            return;
+        }
+        if (root.percent === root.lastPercent)
+            return;
+        root.lastPercent = root.percent;
+        Osd.show(root.icon, root.percent / 100);
+    }
+
+    Timer {
+        interval: 500
+        running: true
+
+        onTriggered: {
+            root.started = true;
+            root.lastPercent = root.percent;
+        }
+    }
 
     function refresh(): void {
         if (!pctProc.running) pctProc.running = true;

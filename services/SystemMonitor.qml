@@ -6,9 +6,10 @@ import Quickshell.Io
 import QtQuick
 
 // Native port of ~/.config/waybar/scripts/waybar-system.sh:
-// CPU usage/temperature, GPU (nvidia-smi), memory, network rates.
-// Named SystemMonitor (not SystemStats) so that `import "../services"`
-// does not shadow the modules/SystemStats bar chip.
+// CPU usage/temperature, GPU (nvidia-smi or amdgpu sysfs), memory, network
+// rates. /proc and sysfs are read through FileView.reload() so the 2 s timer
+// does not spawn a process per sample. Named SystemMonitor (not SystemStats)
+// so that `import "../services"` does not shadow the modules/SystemStats chip.
 Singleton {
     id: root
 
@@ -26,6 +27,10 @@ Singleton {
     property string txSpeed: "0 B/s"
 
     property bool hasNvidia: false
+    property bool hasGpu: false
+    property string gpuVendor: "none"
+    property string gpuBusyPath: ""
+    property string gpuTempPath: ""
 
     // Short history for the SystemPopup sparklines (60 samples ~ 2 min).
     property var cpuHistory: []
@@ -35,12 +40,16 @@ Singleton {
 
     property string uptime: ""
     property string loadAvg: ""
+    property string thermalPath: ""
 
     // Samples for delta calculations.
     property real statTotal1: 0
     property real statIdle1: 0
+    property bool statReady: false
     property real netRx1: 0
     property real netTx1: 0
+    property real netAt: 0
+    property double lastNvidia: 0
 
     readonly property string tooltip:
         "CPU\n" +
@@ -81,137 +90,240 @@ Singleton {
     }
 
     function refresh(): void {
-        if (!statProc.running) statProc.running = true;
-        if (!netProc.running) netProc.running = true;
-        if (!memProc.running) memProc.running = true;
-        if (!thermalProc.running) thermalProc.running = true;
-        if (!uptimeProc.running) uptimeProc.running = true;
-        if (hasNvidia && !gpuProc.running) gpuProc.running = true;
+        statFile.reload();
+        netFile.reload();
+        memFile.reload();
+        uptimeFile.reload();
+        loadFile.reload();
+        if (root.thermalPath !== "")
+            thermalFile.reload();
+        if (root.gpuVendor === "amd") {
+            gpuBusyFile.reload();
+            gpuTempFile.reload();
+        }
+        if (root.hasNvidia && (ShellState.systemScreen !== "" || Date.now() - root.lastNvidia > 10000)) {
+            root.lastNvidia = Date.now();
+            if (!gpuProc.running)
+                gpuProc.running = true;
+        }
     }
 
     onCpuUsageChanged: cpuHistory = pushHistory(cpuHistory, cpuUsage)
     onRamUsageChanged: ramHistory = pushHistory(ramHistory, ramUsage)
     onGpuUsageNumChanged: gpuHistory = pushHistory(gpuHistory, gpuUsageNum)
 
-    // CPU usage: two /proc/stat samples 100 ms apart.
-    Process {
-        id: statProc
-        command: ["head", "-n", "1", "/proc/stat"]
+    FileView {
+        id: statFile
 
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const parts = text.trim().split(/\s+/).slice(1).map(Number);
-                if (parts.length < 5) return;
-                const idle = parts[3] + (parts[4] || 0);
-                const total = parts.slice(0, 8).reduce((a, b) => a + b, 0);
-                if (root.statTotal1 === 0) {
-                    root.statTotal1 = total;
-                    root.statIdle1 = idle;
-                    cpuDelay.restart();
-                } else {
-                    const dt = total - root.statTotal1;
-                    const di = idle - root.statIdle1;
-                    root.cpuUsage = dt > 0 ? Math.round(100 * (dt - di) / dt) : 0;
-                    root.statTotal1 = 0;
-                }
+        path: "/proc/stat"
+        watchChanges: false
+        printErrors: false
+
+        onTextChanged: {
+            const parts = text().trim().split(/\s+/).slice(1).map(Number);
+            if (parts.length < 5)
+                return;
+            const idle = parts[3] + (parts[4] || 0);
+            const total = parts.slice(0, 8).reduce((a, b) => a + b, 0);
+            if (!root.statReady) {
+                root.statTotal1 = total;
+                root.statIdle1 = idle;
+                root.statReady = true;
+                return;
             }
+            const dt = total - root.statTotal1;
+            const di = idle - root.statIdle1;
+            root.cpuUsage = dt > 0 ? Math.round(100 * (dt - di) / dt) : 0;
+            root.statTotal1 = total;
+            root.statIdle1 = idle;
         }
     }
 
-    Timer {
-        id: cpuDelay
-        interval: 100
-        onTriggered: statProc.running = true
-    }
+    FileView {
+        id: netFile
 
-    // Network rates: two /proc/net/dev samples 100 ms apart.
-    Process {
-        id: netProc
-        command: ["sh", "-c", "awk 'NR>2 {rx += $2; tx += $10} END {print rx, tx}' /proc/net/dev"]
+        path: "/proc/net/dev"
+        watchChanges: false
+        printErrors: false
 
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const parts = text.trim().split(/\s+/).map(Number);
-                if (parts.length < 2 || isNaN(parts[0])) return;
-                if (root.netRx1 === 0) {
-                    root.netRx1 = parts[0] || 1;
-                    root.netTx1 = parts[1];
-                    netDelay.restart();
-                } else {
-                    // Samples are 0.1 s apart -> bytes/s = delta * 10.
-                    root.rxSpeed = root.formatSpeed((parts[0] - root.netRx1) * 10);
-                    root.txSpeed = root.formatSpeed((parts[1] - root.netTx1) * 10);
-                    root.netRx1 = 0;
-                }
+        onTextChanged: {
+            let rx = 0;
+            let tx = 0;
+            const lines = text().split("\n");
+            for (let i = 2; i < lines.length; i++) {
+                const parts = lines[i].trim().split(/\s+/);
+                if (parts.length < 10)
+                    continue;
+                rx += Number(parts[1]) || 0;
+                tx += Number(parts[9]) || 0;
             }
+            const now = Date.now();
+            if (root.netAt > 0 && now > root.netAt) {
+                const secs = (now - root.netAt) / 1000;
+                root.rxSpeed = root.formatSpeed((rx - root.netRx1) / secs);
+                root.txSpeed = root.formatSpeed((tx - root.netTx1) / secs);
+            }
+            root.netRx1 = rx;
+            root.netTx1 = tx;
+            root.netAt = now;
         }
     }
 
-    Timer {
-        id: netDelay
-        interval: 100
-        onTriggered: netProc.running = true
-    }
+    FileView {
+        id: memFile
 
-    Process {
-        id: memProc
-        command: ["rg", "-N", "^(MemTotal|MemAvailable):", "/proc/meminfo"]
+        path: "/proc/meminfo"
+        watchChanges: false
+        printErrors: false
 
-        stdout: StdioCollector {
-            onStreamFinished: {
-                let total = 0, available = 0;
-                for (const line of text.split("\n")) {
-                    if (line.startsWith("MemTotal:")) total = parseInt(line.split(/\s+/)[1]);
-                    else if (line.startsWith("MemAvailable:")) available = parseInt(line.split(/\s+/)[1]);
-                }
-                if (total <= 0) return;
-                const used = total - available; // kB
-                root.ramUsage = Math.round(100 * used / total);
-                root.ramUsed = (used / 1024 / 1024).toFixed(1) + " GiB";
-                root.ramTotal = (total / 1024 / 1024).toFixed(1) + " GiB";
+        onTextChanged: {
+            let total = 0;
+            let available = 0;
+            for (const line of text().split("\n")) {
+                if (line.startsWith("MemTotal:"))
+                    total = parseInt(line.split(/\s+/)[1]);
+                else if (line.startsWith("MemAvailable:"))
+                    available = parseInt(line.split(/\s+/)[1]);
             }
+            if (total <= 0)
+                return;
+            const used = total - available;
+            root.ramUsage = Math.round(100 * used / total);
+            root.ramUsed = (used / 1024 / 1024).toFixed(1) + " GiB";
+            root.ramTotal = (total / 1024 / 1024).toFixed(1) + " GiB";
         }
     }
 
-    // First readable thermal zone in 20..110 C, same as the waybar script.
+    FileView {
+        id: uptimeFile
+
+        path: "/proc/uptime"
+        watchChanges: false
+        printErrors: false
+
+        onTextChanged: {
+            const s = parseFloat(text().trim().split(/\s+/)[0]);
+            if (!isNaN(s))
+                root.uptime = root.formatUptime(s);
+        }
+    }
+
+    FileView {
+        id: loadFile
+
+        path: "/proc/loadavg"
+        watchChanges: false
+        printErrors: false
+
+        onTextChanged: {
+            const parts = text().trim().split(/\s+/);
+            if (parts.length >= 3)
+                root.loadAvg = parts.slice(0, 3).join(" ");
+        }
+    }
+
+    FileView {
+        id: thermalFile
+
+        path: root.thermalPath
+        watchChanges: false
+        printErrors: false
+
+        onTextChanged: {
+            const t = parseInt(text().trim());
+            root.cpuTemp = isNaN(t) || t < 20000 || t > 110000 ? "N/A" : Math.round(t / 1000) + "°C";
+        }
+    }
+
+    // First readable thermal zone, same range check as the old script.
     Process {
-        id: thermalProc
+        id: thermalProbe
+
         command: [
             "sh", "-c",
             "for z in /sys/class/thermal/thermal_zone*/temp; do " +
             "[ -r \"$z\" ] || continue; " +
             "t=$(cat \"$z\" 2>/dev/null); " +
             "case \"$t\" in ''|*[!0-9]*) continue;; esac; " +
-            "if [ \"$t\" -gt 20000 ] && [ \"$t\" -lt 110000 ]; then echo $((t / 1000)); exit 0; fi; " +
+            "if [ \"$t\" -gt 20000 ] && [ \"$t\" -lt 110000 ]; then echo \"$z\"; exit 0; fi; " +
             "done"
         ]
 
         stdout: StdioCollector {
             onStreamFinished: {
-                const t = parseInt(text.trim());
-                if (isNaN(t)) {
-                    root.cpuTemp = "N/A";
-                    return;
-                }
-                root.cpuTemp = t + "°C";
+                root.thermalPath = text.trim();
+                if (root.thermalPath !== "")
+                    thermalFile.reload();
             }
         }
     }
 
+    // nvidia-smi when present, otherwise the amdgpu sysfs pair.
     Process {
         id: gpuProbe
-        command: ["sh", "-c", "command -v nvidia-smi >/dev/null 2>&1 && nvidia-smi -L >/dev/null 2>&1 && echo yes"]
+
+        command: [
+            "sh", "-c",
+            "if command -v nvidia-smi >/dev/null 2>&1 && nvidia-smi -L >/dev/null 2>&1; then echo nvidia; exit 0; fi; " +
+            "busy=$(for f in /sys/class/drm/card*/device/gpu_busy_percent; do [ -r \"$f\" ] && { echo \"$f\"; break; }; done); " +
+            "[ -n \"$busy\" ] || { echo none; exit 0; }; " +
+            "temp=$(for h in /sys/class/hwmon/hwmon*; do [ \"$(cat \"$h/name\" 2>/dev/null)\" = amdgpu ] && { echo \"$h/temp1_input\"; break; }; done); " +
+            "echo \"amd|$busy|$temp\""
+        ]
 
         stdout: StdioCollector {
             onStreamFinished: {
-                root.hasNvidia = text.trim() === "yes";
-                if (root.hasNvidia) root.refresh();
+                const out = text.trim();
+                if (out === "nvidia") {
+                    root.gpuVendor = "nvidia";
+                    root.hasNvidia = true;
+                    root.hasGpu = true;
+                    root.refresh();
+                } else if (out.startsWith("amd|")) {
+                    const parts = out.split("|");
+                    root.gpuVendor = "amd";
+                    root.gpuBusyPath = parts[1] ?? "";
+                    root.gpuTempPath = parts[2] ?? "";
+                    root.hasGpu = root.gpuBusyPath !== "";
+                    root.refresh();
+                }
             }
+        }
+    }
+
+    FileView {
+        id: gpuBusyFile
+
+        path: root.gpuBusyPath
+        watchChanges: false
+        printErrors: false
+
+        onTextChanged: {
+            const v = parseInt(text().trim());
+            if (!isNaN(v)) {
+                root.gpuUsageNum = v;
+                root.gpuUsage = v + "%";
+            }
+        }
+    }
+
+    FileView {
+        id: gpuTempFile
+
+        path: root.gpuTempPath
+        watchChanges: false
+        printErrors: false
+
+        onTextChanged: {
+            const t = parseInt(text().trim());
+            if (!isNaN(t))
+                root.gpuTemp = Math.round(t / 1000) + "°C";
         }
     }
 
     Process {
         id: gpuProc
+
         command: [
             "nvidia-smi",
             "--query-gpu=temperature.gpu,utilization.gpu",
@@ -221,28 +333,16 @@ Singleton {
         stdout: StdioCollector {
             onStreamFinished: {
                 const parts = text.trim().split(",").map(s => s.trim());
-                if (parts.length < 2) return;
+                if (parts.length < 2)
+                    return;
                 const t = parseInt(parts[0]);
-                if (isNaN(t)) return;
+                if (isNaN(t))
+                    return;
                 root.gpuTemp = t + "°C";
                 root.gpuUsage = parts[1] + "%";
                 const u = parseInt(parts[1]);
-                if (!isNaN(u)) root.gpuUsageNum = u;
-            }
-        }
-    }
-
-    // Uptime seconds + load average, one cheap read per cycle.
-    Process {
-        id: uptimeProc
-        command: ["sh", "-c", "cut -d' ' -f1 /proc/uptime; awk '{print $1, $2, $3}' /proc/loadavg"]
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const lines = text.trim().split("\n");
-                const s = parseFloat(lines[0]);
-                if (!isNaN(s)) root.uptime = root.formatUptime(s);
-                if (lines.length > 1 && lines[1].trim() !== "") root.loadAvg = lines[1].trim();
+                if (!isNaN(u))
+                    root.gpuUsageNum = u;
             }
         }
     }
@@ -255,6 +355,7 @@ Singleton {
     }
 
     Component.onCompleted: {
+        thermalProbe.running = true;
         gpuProbe.running = true;
         refresh();
     }

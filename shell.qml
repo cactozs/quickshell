@@ -91,6 +91,15 @@ ShellRoot {
         model: Quickshell.screens
 
         LazyOverlay {
+            source: Component { TrayPopup {} }
+            active: ShellState.trayScreen === modelData.name
+        }
+    }
+
+    Variants {
+        model: Quickshell.screens
+
+        LazyOverlay {
             source: Component { WeatherPopup {} }
             active: ShellState.weatherScreen === modelData.name
         }

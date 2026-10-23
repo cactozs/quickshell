@@ -177,7 +177,7 @@ PanelWindow {
             }
 
             Meter {
-                visible: SystemMonitor.hasNvidia
+                visible: SystemMonitor.hasGpu
                 title: "GPU"
                 value: SystemMonitor.gpuUsage + " • " + SystemMonitor.gpuTemp
                 usage: SystemMonitor.gpuUsageNum

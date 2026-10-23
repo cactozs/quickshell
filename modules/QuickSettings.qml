@@ -3,7 +3,6 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import Quickshell.Networking
 import Quickshell.Services.Mpris
-import Quickshell.Services.Pipewire
 import Quickshell.Wayland
 import Quickshell.Widgets
 import QtQuick
@@ -26,35 +25,6 @@ PanelWindow {
     readonly property int cardPadding: 16
     readonly property int netRowHeight: 48
     readonly property int netListMaxHeight: 5 * root.netRowHeight + 2 * 4
-
-    // ---- volume ----------------------------------------------------------------
-
-    readonly property PwNode sink: Pipewire.defaultAudioSink
-    readonly property bool muted: sink?.audio?.muted ?? false
-    readonly property real volume: sink?.audio?.volume ?? 0
-    readonly property int volumePercent: Math.round(root.volume * 100)
-    readonly property bool effectiveMuted: root.muted || root.volumePercent === 0
-    readonly property string volumeIcon: root.effectiveMuted
-        ? Theme.iconVolumeOff
-        : (root.volumePercent < 66 ? Theme.iconVolumeDown : Theme.iconVolumeUp)
-
-    PwObjectTracker {
-        objects: [root.sink]
-    }
-
-    function setVolume(v: real): void {
-        if (root.sink?.ready && root.sink?.audio)
-            root.sink.audio.volume = Math.max(0, Math.min(1.0, v));
-    }
-
-    function toggleMute(): void {
-        if (root.sink?.ready && root.sink?.audio)
-            root.sink.audio.muted = !root.sink.audio.muted;
-    }
-
-    function showVolumeOsd(): void {
-        Osd.show(root.volumeIcon, root.effectiveMuted ? 0 : root.volume);
-    }
 
     // ---- Wi-Fi -----------------------------------------------------------------
 
@@ -500,7 +470,7 @@ PanelWindow {
 
                 width: parent.width
                 spacing: 10
-                visible: root.sink !== null
+                visible: Audio.sink !== null
 
                 Item {
                     width: 32
@@ -508,8 +478,8 @@ PanelWindow {
 
                     Text {
                         anchors.centerIn: parent
-                        text: root.volumeIcon
-                        color: root.effectiveMuted ? Theme.surfaceVariantText : Theme.primary
+                        text: Audio.icon
+                        color: Audio.effectiveMuted ? Theme.surfaceVariantText : Theme.primary
                         font.family: Theme.iconFont
                         font.pixelSize: Theme.iconSizeMedium
                     }
@@ -517,10 +487,7 @@ PanelWindow {
                     MouseArea {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            root.toggleMute();
-                            root.showVolumeOsd();
-                        }
+                        onClicked: Audio.toggleMute()
                     }
                 }
 
@@ -530,19 +497,16 @@ PanelWindow {
                     anchors.verticalCenter: parent.verticalCenter
                     width: volumeRow.width - 32 - 40 - 20
 
-                    value: root.effectiveMuted ? 0 : root.volume
-                    handleColor: root.effectiveMuted ? Theme.surfaceVariantText : Theme.sliderColor
+                    value: Audio.effectiveMuted ? 0 : Audio.volume
+                    handleColor: Audio.effectiveMuted ? Theme.surfaceVariantText : Theme.sliderColor
 
                     onMoved: v => {
-                        if (root.sink?.ready && root.sink?.audio) {
-                            root.sink.audio.muted = false;
-                            root.sink.audio.volume = v;
+                        if (Audio.sink?.ready && Audio.sink?.audio) {
+                            Audio.sink.audio.muted = false;
+                            Audio.sink.audio.volume = v;
                         }
                     }
-                    onCommitted: v => {
-                        root.setVolume(v);
-                        root.showVolumeOsd();
-                    }
+                    onCommitted: v => Audio.setVolume(v)
                 }
 
                 Text {
@@ -581,6 +545,27 @@ PanelWindow {
 
                     onActivated: Networking.wifiEnabled = !root.wifiEnabled
                     onDetailsToggled: root.wifiExpanded = !root.wifiExpanded
+                }
+
+                QsTile {
+                    width: tileGrid.tileWidth
+                    visible: Audio.sink !== null
+                    icon: Theme.iconSpeaker
+                    title: I18n.t("Выход")
+                    subtitle: Audio.sinkName !== "" ? Audio.sinkName : I18n.t("Нет устройства")
+
+                    onActivated: Audio.cycleSink()
+                }
+
+                QsTile {
+                    width: tileGrid.tileWidth
+                    visible: Audio.source !== null
+                    icon: Audio.micMuted ? Theme.iconMicOff : Theme.iconMic
+                    title: I18n.t("Микрофон")
+                    subtitle: Audio.micMuted ? I18n.t("Без звука") : I18n.t("Включён")
+                    active: !Audio.micMuted
+
+                    onActivated: Audio.toggleMicMute()
                 }
 
                 QsTile {
