@@ -7,13 +7,20 @@ import QtQuick
 import "../style"
 
 // brightnessctl singleton: the bar chip and the quick settings slider share
-// one source of truth. The percent is polled once a second; every change pops
-// the shared OSD with the fresh value read back from brightnessctl.
+// one source of truth. The percent is polled once a second through sysfs when
+// the machine exposes a backlight; brightnessctl stays for writes and as the
+// fallback poll. Every change pops the shared OSD with the fresh value.
 Singleton {
     id: root
 
     property int percent: 0
     property bool deviceFound: false
+
+    // sysfs backlight path (".../brightness") when the machine exposes one.
+    // Empty means the brightnessctl fallback below is in charge.
+    property string brightnessPath: ""
+    property int maxBrightness: 0
+    property bool hasReadBrightness: false
 
     // Set while a change is in flight; the OSD pops when the new value arrives.
     property bool osdPending: false
@@ -51,7 +58,13 @@ Singleton {
     }
 
     function refresh(): void {
-        if (!pctProc.running) pctProc.running = true;
+        if (root.brightnessPath !== "") {
+            // Two file reads per second instead of a process spawn per second.
+            brightnessFile.reload();
+            return;
+        }
+        if (!pctProc.running)
+            pctProc.running = true;
     }
 
     // brightnessctl refuses 0 on most backlights, so the floor is 1%.
@@ -70,6 +83,64 @@ Singleton {
         id: applyDelay
         interval: 120
         onTriggered: root.refresh()
+    }
+
+    // One-shot probe for a readable sysfs backlight. Writing still goes
+    // through brightnessctl; this only replaces the once-a-second poll.
+    Process {
+        id: sysfsProbe
+
+        command: [
+            "sh", "-c",
+            "for b in /sys/class/backlight/*; do " +
+            "[ -r \"$b/brightness\" ] || continue; " +
+            "m=$(cat \"$b/max_brightness\" 2>/dev/null) || continue; " +
+            "[ \"$m\" -gt 0 ] 2>/dev/null || continue; " +
+            "echo \"$b/brightness|$m\"; exit 0; " +
+            "done"
+        ]
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const parts = text.trim().split("|");
+                if (parts.length < 2)
+                    return;
+                const max = parseInt(parts[1]);
+                if (parts[0] === "" || isNaN(max) || max <= 0)
+                    return;
+                root.brightnessPath = parts[0];
+                root.maxBrightness = max;
+                brightnessFile.reload();
+            }
+        }
+    }
+
+    FileView {
+        id: brightnessFile
+
+        path: root.brightnessPath
+        preload: false
+        blockAllReads: true
+        printErrors: false
+
+        onTextChanged: {
+            const value = parseInt(text().trim());
+            if (isNaN(value) || root.maxBrightness <= 0)
+                return;
+            const p = Math.round(100 * value / root.maxBrightness);
+            // The first sysfs sample is the startup baseline, not a change:
+            // set it before `percent` so the OSD stays quiet.
+            if (!root.hasReadBrightness) {
+                root.hasReadBrightness = true;
+                root.lastPercent = p;
+            }
+            root.percent = p;
+            root.deviceFound = true;
+            if (root.osdPending) {
+                root.osdPending = false;
+                Osd.show(root.icon, p / 100);
+            }
+        }
     }
 
     Process {
@@ -106,5 +177,8 @@ Singleton {
         onTriggered: root.refresh()
     }
 
-    Component.onCompleted: root.refresh()
+    Component.onCompleted: {
+        sysfsProbe.running = true;
+        root.refresh();
+    }
 }

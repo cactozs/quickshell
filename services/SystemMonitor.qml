@@ -158,14 +158,20 @@ Singleton {
                 const parts = lines[i].trim().split(/\s+/);
                 if (parts.length < 10)
                     continue;
+                // Loopback traffic is local: counting it would show megabytes
+                // per second while nothing leaves the machine.
+                if (parts[0].replace(/:$/, "") === "lo")
+                    continue;
                 rx += Number(parts[1]) || 0;
                 tx += Number(parts[9]) || 0;
             }
             const now = Date.now();
             if (root.netAt > 0 && now > root.netAt) {
                 const secs = (now - root.netAt) / 1000;
-                root.rxSpeed = root.formatSpeed((rx - root.netRx1) / secs);
-                root.txSpeed = root.formatSpeed((tx - root.netTx1) / secs);
+                // An interface restart resets its counters; clamp instead of
+                // briefly showing a negative speed.
+                root.rxSpeed = root.formatSpeed(Math.max(0, rx - root.netRx1) / secs);
+                root.txSpeed = root.formatSpeed(Math.max(0, tx - root.netTx1) / secs);
             }
             root.netRx1 = rx;
             root.netTx1 = tx;

@@ -19,11 +19,19 @@ shows up there and the previous configuration stays on screen.
 
 ```sh
 bash -n install.sh
+python3 scripts/check-qml.py
 qmllint -v -I . -I /usr/lib/qt6/qml shell.qml modules/*.qml services/*.qml style/*.qml
 ```
 
+`check-qml.py` is the static part of the conventions below: `Singleton {}`
+roots, `FileView` flags after `path:`, no hardcoded hex outside `style/`, and
+matching `en`/`de` translation keys.
+
 `qmllint` is part of Qt 6. On Arch it comes with `qt6-declarative`. The exact
 QML import directory can be printed with `qtpaths6 --query QT_INSTALL_QML`.
+qmllint 6.12 reports `missing-property` for singleton types without a `qmldir`;
+those warnings are expected — compare against the previous output rather than
+expecting zero warnings.
 
 If you changed QML, also run:
 

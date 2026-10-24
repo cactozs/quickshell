@@ -329,7 +329,8 @@ quickshell
 
 Run it in the foreground first. There is no build and no test suite: QML errors
 appear on stderr, and the shell reloads itself when a file changes. GitHub
-Actions runs `qmllint` and `bash -n install.sh` on pushes and pull requests.
+Actions runs `qmllint`, `bash -n install.sh` and `python3 scripts/check-qml.py`
+on pushes and pull requests.
 Once it works, keep the niri autostart line and stop the manual instance.
 
 ## Keybinds
@@ -355,8 +356,8 @@ Volume, brightness, media and lock binds do not go through the shell: use
 
 ## IPC
 
-`qs ipc show` prints the live list. All overlay targets share `toggle`,
-`toggleOn <output>` and `close`:
+`qs ipc show` prints the live list. The overlay targets share `toggle`,
+`toggleOn <output>` and `close`; `bar` and `notifs` are separate:
 
 | target | extra functions |
 |---|---|
@@ -364,6 +365,8 @@ Volume, brightness, media and lock binds do not go through the shell: use
 | `clipboard` | — |
 | `center` (notifications) | — |
 | `tray` | — |
+| `weather` | — |
+| `system` (monitoring) | — |
 | `settings` (quick settings) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono>`, `blur <wallpaper\|window>`, `language <ru\|en\|de>` |
 | `wallpaper` (manager) | `random` |
 | `bar` | `toggle` |

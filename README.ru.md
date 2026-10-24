@@ -334,8 +334,9 @@ quickshell
 
 Сначала запускайте в терминале. Сборки и тестов нет: ошибки QML появляются в
 stderr, а оболочка сама перезагружается при изменении файлов. GitHub Actions
-запускает `qmllint` и `bash -n install.sh` на push и pull request. Когда всё
-работает, оставьте строку автозапуска в niri и остановите ручной экземпляр.
+запускает `qmllint`, `bash -n install.sh` и `python3 scripts/check-qml.py` на
+push и pull request. Когда всё работает, оставьте строку автозапуска в niri и
+остановите ручной экземпляр.
 
 ## Горячие клавиши
 
@@ -360,8 +361,8 @@ Mod+P       repeat=false { spawn "qs" "ipc" "call" "bar" "toggle"; }
 
 ## IPC
 
-`qs ipc show` печатает живой список. У всех оверлеев есть `toggle`,
-`toggleOn <output>` и `close`:
+`qs ipc show` печатает живой список. У оверлеев есть `toggle`,
+`toggleOn <output>` и `close`; `bar` и `notifs` — отдельные цели:
 
 | цель | дополнительные функции |
 |---|---|
@@ -369,6 +370,8 @@ Mod+P       repeat=false { spawn "qs" "ipc" "call" "bar" "toggle"; }
 | `clipboard` | — |
 | `center` (уведомления) | — |
 | `tray` | — |
+| `weather` | — |
+| `system` (мониторинг) | — |
 | `settings` (быстрые настройки) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono>`, `blur <wallpaper\|window>`, `language <ru\|en\|de>` |
 | `wallpaper` (менеджер) | `random` |
 | `bar` | `toggle` |

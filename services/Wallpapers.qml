@@ -115,6 +115,9 @@ Singleton {
     // background loop keeps 720px JPEG previews in the cache dir instead and
     // prints the ones it has; it rebuilds only previews older than their
     // source. Runs once per new wallpaper list, not on every menu open.
+    // The preview name is a SHA-1 of the full path: replacing "/" with "_"
+    // made "a/b.jpg" and "a_b.jpg" share one cache file. The find drops those
+    // legacy names once; a hash is hex, so it cannot match them.
     // shortcut: without magick nothing is printed and the tiles load the
     // originals, as before; a wiped cache is only rebuilt on the next scan.
     Process {
@@ -122,8 +125,9 @@ Singleton {
 
         command: ["sh", "-c",
             "d=$1; shift; mkdir -p \"$d\" 2>/dev/null; " +
+            "find \"$d\" -maxdepth 1 -type f -name '*_*.jpg' -delete 2>/dev/null; " +
             "for f in \"$@\"; do " +
-            "t=\"$d/$(printf '%s' \"$f\" | tr '/' '_').jpg\"; " +
+            "t=\"$d/$(printf '%s' \"$f\" | sha1sum | cut -d' ' -f1).jpg\"; " +
             "[ -f \"$t\" ] && [ \"$t\" -nt \"$f\" ] || magick \"$f\" -resize 720x720\\> -quality 85 \"$t\" 2>/dev/null; " +
             "[ -f \"$t\" ] && printf '%s\\t%s\\n' \"$f\" \"$t\"; " +
             "done", "sh", root.thumbDir].concat(root.entries.map(entry => entry.path))

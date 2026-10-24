@@ -12,6 +12,12 @@ Singleton {
     // Emitted when the active keyboard layout index actually changes.
     signal layoutSwitched()
 
+    // niri can be absent (first login, a compositor restart, a non-niri
+    // session). Retry with backoff instead of spawning a process every second
+    // forever; a successfully parsed event proves the stream is alive again.
+    property int reconnectDelay: 1000
+    readonly property int maxReconnectDelay: 10000
+
     // Raw objects straight from niri IPC (JSON).
     property var workspaces: []
     property var windows: []
@@ -84,6 +90,7 @@ Singleton {
             return;
         }
         if (!ev || typeof ev !== "object") return;
+        root.reconnectDelay = 1000;
 
         if (ev.WorkspacesChanged) {
             root.workspaces = ev.WorkspacesChanged.workspaces;
@@ -138,6 +145,18 @@ Singleton {
         if (!kbProc.running) kbProc.running = true;
     }
 
+    function scheduleReconnect(): void {
+        // onExited and the watchdog can race for one outage; restarting the
+        // armed timer must not double the delay.
+        if (restartTimer.running) {
+            restartTimer.restart();
+            return;
+        }
+        restartTimer.interval = root.reconnectDelay;
+        restartTimer.restart();
+        root.reconnectDelay = Math.min(root.reconnectDelay * 2, root.maxReconnectDelay);
+    }
+
     Process {
         id: streamProc
         command: ["niri", "msg", "-j", "event-stream"]
@@ -147,13 +166,30 @@ Singleton {
             onRead: line => root.handleLine(line)
         }
 
-        onExited: restartTimer.restart()
+        onExited: root.scheduleReconnect()
+        onRunningChanged: {
+            if (!streamProc.running && !restartTimer.running)
+                root.scheduleReconnect();
+        }
     }
 
     Timer {
         id: restartTimer
         interval: 1000
         onTriggered: streamProc.running = true
+    }
+
+    // QProcess reports a failed start through its C++ error handler, not a QML
+    // signal, so a missing niri would otherwise never emit onExited. This cheap
+    // one-second check catches that case; it only acts when the stream is down.
+    Timer {
+        interval: 1000
+        repeat: true
+        running: true
+        onTriggered: {
+            if (!streamProc.running && !restartTimer.running)
+                root.scheduleReconnect();
+        }
     }
 
     Process {

@@ -121,10 +121,13 @@ Singleton {
         }
     }
 
+    // Only the weather popup reads this data: refresh while it is open, not
+    // every half hour for the whole session. Opening the popup calls refresh()
+    // itself, so a long-closed popup still comes back fresh.
     Timer {
         interval: 30 * 60 * 1000
         repeat: true
-        running: true
+        running: ShellState.weatherScreen !== ""
         onTriggered: root.refresh()
     }
 

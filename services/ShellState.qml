@@ -62,6 +62,33 @@ Singleton {
         }
     }
 
+    // A monitor can disappear while its overlay is open; the screen string
+    // would then point at an output no window can ever appear on.
+    Connections {
+        target: Quickshell
+
+        function onScreensChanged(): void {
+            if (root.quickSettingsScreen !== "" && !root.screenKnown(root.quickSettingsScreen))
+                root.quickSettingsScreen = "";
+            if (root.launcherScreen !== "" && !root.screenKnown(root.launcherScreen))
+                root.launcherScreen = "";
+            if (root.clipboardScreen !== "" && !root.screenKnown(root.clipboardScreen))
+                root.clipboardScreen = "";
+            if (root.notificationScreen !== "" && !root.screenKnown(root.notificationScreen))
+                root.notificationScreen = "";
+            if (root.weatherScreen !== "" && !root.screenKnown(root.weatherScreen))
+                root.weatherScreen = "";
+            if (root.systemScreen !== "" && !root.screenKnown(root.systemScreen))
+                root.systemScreen = "";
+            if (root.settingsScreen !== "" && !root.screenKnown(root.settingsScreen))
+                root.settingsScreen = "";
+            if (root.wallpaperScreen !== "" && !root.screenKnown(root.wallpaperScreen))
+                root.wallpaperScreen = "";
+            if (root.trayScreen !== "" && !root.screenKnown(root.trayScreen))
+                root.trayScreen = "";
+        }
+    }
+
     readonly property bool barHidden: props.barHidden
 
     // Launcher appearance: fullscreen = icon grid over the whole output,
@@ -135,6 +162,25 @@ Singleton {
 
     function setLanguage(name: string): void {
         props.language = name === "en" || name === "de" ? name : "ru";
+    }
+
+    // Resolve an IPC/screen name against the live output list. Unknown names
+    // (a stale output, a typo) fall back to the first screen instead of
+    // leaving an overlay keyed to a screen that does not exist.
+    function screenKnown(name: string): bool {
+        const screens = Quickshell.screens;
+        for (let i = 0; i < screens.length; i++) {
+            if (screens[i].name === name)
+                return true;
+        }
+        return false;
+    }
+
+    function resolveScreen(name: string): string {
+        const screens = Quickshell.screens;
+        if (name !== "" && root.screenKnown(name))
+            return name;
+        return screens.length > 0 ? screens[0].name : "";
     }
 
     function toggleQuickSettings(screenName: string): void {
@@ -222,14 +268,12 @@ Singleton {
 
         // Opens on the first screen; useful for testing and scripted use.
         function toggle(): void {
-            const screens = Quickshell.screens;
-            root.toggleSettings(screens.length > 0 ? screens[0].name : "");
+            root.toggleSettings(root.resolveScreen(""));
         }
 
         // Toggles on a specific screen; niri keybinds pass the focused output.
         function toggleOn(screenName: string): void {
-            const screens = Quickshell.screens;
-            root.toggleSettings(screenName !== "" ? screenName : (screens.length > 0 ? screens[0].name : ""));
+            root.toggleSettings(root.resolveScreen(screenName));
         }
 
         function close(): void {
@@ -277,14 +321,12 @@ Singleton {
 
         // Opens on the first screen; useful for testing and scripted use.
         function toggle(): void {
-            const screens = Quickshell.screens;
-            root.toggleWallpaper(screens.length > 0 ? screens[0].name : "");
+            root.toggleWallpaper(root.resolveScreen(""));
         }
 
         // Toggles on a specific screen; niri keybinds pass the focused output.
         function toggleOn(screenName: string): void {
-            const screens = Quickshell.screens;
-            root.toggleWallpaper(screenName !== "" ? screenName : (screens.length > 0 ? screens[0].name : ""));
+            root.toggleWallpaper(root.resolveScreen(screenName));
         }
 
         function close(): void {
@@ -305,14 +347,12 @@ Singleton {
 
         // Opens on the first screen; useful for testing and scripted use.
         function toggle(): void {
-            const screens = Quickshell.screens;
-            root.toggleLauncher(screens.length > 0 ? screens[0].name : "");
+            root.toggleLauncher(root.resolveScreen(""));
         }
 
         // Toggles on a specific screen; niri keybinds pass the focused output.
         function toggleOn(screenName: string): void {
-            const screens = Quickshell.screens;
-            root.toggleLauncher(screenName !== "" ? screenName : (screens.length > 0 ? screens[0].name : ""));
+            root.toggleLauncher(root.resolveScreen(screenName));
         }
 
         function close(): void {
@@ -325,14 +365,12 @@ Singleton {
 
         // Opens on the first screen; useful for testing and scripted use.
         function toggle(): void {
-            const screens = Quickshell.screens;
-            root.toggleClipboard(screens.length > 0 ? screens[0].name : "");
+            root.toggleClipboard(root.resolveScreen(""));
         }
 
         // Toggles on a specific screen; niri keybinds pass the focused output.
         function toggleOn(screenName: string): void {
-            const screens = Quickshell.screens;
-            root.toggleClipboard(screenName !== "" ? screenName : (screens.length > 0 ? screens[0].name : ""));
+            root.toggleClipboard(root.resolveScreen(screenName));
         }
 
         function close(): void {
@@ -345,14 +383,12 @@ Singleton {
 
         // Opens on the first screen; useful for testing and scripted use.
         function toggle(): void {
-            const screens = Quickshell.screens;
-            root.toggleNotificationCenter(screens.length > 0 ? screens[0].name : "");
+            root.toggleNotificationCenter(root.resolveScreen(""));
         }
 
         // Toggles on a specific screen; niri keybinds pass the focused output.
         function toggleOn(screenName: string): void {
-            const screens = Quickshell.screens;
-            root.toggleNotificationCenter(screenName !== "" ? screenName : (screens.length > 0 ? screens[0].name : ""));
+            root.toggleNotificationCenter(root.resolveScreen(screenName));
         }
 
         function close(): void {
@@ -361,18 +397,52 @@ Singleton {
     }
 
     IpcHandler {
-        target: "tray"
+        target: "weather"
 
         // Opens on the first screen; useful for testing and scripted use.
         function toggle(): void {
-            const screens = Quickshell.screens;
-            root.toggleTray(screens.length > 0 ? screens[0].name : "");
+            root.toggleWeather(root.resolveScreen(""));
         }
 
         // Toggles on a specific screen; niri keybinds pass the focused output.
         function toggleOn(screenName: string): void {
-            const screens = Quickshell.screens;
-            root.toggleTray(screenName !== "" ? screenName : (screens.length > 0 ? screens[0].name : ""));
+            root.toggleWeather(root.resolveScreen(screenName));
+        }
+
+        function close(): void {
+            root.closeWeather();
+        }
+    }
+
+    IpcHandler {
+        target: "system"
+
+        // Opens on the first screen; useful for testing and scripted use.
+        function toggle(): void {
+            root.toggleSystem(root.resolveScreen(""));
+        }
+
+        // Toggles on a specific screen; niri keybinds pass the focused output.
+        function toggleOn(screenName: string): void {
+            root.toggleSystem(root.resolveScreen(screenName));
+        }
+
+        function close(): void {
+            root.closeSystem();
+        }
+    }
+
+    IpcHandler {
+        target: "tray"
+
+        // Opens on the first screen; useful for testing and scripted use.
+        function toggle(): void {
+            root.toggleTray(root.resolveScreen(""));
+        }
+
+        // Toggles on a specific screen; niri keybinds pass the focused output.
+        function toggleOn(screenName: string): void {
+            root.toggleTray(root.resolveScreen(screenName));
         }
 
         function close(): void {

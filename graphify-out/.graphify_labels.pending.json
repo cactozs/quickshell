@@ -1,5 +1,6 @@
 {
   "1": "LayoutBadge (keyboard-layout HUD)",
+  "2": "ClipboardLauncher (cliphist overlay)",
   "3": "install.sh",
   "4": "Quickshell",
   "5": "Quickshell",
@@ -20,7 +21,7 @@
   "21": "WeatherPopup.qml",
   "22": "Weather.qml",
   "23": "AppUsage.qml",
-  "24": "Manual installation",
+  "24": "check-qml.py",
   "25": "I18n.qml",
   "26": "SystemPopup.qml",
   "27": "Settings.qml",
@@ -35,5 +36,6 @@
   "36": "GlassEdge.qml",
   "37": "TrayPopup.qml",
   "38": "Audio.qml",
-  "39": "ClipboardPins.qml"
+  "39": "ClipboardPins.qml",
+  "40": "Launcher (app launcher overlay, wofi replacement)"
 }

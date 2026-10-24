@@ -11,8 +11,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install tooling
-        run: pacman -Syu --noconfirm --needed quickshell qt6-declarative
+        run: pacman -Syu --noconfirm --needed quickshell qt6-declarative python
       - name: Check the installer
         run: bash -n install.sh
+      - name: Check repository conventions
+        run: python3 scripts/check-qml.py
       - name: Lint the QML
         run: /usr/lib/qt6/bin/qmllint -I . -I /usr/lib/qt6/qml shell.qml modules/*.qml services/*.qml style/*.qml
