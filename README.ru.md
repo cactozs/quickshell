@@ -70,6 +70,14 @@
 |:---:|:---:|
 | ![OSD](assets/screenshots/osd.png) | ![Раскладка](assets/screenshots/layout.png) |
 
+| Лончер | История буфера обмена |
+|:---:|:---:|
+| ![Лончер](assets/screenshots/launcher.png) | ![История буфера обмена](assets/screenshots/clipboard.png) |
+
+| Меню настроек | Менеджер обоев |
+|:---:|:---:|
+| ![Меню настроек](assets/screenshots/settings.png) | <img src="assets/screenshots/wallpaper.png" width="520" alt="Менеджер обоев"> |
+
 ## Быстрый старт
 
 ### Установщик (рекомендуется)

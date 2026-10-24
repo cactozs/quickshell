@@ -70,6 +70,14 @@ English (except for the Russian README).
 |:---:|:---:|
 | ![OSD](assets/screenshots/osd.png) | ![Keyboard layout](assets/screenshots/layout.png) |
 
+| Launcher | Clipboard history |
+|:---:|:---:|
+| ![Launcher](assets/screenshots/launcher.png) | ![Clipboard history](assets/screenshots/clipboard.png) |
+
+| Settings menu | Wallpaper manager |
+|:---:|:---:|
+| ![Settings menu](assets/screenshots/settings.png) | <img src="assets/screenshots/wallpaper.png" width="520" alt="Wallpaper manager"> |
+
 ## Quick start
 
 ### Installer (recommended)
