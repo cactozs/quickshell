@@ -161,7 +161,7 @@ PanelWindow {
                 toast.appName = notif.appName;
                 toast.summary = notif.summary;
                 toast.body = notif.body;
-                toast.iconSource = notif.image !== "" ? notif.image : notif.appIcon;
+                toast.iconSource = Notifications.pickIcon(notif.image, notif.appIcon, notif.desktopEntry);
                 toast.critical = notif.urgency === NotificationUrgency.Critical;
                 toast.buttons = notif.actions.filter(a => a.identifier !== "default");
             } catch (e) {
@@ -290,15 +290,19 @@ PanelWindow {
                     color: Theme.surfaceContainerHighest
 
                     IconImage {
+                        id: iconImage
+
                         anchors.fill: parent
                         anchors.margins: 6
                         source: toast.iconSource
-                        visible: toast.iconSource !== ""
+                        // Only a loaded image draws; a failed source would
+                        // otherwise paint a broken frame over the glyph.
+                        visible: toast.iconSource !== "" && status === Image.Ready
                     }
 
                     Text {
                         anchors.centerIn: parent
-                        visible: toast.iconSource === ""
+                        visible: !iconImage.visible
                         text: Theme.iconNotifications
                         color: toast.critical ? Theme.error : Theme.primary
                         font.family: Theme.iconFont

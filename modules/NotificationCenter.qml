@@ -290,7 +290,7 @@ PanelWindow {
 
         readonly property var entry: modelData
         readonly property bool actionable: entry.live !== null && Notifications.defaultAction(entry.live) !== null
-        readonly property string iconSource: entry.image !== "" ? entry.image : entry.appIcon
+        readonly property string iconSource: Notifications.entryIcon(entry)
         readonly property bool hovered: rowHover.hovered
 
         width: listArea.width
@@ -316,15 +316,20 @@ PanelWindow {
             color: Theme.surfaceContainerHighest
 
             IconImage {
+                id: iconImage
+
                 anchors.fill: parent
                 anchors.margins: 6
                 source: row.iconSource
-                visible: row.iconSource !== ""
+                // A source that failed to load (dead temp image, border case
+                // the resolver let through) must not paint a broken frame; the
+                // glyph below stands in for it.
+                visible: row.iconSource !== "" && status === Image.Ready
             }
 
             Text {
                 anchors.centerIn: parent
-                visible: row.iconSource === ""
+                visible: !iconImage.visible
                 text: Theme.iconNotifications
                 color: Theme.surfaceVariantText
                 font.family: Theme.iconFont

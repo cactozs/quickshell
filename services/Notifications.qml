@@ -73,8 +73,8 @@ Singleton {
     // it forever. Entries are plain records (see addHistory), not live
     // Notification objects: the server destroys closed ones when the config
     // reloads, so anything long-lived must not point at them.
-    // Record fields: id, appName, summary, body, image, appIcon, at, live,
-    // watcher.
+    // Record fields: id, appName, summary, body, image, appIcon, desktopEntry,
+    // at, live, watcher.
     property var history: []
     readonly property int historyLimit: 100
 
@@ -172,6 +172,7 @@ Singleton {
             body: notif.body,
             image: notif.image,
             appIcon: notif.appIcon,
+            desktopEntry: notif.desktopEntry,
             at: Date.now(),
             live: notif,
             watcher: null,
@@ -199,6 +200,7 @@ Singleton {
             body: e.body ?? "",
             image: e.image ?? "",
             appIcon: e.appIcon ?? "",
+            desktopEntry: e.desktopEntry ?? "",
             at: e.at ?? 0,
             live: null,
             watcher: null
@@ -215,6 +217,7 @@ Singleton {
             body: e.body,
             image: e.image,
             appIcon: e.appIcon,
+            desktopEntry: e.desktopEntry,
             at: e.at
         }));
     }
@@ -407,6 +410,66 @@ Singleton {
 
     function arrivalText(entry: var): string {
         return entry.at ? Qt.formatTime(new Date(entry.at), "HH:mm") : "";
+    }
+
+    // ---- icons -------------------------------------------------------------
+
+    // A notification's icon hint is not a QML image source. app_icon arrives
+    // as an XDG icon *name* (Quickshell substitutes the desktop entry's icon
+    // when the app sent none), and every image-path hint that is not already a
+    // file: URL is wrapped as an image://icon/<id> request — plain filesystem
+    // paths included. Handed straight to an Image, a bare name resolves to a
+    // missing relative URL and draws nothing, while an unresolved provider id
+    // makes IconImageProvider paint its magenta checkerboard. Resolve every
+    // hint here instead: names go through Quickshell.iconPath's boolean
+    // overload, which returns "" when the name is not installed, so the views
+    // draw their glyph fallback.
+    function resolveIcon(hint: var): string {
+        const value = String(hint ?? "");
+        if (value === "")
+            return "";
+
+        const providerPrefix = "image://icon/";
+        if (value.startsWith(providerPrefix)) {
+            const id = value.slice(providerPrefix.length);
+            // A path wrapped as an icon name (Chromium's image-path hint).
+            if (id.startsWith("/"))
+                return "file://" + id;
+            if (id.startsWith("data:") || id.startsWith("qrc:"))
+                return id;
+            return Quickshell.iconPath(id, true);
+        }
+
+        if (value.startsWith("image://") || value.startsWith("file:")
+                || value.startsWith("data:") || value.startsWith("qrc:"))
+            return value;
+        if (value.startsWith("/"))
+            return "file://" + value;
+        return Quickshell.iconPath(value, true);
+    }
+
+    // Best icon for one notification or history record: the image hint first,
+    // then the app icon, then the icon of the desktop-entry hint. "" means
+    // nothing resolved and the views draw their glyph fallback.
+    function pickIcon(image: var, appIcon: var, desktopEntry: var): string {
+        const direct = root.resolveIcon(image) || root.resolveIcon(appIcon);
+        if (direct !== "")
+            return direct;
+
+        const id = String(desktopEntry ?? "");
+        if (id === "")
+            return "";
+
+        // The hint is a desktop file name without its .desktop suffix; a few
+        // senders include it anyway, so try both spellings.
+        let entry = DesktopEntries.byId(id);
+        if (!entry && id.endsWith(".desktop"))
+            entry = DesktopEntries.byId(id.slice(0, -8));
+        return entry ? root.resolveIcon(entry.icon) : "";
+    }
+
+    function entryIcon(entry: var): string {
+        return root.pickIcon(entry?.image, entry?.appIcon, entry?.desktopEntry);
     }
 
     // ---- popup expiry ------------------------------------------------------
