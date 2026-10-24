@@ -131,9 +131,9 @@
     "language": "language=.md"
   },
   "services/Niri.qml": {
-    "mtime": 1792820853.089934,
-    "seen": 1792821005.987154,
-    "ast_hash": "49e87cae1c601d0284068975af5096d9",
+    "mtime": 1792821078.2463157,
+    "seen": 1792831945.117756,
+    "ast_hash": "c80f92e28ff6e97a312ad414cf5a2de1",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -201,23 +201,23 @@
     "language": "language=.md"
   },
   "modules/NotificationCenter.qml": {
-    "mtime": 1792763419.0831993,
-    "seen": 1792763743.413289,
-    "ast_hash": "d9c510b8c6c53f17a45ca6868a50c41b",
+    "mtime": 1792831533.6695566,
+    "seen": 1792831945.1175604,
+    "ast_hash": "33df646e7ebd486c8d2fdbcd2441762b",
     "semantic_hash": "",
     "language": "language=.md"
   },
   "modules/NotificationToast.qml": {
-    "mtime": 1792684133.2760034,
-    "seen": 1792756085.4747243,
-    "ast_hash": "adfdff6f30b3e314e82b784f7323d683",
+    "mtime": 1792831537.520491,
+    "seen": 1792831945.1175685,
+    "ast_hash": "29791b5a36459870c01cdcf540237084",
     "semantic_hash": "",
     "language": "language=.md"
   },
   "services/Notifications.qml": {
-    "mtime": 1792767328.0179656,
-    "seen": 1792821005.9871612,
-    "ast_hash": "8d488c54d601c413305aa200583e5f66",
+    "mtime": 1792831886.6191475,
+    "seen": 1792831945.1177626,
+    "ast_hash": "b047d9131d2feeb262a5b8524497ae54",
     "semantic_hash": "",
     "language": "language=.md"
   },
@@ -376,9 +376,9 @@
     "semantic_hash": ""
   },
   "README.ru.md": {
-    "mtime": 1792820909.4452708,
-    "seen": 1792821005.9868386,
-    "ast_hash": "da89e85a462c032c203ecd4897ce6567",
+    "mtime": 1792821057.8293593,
+    "seen": 1792831945.1174223,
+    "ast_hash": "a34f4bb1d8985d491aa466b855d78ad7",
     "semantic_hash": ""
   },
   "assets/screenshots/calendar.png": {
@@ -474,6 +474,12 @@
     "mtime": 1792820884.5245402,
     "seen": 1792821005.9867766,
     "ast_hash": "babb01a1800f0ba3e4c3191486bd8e35",
+    "semantic_hash": ""
+  },
+  "notification-icons-check.png": {
+    "mtime": 1792831932.1203706,
+    "seen": 1792831945.1179037,
+    "ast_hash": "86e1d1e56f198e959b04ad57d436c181",
     "semantic_hash": ""
   }
 }
