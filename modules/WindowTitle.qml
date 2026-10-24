@@ -34,8 +34,13 @@ Item {
     property real scrollDist: 0
     property bool ready: false
 
+    // The bar hands the title whatever the workspace chips leave. Half an
+    // icon plus a couple of glyphs is not worth the row gap, so below this
+    // the chip disappears instead of squeezing to zero.
+    readonly property int minUsefulWidth: 48
+
     height: Theme.barHeight
-    visible: root.win !== null
+    visible: root.win !== null && root.maxWidth >= root.minUsefulWidth
     implicitWidth: !visible ? 0 : 8 + (icon.visible ? icon.width + 6 : 0) + measurer.implicitWidth + 4
     width: Math.min(implicitWidth, maxWidth)
 

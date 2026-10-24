@@ -30,6 +30,17 @@ PanelWindow {
     readonly property int bandTop: Theme.glass ? Theme.barMargin : 0
     readonly property int shadowInset: Theme.glass ? Theme.cardShadowBlur + Theme.cardShadowOffset : 0
 
+    // The left island may use all the room up to the centered clock island.
+    // A percentage cap cannot hold a growing workspace list: everything past
+    // it is silently clipped, and niri creates workspaces on demand. The chips
+    // compact themselves inside this width (and, at the physical limit, shift
+    // to keep the active one visible); the island itself never crosses the
+    // clock.
+    readonly property int leftIslandMaxWidth: Math.max(0,
+        Math.floor((root.width - centerIsland.width) / 2) - 2 * Theme.barPadding)
+    readonly property int leftContentMaxWidth: Math.max(0,
+        root.leftIslandMaxWidth - 2 * Theme.barPadding)
+
     margins {
         top: Theme.glass ? 0 : Theme.barMargin
         left: Theme.barMargin
@@ -148,7 +159,7 @@ PanelWindow {
             anchors.left: parent.left
             anchors.top: parent.top
             anchors.topMargin: root.bandTop
-            width: Math.min(leftRow.implicitWidth + 2 * Theme.barPadding, Math.floor(root.width * 0.3))
+            width: Math.min(leftRow.implicitWidth + 2 * Theme.barPadding, root.leftIslandMaxWidth)
             height: Theme.barHeight
             radius: Theme.barRadius
             color: Theme.surfaceContainer
@@ -184,11 +195,21 @@ PanelWindow {
                 spacing: 2
 
                 Workspaces {
+                    id: workspacesItem
+
                     screenName: root.modelData.name
+                    // The row gap is reserved twice: once here, and once by
+                    // the title width below, so the two never overrun the
+                    // island even when the title is hidden.
+                    maxWidth: Math.max(0, root.leftContentMaxWidth - leftRow.spacing)
                 }
 
                 WindowTitle {
-                    maxWidth: Math.floor(root.width * 0.18)
+                    // The old 18% cap only shrinks the title; workspaces get
+                    // the first claim on the room, and a sliver of title is
+                    // not worth keeping (see WindowTitle's visible rule).
+                    maxWidth: Math.max(0, Math.min(Math.floor(root.width * 0.18),
+                        root.leftContentMaxWidth - workspacesItem.width - leftRow.spacing))
                 }
             }
         }
