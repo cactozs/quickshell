@@ -37,5 +37,6 @@
   "37": "TrayPopup.qml",
   "38": "Audio.qml",
   "39": "ClipboardPins.qml",
-  "40": "Launcher (app launcher overlay, wofi replacement)"
+  "40": "calculate",
+  "41": "OverlayChrome.qml"
 }

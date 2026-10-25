@@ -1,17 +1,17 @@
-# Graph Report - quickshell  (2026-10-24)
+# Graph Report - quickshell  (2026-10-25)
 
 ## Corpus Check
-- 61 files · ~67,117 words
+- 64 files · ~174,173 words
 - Verdict: corpus is large enough that graph structure adds value.
-- Unclassified: 7 file(s) not represented in the graph (top: (none) 4, .toml 2, .conf 1)
+- Unclassified: 11 file(s) not represented in the graph (top: (none) 7, .toml 2, .ini 1)
 
 ## Summary
-- 219 nodes · 354 edges · 41 communities (9 shown, 32 thin omitted)
-- Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 5 edges (avg confidence: 0.85)
+- 236 nodes · 385 edges · 42 communities (9 shown, 33 thin omitted)
+- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 6 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `53e171c3`
+- Built from commit: `8c953d37`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -25,7 +25,7 @@
 - Contributing
 - Graphify Agent Workflow
 - check-qml.py
-- Launcher (app launcher overlay, wofi replacement)
+- calculate
 
 ## God Nodes (most connected - your core abstractions)
 1. `ok()` - 23 edges
@@ -58,19 +58,19 @@
 - **M3 Expressive design system implementation** — style_theme_theme, style_theme_m3_expressive, modules_iconbutton_iconbutton, modules_statelayer_statelayer, modules_tip_tip, modules_bar_bar, modules_layoutbadge_layoutbadge [EXTRACTED 1.00]
 - **niri IPC integration (event stream + action bridge)** — services_niri_niri, services_niri_handleline, services_niri_layoutswitched, modules_workspaces_workspaces, modules_windowtitle_windowtitle, modules_keyboardlayout_keyboardlayout, modules_layoutbadge_layoutbadge [EXTRACTED 1.00]
 
-## Communities (41 total, 32 thin omitted)
+## Communities (42 total, 33 thin omitted)
 
 ### Community 0 - "Bar Status Chips"
 Cohesion: 0.10
-Nodes (24): Backlight (brightnessctl chip), Bar (M3 floating pill panel), Battery (UPower chip), MenuEntry (inline actions row), DateClock (date chip with calendar tooltip), IconButton (M3 chip control base), KeyboardLayout (niri layout chip), PowerButton (tonal power toggle) (+16 more)
+Nodes (24): Backlight (brightnessctl chip), Bar (M3 floating pill panel), Battery (UPower chip), ClipItem (inline entry delegate), DateClock (date chip with calendar tooltip), IconButton (M3 chip control base), KeyboardLayout (niri layout chip), PowerButton (tonal power toggle) (+16 more)
 
 ### Community 1 - "LayoutBadge (keyboard-layout HUD)"
-Cohesion: 0.12
-Nodes (16): LayoutBadge (keyboard-layout HUD), Workspaces (niri workspace chips), Niri.currentLayout, Niri.focusedWindow, handleLine() event dispatch, Niri.keyboardLayouts state, layoutShortName(), layoutSwitched signal (+8 more)
+Cohesion: 0.08
+Nodes (25): activate(), fieldScore(), Launcher (app launcher overlay, wofi replacement), ResultItem (inline app row delegate), scoreEntry(), LayoutBadge (keyboard-layout HUD), Workspaces (niri workspace chips), Niri.currentLayout (+17 more)
 
 ### Community 2 - "ClipboardLauncher (cliphist overlay)"
 Cohesion: 0.21
-Nodes (11): activateMenu(), ClipboardLauncher (cliphist overlay), ClipItem (inline entry delegate), copyEntry(), deleteEntry(), parseList(), wipeHistory(), ShellState.clipboardScreen (+3 more)
+Nodes (11): activateMenu(), ClipboardLauncher (cliphist overlay), copyEntry(), deleteEntry(), MenuEntry (inline actions row), parseList(), wipeHistory(), ShellState.clipboardScreen (+3 more)
 
 ### Community 3 - "install.sh"
 Cohesion: 0.23
@@ -92,28 +92,28 @@ Nodes (4): Check before sending a change, Contributing, Rules of thumb, Run it
 Cohesion: 0.25
 Nodes (8): block_after_key(), check_fileviews(), check_hardcoded_colors(), check_i18n(), check_singletons(), find_blocks(), main(), qml_files()
 
-### Community 40 - "Launcher (app launcher overlay, wofi replacement)"
-Cohesion: 0.22
-Nodes (9): activate(), fieldScore(), Launcher (app launcher overlay, wofi replacement), ResultItem (inline app row delegate), scoreEntry(), closeLauncher(), IPC target: launcher, ShellState.launcherScreen (+1 more)
+### Community 40 - "calculate"
+Cohesion: 0.25
+Nodes (12): calculate(), expression(), postfix(), power(), primary(), skip(), startsFactor(), term() (+4 more)
 
 ## Knowledge Gaps
 - **5 isolated node(s):** `TimeClock (clock chip)`, `IPC target: bar`, `IPC target: power`, `ShellState.powerMenuScreen`, `ShellState (cross-window state singleton)`
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 105 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **32 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 111 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **33 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Bar (M3 floating pill panel)` connect `Bar Status Chips` to `LayoutBadge (keyboard-layout HUD)`?**
-  _High betweenness centrality (0.039) - this node is a cross-community bridge._
+  _High betweenness centrality (0.033) - this node is a cross-community bridge._
 - **What connects `TimeClock (clock chip)`, `IPC target: bar`, `IPC target: power` to the rest of the system?**
   _5 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Bar Status Chips` be split into smaller, more focused modules?**
   _Cohesion score 0.10114942528735632 - nodes in this community are weakly interconnected._
 - **Why does `Quickshell` connect `Quickshell` to `Quickshell`?**
-  _High betweenness centrality (0.036) - this node is a cross-community bridge._
+  _High betweenness centrality (0.031) - this node is a cross-community bridge._
 - **Should `LayoutBadge (keyboard-layout HUD)` be split into smaller, more focused modules?**
-  _Cohesion score 0.11904761904761904 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07956989247311828 - nodes in this community are weakly interconnected._
 - **Should `Quickshell` be split into smaller, more focused modules?**
   _Cohesion score 0.08 - nodes in this community are weakly interconnected._
 - **Should `Quickshell` be split into smaller, more focused modules?**
