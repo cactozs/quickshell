@@ -36,15 +36,6 @@ describe (`missing-property`, `unqualified`, `unresolved-type`) are informationa
 everything else fails CI. The `-i` flags make the `qmldir` files apply to this
 run exactly as they do in CI.
 
-If you changed QML, also run:
-
-```sh
-graphify update .
-```
-
-This repository keeps the knowledge graph in `graphify-out/`; the large diff is
-expected.
-
 ## Rules of thumb
 
 - Use `Theme.*` color roles, never hardcoded hex values.
