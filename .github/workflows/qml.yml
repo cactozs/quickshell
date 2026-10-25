@@ -34,11 +34,9 @@ jobs:
       - name: Lint the QML
         run: |
           set +e
-          echo "::error::qmllint $(/usr/lib/qt6/bin/qmllint -v 2>&1 | head -1), files=$(git ls-files '*.qml' | wc -l)"
-          git ls-files -z '*.qml' | xargs -0 \
+          find . -name '*.qml' -not -path './.git/*' -print0 | xargs -0 \
             /usr/lib/qt6/bin/qmllint -I . -I /usr/lib/qt6/qml \
             -i services/qmldir -i modules/qmldir -i style/qmldir > /tmp/qmllint.log 2>&1
           status=$?
-          echo "::error::status=$status lines=$(wc -l < /tmp/qmllint.log)"
-          head -c 900 /tmp/qmllint.log | tr '\n' '|' | sed 's/^/::error::log:/'
+          grep -E '^(Warning|Error):' /tmp/qmllint.log | head -10 | sed 's/^/::error::/'
           exit $status
