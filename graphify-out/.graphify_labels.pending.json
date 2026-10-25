@@ -38,5 +38,7 @@
   "38": "Audio.qml",
   "39": "ClipboardPins.qml",
   "40": "calculate",
-  "41": "OverlayChrome.qml"
+  "41": "OverlayChrome.qml",
+  "42": "ClockPopup.qml",
+  "43": "ClockTools.qml"
 }

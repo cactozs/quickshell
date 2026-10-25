@@ -1,17 +1,17 @@
 # Graph Report - quickshell  (2026-10-25)
 
 ## Corpus Check
-- 64 files · ~174,173 words
+- 66 files · ~176,761 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 11 file(s) not represented in the graph (top: (none) 7, .toml 2, .ini 1)
 
 ## Summary
-- 236 nodes · 385 edges · 42 communities (9 shown, 33 thin omitted)
+- 238 nodes · 385 edges · 44 communities (9 shown, 35 thin omitted)
 - Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 6 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `8c953d37`
+- Built from commit: `cd02d06a`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -58,7 +58,7 @@
 - **M3 Expressive design system implementation** — style_theme_theme, style_theme_m3_expressive, modules_iconbutton_iconbutton, modules_statelayer_statelayer, modules_tip_tip, modules_bar_bar, modules_layoutbadge_layoutbadge [EXTRACTED 1.00]
 - **niri IPC integration (event stream + action bridge)** — services_niri_niri, services_niri_handleline, services_niri_layoutswitched, modules_workspaces_workspaces, modules_windowtitle_windowtitle, modules_keyboardlayout_keyboardlayout, modules_layoutbadge_layoutbadge [EXTRACTED 1.00]
 
-## Communities (42 total, 33 thin omitted)
+## Communities (44 total, 35 thin omitted)
 
 ### Community 0 - "Bar Status Chips"
 Cohesion: 0.10
@@ -98,8 +98,8 @@ Nodes (12): calculate(), expression(), postfix(), power(), primary(), skip(), st
 
 ## Knowledge Gaps
 - **5 isolated node(s):** `TimeClock (clock chip)`, `IPC target: bar`, `IPC target: power`, `ShellState.powerMenuScreen`, `ShellState (cross-window state singleton)`
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 111 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **33 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 113 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **35 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
