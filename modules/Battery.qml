@@ -14,10 +14,10 @@ IconButton {
     readonly property var device: UPower.displayDevice
     readonly property bool isBattery: device !== null && device.type === UPowerDeviceType.Battery
     readonly property int percent: Math.round((device?.percentage ?? 0) * 100)
-    readonly property int state: device?.state ?? UPowerDeviceState.Unknown
-    readonly property bool charging: state === UPowerDeviceState.Charging
-    readonly property bool full: state === UPowerDeviceState.FullyCharged
-    readonly property bool plugged: state === UPowerDeviceState.PendingCharge
+    readonly property int chargeState: device?.state ?? UPowerDeviceState.Unknown
+    readonly property bool charging: chargeState === UPowerDeviceState.Charging
+    readonly property bool full: chargeState === UPowerDeviceState.FullyCharged
+    readonly property bool plugged: chargeState === UPowerDeviceState.PendingCharge
     readonly property bool critical: percent <= 15 && !charging
 
     function formatTime(secs: real): string {

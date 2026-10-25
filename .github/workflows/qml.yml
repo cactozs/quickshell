@@ -2,19 +2,37 @@ name: qml
 
 on:
   push:
+    branches: [master]
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  lint:
+  conventions:
     runs-on: ubuntu-latest
-    container: archlinux:latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Install tooling
-        run: pacman -Syu --noconfirm --needed quickshell qt6-declarative python
+      - uses: actions/checkout@v7
       - name: Check the installer
         run: bash -n install.sh
       - name: Check repository conventions
         run: python3 scripts/check-qml.py
+
+  qmllint:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install tooling
+        run: pacman -Syu --noconfirm --needed quickshell qt6-declarative git
+      # .qmllint.ini fails the build on any warning outside the noisy categories.
       - name: Lint the QML
-        run: /usr/lib/qt6/bin/qmllint -I . -I /usr/lib/qt6/qml shell.qml modules/*.qml services/*.qml style/*.qml
+        run: >
+          git ls-files -z '*.qml' | xargs -0
+          /usr/lib/qt6/bin/qmllint -I . -I /usr/lib/qt6/qml
+          -i services/qmldir -i modules/qmldir -i style/qmldir

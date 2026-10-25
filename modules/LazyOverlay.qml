@@ -30,10 +30,10 @@ QtObject {
 
     onActiveChanged: {
         if (root.active) {
-            destroyTimer.stop();
+            timer.stop();
             root.ensure();
         } else if (root.window !== null) {
-            destroyTimer.restart();
+            timer.restart();
         }
     }
 
@@ -47,7 +47,7 @@ QtObject {
     // A named property, not a child: QtObject has no default property to put
     // children in.
     property Timer destroyTimer: Timer {
-        id: destroyTimer
+        id: timer
 
         interval: root.idle
         onTriggered: {
