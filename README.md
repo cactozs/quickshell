@@ -22,9 +22,9 @@ English (except for the Russian README).
 
 ## What you get
 
-- **Bar** — workspaces, window title, clock/date, weather, keyboard layout,
-  volume, brightness, battery, notifications, the system tray and a power
-  button.
+- **Bar** — workspaces, window title, clock (timer/stopwatch) and date
+  (weather), keyboard layout, volume, brightness, battery, notifications, the
+  system tray and a power button.
 - **Launcher** — applications, arithmetic and `Terminal=true` desktop entries,
   with a configurable terminal (`$TERMINAL`, `alacritty` by default).
 - **Clipboard history** — `cliphist` + `wl-clipboard`, with images and text.
@@ -374,6 +374,7 @@ Volume, brightness, media and lock binds do not go through the shell: use
 | `center` (notifications) | — |
 | `tray` | — |
 | `weather` | — |
+| `clock` (timer and stopwatch) | — |
 | `system` (monitoring) | — |
 | `settings` (quick settings) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono>`, `blur <wallpaper\|window>`, `language <ru\|en\|de>` |
 | `wallpaper` (manager) | `random` |

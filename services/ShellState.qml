@@ -8,13 +8,15 @@ import QtQuick
 // Cross-window shell state. Currently: which screen shows the quick settings,
 // which screen shows the app launcher, which one shows the clipboard history,
 // which one shows the notification center, which one shows the weather
-// popup, which one shows the settings menu, which one shows the wallpaper
-// manager and which one shows the system tray (empty string = closed), plus
-// whether the bar is hidden. The IPC targets let scripts toggle them:
+// popup, which one shows the clock popup (timer and stopwatch), which one
+// shows the settings menu, which one shows the wallpaper manager and which one
+// shows the system tray (empty string = closed), plus whether the bar is
+// hidden. The IPC targets let scripts toggle them:
 //   qs ipc call settings toggle
 //   qs ipc call launcher toggle
 //   qs ipc call clipboard toggle
 //   qs ipc call center toggle
+//   qs ipc call clock toggle
 //   qs ipc call tray toggle
 //   qs ipc call wallpaper toggle
 //   qs ipc call bar toggle
@@ -26,6 +28,7 @@ Singleton {
     property string clipboardScreen: ""
     property string notificationScreen: ""
     property string weatherScreen: ""
+    property string clockScreen: ""
     property string systemScreen: ""
     property string settingsScreen: ""
     property string wallpaperScreen: ""
@@ -78,6 +81,8 @@ Singleton {
                 root.notificationScreen = "";
             if (root.weatherScreen !== "" && !root.screenKnown(root.weatherScreen))
                 root.weatherScreen = "";
+            if (root.clockScreen !== "" && !root.screenKnown(root.clockScreen))
+                root.clockScreen = "";
             if (root.systemScreen !== "" && !root.screenKnown(root.systemScreen))
                 root.systemScreen = "";
             if (root.settingsScreen !== "" && !root.screenKnown(root.settingsScreen))
@@ -216,11 +221,21 @@ Singleton {
     }
 
     function toggleWeather(screenName: string): void {
+        root.clockScreen = "";
         root.weatherScreen = root.weatherScreen === screenName ? "" : screenName;
     }
 
     function closeWeather(): void {
         root.weatherScreen = "";
+    }
+
+    function toggleClock(screenName: string): void {
+        root.weatherScreen = "";
+        root.clockScreen = root.clockScreen === screenName ? "" : screenName;
+    }
+
+    function closeClock(): void {
+        root.clockScreen = "";
     }
 
     function toggleSystem(screenName: string): void {
@@ -413,6 +428,24 @@ Singleton {
 
         function close(): void {
             root.closeWeather();
+        }
+    }
+
+    IpcHandler {
+        target: "clock"
+
+        // Opens on the first screen; useful for testing and scripted use.
+        function toggle(): void {
+            root.toggleClock(root.resolveScreen(""));
+        }
+
+        // Toggles on a specific screen; niri keybinds pass the focused output.
+        function toggleOn(screenName: string): void {
+            root.toggleClock(root.resolveScreen(screenName));
+        }
+
+        function close(): void {
+            root.closeClock();
         }
     }
 

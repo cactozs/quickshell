@@ -33,7 +33,7 @@ REQUIRED_PACKAGES=(
     brightnessctl pipewire wireplumber upower power-profiles-daemon
     networkmanager ttf-material-symbols-variable ttf-nerd-fonts-symbols
     ttf-jetbrains-mono-nerd alacritty gtk3 gtk4 qt6ct ghostty hyprlock
-    imagemagick wlsunset swayidle playerctl
+    imagemagick wlsunset swayidle playerctl libnotify libpulse sound-theme-freedesktop
 )
 OPTIONAL_PACKAGES=(papirus-icon-theme nvidia-utils)
 

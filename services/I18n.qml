@@ -130,6 +130,18 @@ Singleton {
             "° • Ветер ": "° • Wind ",
             " м/с • Влажность ": " m/s • Humidity ",
 
+            // clock popup
+            "Таймер": "Timer",
+            "Секундомер": "Stopwatch",
+            "Длительность": "Duration",
+            "мин:сек": "min:sec",
+            "Старт": "Start",
+            "Пауза": "Pause",
+            "Сброс": "Reset",
+            "Круг": "Lap",
+            "Круг ": "Lap ",
+            "Время вышло": "Time is up",
+
             // system popup and notifications
             "Мониторинг": "Monitoring",
             "Сеть": "Network",
@@ -269,6 +281,18 @@ Singleton {
             "Ощущается ": "Gefühlt ",
             "° • Ветер ": "° • Wind ",
             " м/с • Влажность ": " m/s • Feuchtigkeit ",
+
+            // clock popup
+            "Таймер": "Timer",
+            "Секундомер": "Stoppuhr",
+            "Длительность": "Dauer",
+            "мин:сек": "Min:Sek",
+            "Старт": "Start",
+            "Пауза": "Pause",
+            "Сброс": "Zurücksetzen",
+            "Круг": "Runde",
+            "Круг ": "Runde ",
+            "Время вышло": "Zeit abgelaufen",
 
             // system popup and notifications
             "Мониторинг": "Überwachung",

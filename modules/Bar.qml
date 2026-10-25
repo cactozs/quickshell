@@ -254,7 +254,9 @@ PanelWindow {
                 spacing: 4
 
                 KeyboardLayout {}
-                DateClock {}
+                DateClock {
+                    screenName: root.modelData.name
+                }
                 TimeClock {
                     screenName: root.modelData.name
                 }

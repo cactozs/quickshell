@@ -2,6 +2,7 @@ singleton AppUsage 1.0 AppUsage.qml
 singleton Audio 1.0 Audio.qml
 singleton Brightness 1.0 Brightness.qml
 singleton ClipboardPins 1.0 ClipboardPins.qml
+singleton ClockTools 1.0 ClockTools.qml
 singleton I18n 1.0 I18n.qml
 singleton NightLight 1.0 NightLight.qml
 singleton Niri 1.0 Niri.qml

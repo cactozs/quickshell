@@ -6,7 +6,8 @@ import QtQuick.Layouts
 import "../services"
 import "../style"
 
-// Clock with an M3 schedule glyph; click toggles the weather popup.
+// Clock with an M3 schedule glyph; click toggles the clock popup (timer and
+// stopwatch).
 Item {
     id: root
 
@@ -48,6 +49,6 @@ Item {
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton
         cursorShape: Qt.PointingHandCursor
-        onClicked: ShellState.toggleWeather(root.screenName)
+        onClicked: ShellState.toggleClock(root.screenName)
     }
 }

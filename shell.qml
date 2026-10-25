@@ -4,9 +4,13 @@ import "modules"
 import "services"
 
 ShellRoot {
-    // Writes the palette onto GTK, Qt, ghostty and the niri border (singletons
-    // are instantiated lazily, this is what pulls SystemTheme in).
-    Component.onCompleted: SystemTheme.sync()
+    // Singletons are instantiated lazily: this pulls in SystemTheme, and
+    // touches ClockTools so a running timer keeps ticking across a config
+    // reload while its popup window is closed.
+    Component.onCompleted: {
+        SystemTheme.sync();
+        ClockTools.now = Date.now();
+    }
 
     Variants {
         model: Quickshell.screens
@@ -102,6 +106,15 @@ ShellRoot {
         LazyOverlay {
             source: Component { WeatherPopup {} }
             active: ShellState.weatherScreen === modelData.name
+        }
+    }
+
+    Variants {
+        model: Quickshell.screens
+
+        LazyOverlay {
+            source: Component { ClockPopup {} }
+            active: ShellState.clockScreen === modelData.name
         }
     }
 

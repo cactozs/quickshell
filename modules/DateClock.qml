@@ -3,12 +3,15 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import QtQuick
 import QtQuick.Layouts
+import "../services"
 import "../style"
 
 // Date with an M3 calendar glyph; hovering shows the month calendar popup
-// (Monday-first, today highlighted).
+// (Monday-first, today highlighted), clicking opens the weather popup.
 Item {
     id: root
+
+    property string screenName: ""
 
     implicitWidth: content.implicitWidth + 16
     implicitHeight: Theme.barHeight
@@ -44,12 +47,20 @@ Item {
 
     HoverHandler {
         id: hover
-
-        onHoveredChanged: calendar.shown = hovered
     }
 
+    MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.LeftButton
+        cursorShape: Qt.PointingHandCursor
+        onClicked: ShellState.toggleWeather(root.screenName)
+    }
+
+    // The calendar and the weather card would overlap, so the hover calendar
+    // yields while the weather popup is open.
     CalendarPopup {
         id: calendar
         target: root
+        shown: hover.hovered && ShellState.weatherScreen !== root.screenName
     }
 }

@@ -4,6 +4,7 @@ Battery 1.0 Battery.qml
 CalcRow 1.0 CalcRow.qml
 CalendarPopup 1.0 CalendarPopup.qml
 ClipboardLauncher 1.0 ClipboardLauncher.qml
+ClockPopup 1.0 ClockPopup.qml
 DateClock 1.0 DateClock.qml
 GlassEdge 1.0 GlassEdge.qml
 IconButton 1.0 IconButton.qml
