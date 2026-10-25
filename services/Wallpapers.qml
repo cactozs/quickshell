@@ -20,6 +20,19 @@ Singleton {
     // [{ path, name, folder }], folder is relative to rootDir ("" at the top).
     property var entries: []
 
+    // A random request can arrive before the lazy singleton's scan finishes.
+    property bool pendingRandom: false
+
+    onEntriesChanged: {
+        if (!root.pendingRandom)
+            return;
+        // Consume the request on the first scan even if it found nothing, so a
+        // much later reload cannot fire a random wallpaper out of nowhere.
+        root.pendingRandom = false;
+        if (root.entries.length > 0)
+            root.apply(root.randomPath());
+    }
+
     // Source path -> cached preview (see `thumbs`); a path missing from the map
     // (preview not built yet, or no magick) falls back to the original file.
     property var thumbs: ({})

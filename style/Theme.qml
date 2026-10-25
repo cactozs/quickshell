@@ -540,7 +540,7 @@ Singleton {
     readonly property string lightPassScript: [
         "dark=" + root.shQuote(Quickshell.shellPath("style/Colors.json")),
         "light=" + root.shQuote(Quickshell.shellPath("style/ColorsLight.json")),
-        "[ \"$light\" -nt \"$dark\" ] && exit 0",
+        "[ -s \"$light\" ] && [ \"$light\" -nt \"$dark\" ] && exit 0",
         "img=$(awww query 2>/dev/null | sed -n 's/.*currently displaying: image: //p' | head -1)",
         "[ -n \"$img\" ] || exit 0",
         "exec matugen -m light image \"$img\" -c " + root.shQuote(root.matugenDir + "/light.toml")
@@ -551,9 +551,23 @@ Singleton {
 
         command: ["sh", "-c", root.lightPassScript]
 
+        // A reload can land while the pass is reading the old palette; run it
+        // once more after exit instead of dropping the request.
+        property bool pending: false
+
         function sync(): void {
-            if (!lightPass.running)
+            if (lightPass.running) {
+                lightPass.pending = true;
+                return;
+            }
+            lightPass.running = true;
+        }
+
+        onExited: {
+            if (lightPass.pending) {
+                lightPass.pending = false;
                 lightPass.running = true;
+            }
         }
     }
 

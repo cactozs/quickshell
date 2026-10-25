@@ -46,6 +46,12 @@ Singleton {
         running: true
 
         onTriggered: {
+            // Pipewire can hand over the default sink later; a baseline at 0
+            // would make the first real volume look like a user change.
+            if (!root.sink?.ready) {
+                restart();
+                return;
+            }
             root.started = true;
             root.lastVolume = root.volume;
             root.lastMuted = root.muted;

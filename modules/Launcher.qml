@@ -26,7 +26,8 @@ PanelWindow {
     // Apps with Terminal=true in their desktop entry run through this.
     // $TERMINAL wins (e.g. ghostty), alacritty is the fallback. Split on
     // spaces so `TERMINAL="ghostty --class=foo"` also works.
-    readonly property var terminalCommand: (Quickshell.env("TERMINAL") || "alacritty").split(" ").concat(["-e"])
+    readonly property var terminalCommand: (Quickshell.env("TERMINAL") || "alacritty")
+        .split(/\s+/).filter(s => s !== "").concat(["-e"])
 
     readonly property bool fullscreen: ShellState.launcherFullscreen
 
@@ -290,10 +291,16 @@ PanelWindow {
 
     // The calculator row owns index -1; the app rows keep 0..n-1.
     function moveFocus(delta: int): void {
+        if (root.results.length === 0)
+            return;
         const lowest = root.calcActive ? -1 : 0;
         const highest = root.results.length - 1;
-        if (highest < lowest)
+        // Down from the calculator row (-1) goes to the first app, not to
+        // "one step" before it.
+        if (root.currentIndex < 0 && delta > 0) {
+            root.currentIndex = 0;
             return;
+        }
         root.currentIndex = Math.max(lowest, Math.min(highest, root.currentIndex + delta));
     }
 
@@ -878,7 +885,9 @@ PanelWindow {
             anchors.margins: 2
             source: {
                 const icon = iconBox.entry?.icon ?? "";
-                return icon !== "" ? Quickshell.iconPath(icon, "") : "";
+                // `true` makes a missing themed icon return "", so the
+                // initial-letter fallback can appear instead of a placeholder.
+                return icon !== "" ? Quickshell.iconPath(icon, true) : "";
             }
         }
     }

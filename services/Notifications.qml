@@ -128,6 +128,11 @@ Singleton {
                 }
                 root.history = [...root.history]; // poke row bindings
             }
+
+            // replaces_id updates the object in place, without a new arrival.
+            function onSummaryChanged(): void { root.refreshEntry(entry); }
+            function onBodyChanged(): void { root.refreshEntry(entry); }
+            function onImageChanged(): void { root.refreshEntry(entry); }
         }
     }
 
@@ -160,8 +165,8 @@ Singleton {
     }
 
     function addHistory(notif: Notification): void {
-        // A replaces_id update may re-emit; the first record wins so ids
-        // stay unique.
+        // The first record for an id wins; the watcher below applies later
+        // replaces_id updates to it.
         if (root.history.some(e => e.id === notif.id))
             return;
 
@@ -189,12 +194,25 @@ Singleton {
         root.history = all.slice(0, root.historyLimit);
     }
 
+    function refreshEntry(entry: var): void {
+        const notif = entry.live;
+        if (!notif || !root.alive(notif))
+            return;
+        entry.summary = notif.summary;
+        entry.body = notif.body;
+        entry.image = notif.image;
+        root.history = [...root.history]; // poke row bindings
+    }
+
     // ---- persistence -------------------------------------------------------
 
     function restore(): void {
         const saved = store.entries ?? [];
-        root.history = saved.slice(0, root.historyLimit).map(e => ({
-            id: e.id,
+        // Server ids restart at 1 every process; a saved id would collide with
+        // a fresh notification and make addHistory drop it. Negative ids are
+        // unique and never handed out by the server.
+        root.history = saved.slice(0, root.historyLimit).map((e, i) => ({
+            id: -1 - i,
             appName: e.appName ?? "",
             summary: e.summary ?? "",
             body: e.body ?? "",
@@ -226,17 +244,28 @@ Singleton {
 
     Component.onCompleted: Qt.callLater(root.restore)
 
+    // Quickshell.screens is a model, not a JS array; check by loop.
+    function hasScreen(name: string): bool {
+        for (let i = 0; i < Quickshell.screens.length; i++) {
+            if (Quickshell.screens[i].name === name)
+                return true;
+        }
+        return false;
+    }
+
     function addPopup(notif: Notification): void {
         if (root.popups.includes(notif)) {
             // replaced in place: bump to front
             root.popups = [notif, ...root.popups.filter(n => n !== notif)];
             return;
         }
-        if (root.popups.length === 0)
+        // Freed entries read as -1; drop them before the emptiness check (a
+        // toast on an unplugged screen never reports its close). Re-pick the
+        // screen when the latched one is gone, or no toast would ever show.
+        root.popups = root.popups.filter(n => root.liveId(n) >= 0);
+        if (root.popups.length === 0 || !root.hasScreen(root.popupScreen))
             root.popupScreen = root.focusedOutputName();
-        // Freed entries read as -1; drop them as a safety net (a cap-evicted
-        // toast never reports its close).
-        root.popups = [notif, ...root.popups.filter(n => root.liveId(n) >= 0)].slice(0, 5);
+        root.popups = [notif, ...root.popups].slice(0, 5);
 
         const timeout = root.popupTimeout(notif);
         if (timeout > 0)
@@ -405,6 +434,10 @@ Singleton {
             if (ws && ws.output)
                 return ws.output;
         }
+        // No focused window (empty workspace): niri still marks the active one.
+        const active = Niri.workspaces.find(w => w.is_focused === true);
+        if (active && active.output)
+            return active.output;
         return Quickshell.screens.length > 0 ? Quickshell.screens[0].name : "";
     }
 

@@ -70,8 +70,11 @@ Singleton {
     // brightnessctl refuses 0 on most backlights, so the floor is 1%.
     function setPercent(p: real): void {
         const clamped = Math.max(1, Math.min(100, Math.round(p)));
-        Quickshell.execDetached(["brightnessctl", "set", clamped + "%"]);
+        // Optimistic: the slider follows the release instead of snapping back
+        // until the poll returns. osdPending first so this pop is suppressed.
         root.osdPending = true;
+        root.percent = clamped;
+        Quickshell.execDetached(["brightnessctl", "set", clamped + "%"]);
         applyDelay.restart();
     }
 
@@ -159,6 +162,11 @@ Singleton {
                 }
                 const p = Math.round(parseFloat(parts[3]));
                 if (!isNaN(p)) {
+                    // Fallback path: the first sample is the baseline too.
+                    if (!root.hasReadBrightness) {
+                        root.hasReadBrightness = true;
+                        root.lastPercent = p;
+                    }
                     root.percent = p;
                     root.deviceFound = true;
                     if (root.osdPending) {

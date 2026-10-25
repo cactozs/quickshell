@@ -55,10 +55,22 @@ PanelWindow {
         Region { item: blurAnchor; radius: card.radius }
     }
 
+    // LazyOverlay builds the window already open, so onShownChanged alone
+    // would miss the first open; both paths kick the focus.
     Timer {
         id: focusKick
         interval: 50
         onTriggered: keyCatcher.forceActiveFocus()
+    }
+
+    Component.onCompleted: {
+        if (root.shown)
+            focusKick.restart();
+    }
+
+    onShownChanged: {
+        if (root.shown)
+            focusKick.restart();
     }
 
     // click outside the card dismisses the popup

@@ -30,6 +30,7 @@ Singleton {
 
     readonly property string requestUrl: "https://api.open-meteo.com/v1/forecast?latitude=" + root.lat + "&longitude=" + root.lon
         + "&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m"
+        + "&wind_speed_unit=ms"
         + "&hourly=temperature_2m,weather_code,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min"
         + "&timezone=auto&forecast_days=4"
 

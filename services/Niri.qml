@@ -69,8 +69,12 @@ Singleton {
         return known[name] ?? name.slice(0, 2).toLowerCase();
     }
 
-    function focusWorkspace(idx: number): void {
-        Quickshell.execDetached(["niri", "msg", "action", "focus-workspace", String(idx)]);
+    // niri reads a bare index against the focused output, so clicking a chip on
+    // another monitor's bar must focus that monitor first.
+    function focusWorkspace(idx: number, output: string): void {
+        Quickshell.execDetached(["sh", "-c",
+            "niri msg action focus-monitor \"$0\" && niri msg action focus-workspace \"$1\"",
+            output, String(idx)]);
     }
 
     function focusWorkspaceDown(): void {

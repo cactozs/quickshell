@@ -16,7 +16,7 @@ Singleton {
     }
 
     function launchCount(entry: DesktopEntry): int {
-        return usageAdapter.counts[root.launchKey(entry)] ?? 0;
+        return (usageAdapter.counts ?? {})[root.launchKey(entry)] ?? 0;
     }
 
     function isFavorite(entry: DesktopEntry): bool {

@@ -728,6 +728,13 @@ PanelWindow {
                                 selectedTextColor: Theme.primaryText
 
                                 onAccepted: root.submitPsk()
+
+                                // The catcher is a sibling, not an ancestor;
+                                // key events from this field never reach it.
+                                Keys.onEscapePressed: {
+                                    root.pskTarget = null;
+                                    keyCatcher.forceActiveFocus();
+                                }
                             }
                         }
 
@@ -1315,6 +1322,8 @@ PanelWindow {
             anchors.verticalCenter: parent.verticalCenter
             icon: Theme.iconDelete
             contentColor: row.armed ? Theme.error : Theme.surfaceVariantText
+            // rowTap below fills the row and would otherwise swallow the click.
+            z: 1
 
             onClicked: root.forgetNetwork(row.net)
         }
@@ -1331,12 +1340,21 @@ PanelWindow {
             target: row.net
 
             function onConnectedChanged(): void {
-                if (row.net.connected && root.pskTarget === row.net)
+                if (row.net.connected && root.pskTarget === row.net) {
                     root.pskTarget = null;
+                    keyCatcher.forceActiveFocus();
+                }
             }
 
             function onConnectionFailed(reason): void {
                 root.wifiError = root.failText(reason);
+                // A known profile without secrets otherwise just fails; offer
+                // the password field instead of a dead end.
+                if (reason === ConnectionFailReason.NoSecrets && root.pskTarget === null) {
+                    root.pskTarget = row.net;
+                    pskInput.text = "";
+                    pskFocus.restart();
+                }
             }
         }
 

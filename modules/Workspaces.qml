@@ -236,7 +236,7 @@ Item {
                     acceptedButtons: Qt.LeftButton | Qt.MiddleButton
                     cursorShape: Qt.PointingHandCursor
 
-                    onClicked: Niri.focusWorkspace(cell.modelData.idx)
+                    onClicked: Niri.focusWorkspace(cell.modelData.idx, root.screenName)
                 }
             }
         }

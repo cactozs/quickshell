@@ -339,6 +339,8 @@ Singleton {
             const path = Wallpapers.randomPath();
             if (path !== "")
                 Wallpapers.apply(path);
+            else
+                Wallpapers.pendingRandom = true;
         }
     }
 

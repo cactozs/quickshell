@@ -159,6 +159,10 @@ PanelWindow {
             ClipboardPins.remove(entry);
             return;
         }
+        // Drop the row now: cliphist is async, and a row that outlives the
+        // delete can be copied (decode then fails and wl-copy clears the buffer).
+        root.entries = root.entries.filter(e => e.line !== entry.line);
+        root.clampIndex();
         Quickshell.execDetached(["sh", "-c", "printf '%s\\n' \"$0\" | cliphist delete", entry.line]);
         reloadDelay.restart();
     }
@@ -177,6 +181,8 @@ PanelWindow {
 
     function wipeHistory(): void {
         root.menuOpen = false;
+        root.entries = [];
+        root.clampIndex();
         Quickshell.execDetached(["cliphist", "wipe"]);
         reloadDelay.restart();
     }
@@ -528,7 +534,7 @@ PanelWindow {
                     // Enter can never fire on an off-screen row.
                     WheelHandler {
                         onWheel: event => {
-                            if (event.angleDelta.y === 0)
+                            if (root.menuOpen || event.angleDelta.y === 0)
                                 return;
                             root.moveFocus(event.angleDelta.y > 0 ? -1 : 1);
                             event.accepted = true;

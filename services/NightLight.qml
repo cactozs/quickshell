@@ -16,10 +16,21 @@ Singleton {
 
     // Whether wlsunset is installed; the tile stays hidden otherwise.
     property bool available: false
-    property bool enabled: false
+
+    // Survives a config reload (a plain bool turns the filter off and kills
+    // wlsunset); deliberately not restored after a restart.
+    PersistentProperties {
+        id: props
+
+        reloadableId: "nightLight"
+
+        property bool enabled
+    }
+
+    readonly property bool enabled: props.enabled
 
     function toggle(): void {
-        root.enabled = !root.enabled;
+        props.enabled = !props.enabled;
     }
 
     // Re-runs the availability probe; called when the panel opens so a

@@ -22,7 +22,9 @@ fallback_color = "#6750A4"
 set = true
 # Absolute path: the /usr/local/bin/awww shim routes `awww img` back into
 # matugen, so a relative lookup here would loop.
-command = "/usr/bin/awww img --transition-type center {{ image }}"
+# shortcut: quotes protect spaces and shell operators in a filename, not $()
+# or backticks; escape at the shim if untrusted names ever reach this.
+command = "/usr/bin/awww img --transition-type center \"{{ image }}\""
 
 [templates.quickshell]
 input_path = "templates/quickshell.json"
