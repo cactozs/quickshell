@@ -12,6 +12,11 @@ Singleton {
     // Emitted when the active keyboard layout index actually changes.
     signal layoutSwitched()
 
+    // True while the layout HUD should be on screen. Owned here so the badge
+    // window can be a LazyOverlay: the state of a destroyed window lives in
+    // its singleton.
+    property bool layoutBadgeShown: false
+
     // niri can be absent (first login, a compositor restart, a non-niri
     // session). Retry with backoff instead of spawning a process every second
     // forever; a successfully parsed event proves the stream is alive again.
@@ -125,8 +130,11 @@ Singleton {
                 currentIdx: idx
             };
             // No names yet (startup race) means the badge would show empty.
-            if (changed && root.keyboardLayouts.names.length > 0)
+            if (changed && root.keyboardLayouts.names.length > 0) {
                 root.layoutSwitched();
+                root.layoutBadgeShown = true;
+                badgeHideTimer.restart();
+            }
         } else if (ev.WorkspaceActivated) {
             root.poppingWorkspaceId = ev.WorkspaceActivated.id;
             refreshWorkspaces();
@@ -181,6 +189,13 @@ Singleton {
         id: restartTimer
         interval: 1000
         onTriggered: streamProc.running = true
+    }
+
+    // How long the layout badge stays on screen after a switch.
+    Timer {
+        id: badgeHideTimer
+        interval: 1000
+        onTriggered: root.layoutBadgeShown = false
     }
 
     // QProcess reports a failed start through its C++ error handler, not a QML

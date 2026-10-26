@@ -16,8 +16,10 @@ PanelWindow {
 
     required property ShellScreen modelData
 
-    // How long the badge stays on screen after a switch.
-    readonly property int showDuration: 1000
+    // Show/hide timing is owned by Niri (layoutBadgeShown): the window is a
+    // LazyOverlay, so its state must survive its own destruction.
+    readonly property bool shown: Niri.layoutBadgeShown
+
     // Distance from the top of the screen (the bar pill ends around 50 px).
     readonly property int topMargin: 72
     readonly property int pillHeight: 52
@@ -26,24 +28,12 @@ PanelWindow {
     readonly property var layouts: Niri.keyboardLayouts.names.map(
         name => Niri.layoutShortName(name).toUpperCase())
 
-    property bool shown: false
     // Follows niri directly, so the highlight re-targets on rapid switches.
     property int activeIdx: Niri.keyboardLayouts.currentIdx
 
     // Live segment behind the highlight; Row.children tracks the Repeater.
     readonly property Item activeSeg: (root.activeIdx >= 0 && segments.children.length > root.activeIdx)
         ? segments.children[root.activeIdx] : null
-
-    function show(): void {
-        // When already visible only the highlight and the timer change, so
-        // rapid switches slide without replaying the pop-in.
-        root.shown = true;
-        hideTimer.restart();
-    }
-
-    function hide(): void {
-        root.shown = false;
-    }
 
     // ---- panel window ----------------------------------------------------------
 
@@ -68,20 +58,6 @@ PanelWindow {
 
     // Empty input region: every click passes through to the window below.
     mask: Region {}
-
-    Connections {
-        target: Niri
-
-        function onLayoutSwitched(): void {
-            root.show();
-        }
-    }
-
-    Timer {
-        id: hideTimer
-        interval: root.showDuration
-        onTriggered: root.hide()
-    }
 
     // Acrylic behind the pill (New and Blur). Off as soon as it closes: a
     // compositor blur region cannot fade, so it would hang under the pill.

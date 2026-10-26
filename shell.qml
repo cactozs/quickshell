@@ -27,8 +27,6 @@ ShellRoot {
     // Every other overlay is built the first time it is opened and dropped again
     // once it has been closed for a while (LazyOverlay): a dormant window was
     // 2-4 MB each, an open-then-closed one left its scene behind as well.
-    // LayoutBadge stays eager — it has no state to key on, only an event inside
-    // itself (a keyboard layout switch).
 
     Variants {
         model: Quickshell.screens
@@ -42,7 +40,10 @@ ShellRoot {
     Variants {
         model: Quickshell.screens
 
-        LayoutBadge {}
+        LazyOverlay {
+            source: Component { LayoutBadge {} }
+            active: Niri.layoutBadgeShown
+        }
     }
 
     Variants {
