@@ -10,16 +10,20 @@ import "../style"
 
 // Settings menu: a centered card over a full-screen scrim, unlike the bar's
 // docked panels. Opened from the "Настройки" tile in the quick settings;
-// Esc or a click outside dismisses it. Nine sections: the UI language, the
-// launcher view, the shell-wide style pack, the blur source (hidden while
-// nothing blurs), the theme mode, the color scheme, the font, the system
-// power profile and the wallpaper manager shortcut.
+// Esc or a click outside dismisses it. Three tabs — appearance (style pack,
+// blur source, theme, colors, font), interface (language, launcher view,
+// wallpaper shortcut) and system (muted apps, power profile). The card always
+// opens on the first tab and animates its height between pages.
 PanelWindow {
     id: root
 
     required property ShellScreen modelData
 
     readonly property bool shown: ShellState.settingsScreen === root.modelData.name
+
+    // 0 = Оформление, 1 = Интерфейс, 2 = Система. Reset on every open so the
+    // menu is predictable; the window itself outlives a close by 20 s.
+    property int tabIndex: 0
 
     // Wide enough for the five style segments next to their label.
     readonly property int cardWidth: 620
@@ -69,8 +73,10 @@ PanelWindow {
     }
 
     onShownChanged: {
-        if (root.shown)
+        if (root.shown) {
+            root.tabIndex = 0;
             focusKick.restart();
+        }
     }
 
     // Layer surfaces take a moment to gain keyboard focus; make sure the key
@@ -110,8 +116,14 @@ PanelWindow {
         focus: root.shown
 
         Keys.onPressed: event => {
-            if (event.key === Qt.Key_Escape)
+            if (event.key === Qt.Key_Escape) {
                 ShellState.closeSettings();
+            } else if ((event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab)
+                && (event.modifiers & Qt.ControlModifier)) {
+                const back = event.key === Qt.Key_Backtab
+                    || (event.modifiers & Qt.ShiftModifier);
+                root.tabIndex = (root.tabIndex + (back ? -1 : 1) + tabs.count) % tabs.count;
+            }
             event.accepted = true;
         }
     }
@@ -162,6 +174,16 @@ PanelWindow {
             }
         }
 
+        // Each tab has its own height; the card follows with the M3 container
+        // timing while the pages clip their own overflow.
+        Behavior on height {
+            NumberAnimation {
+                duration: Theme.durPop
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Theme.curveEmphasized
+            }
+        }
+
         // Swallow clicks on the card so they don't reach the dismiss area.
         MouseArea {
             anchors.fill: parent
@@ -188,236 +210,403 @@ PanelWindow {
                 font.weight: Font.Medium
             }
 
-            // ---- language -------------------------------------------------------
+            // ---- tabs -----------------------------------------------------------
 
-            // Native names on purpose: they need no translation and stay
-            // readable whichever language is picked.
-            SettingRow {
-                label: I18n.t("Язык")
+            Item {
+                id: tabBar
 
-                SettingSegment {
-                    label: "Русский"
-                    selected: ShellState.language === "ru"
-                    onClicked: ShellState.setLanguage("ru")
-                }
+                width: parent.width
+                height: 44
 
-                SettingSegment {
-                    label: "English"
-                    selected: ShellState.language === "en"
-                    onClicked: ShellState.setLanguage("en")
-                }
-
-                SettingSegment {
-                    label: "Deutsch"
-                    selected: ShellState.language === "de"
-                    onClicked: ShellState.setLanguage("de")
-                }
-            }
-
-            // ---- launcher view --------------------------------------------------
-
-            SettingRow {
-                label: I18n.t("Вид лончера")
-
-                SettingSegment {
-                    label: I18n.t("Классический")
-                    selected: !ShellState.launcherFullscreen
-                    onClicked: ShellState.setLauncherFullscreen(false)
-                }
-
-                SettingSegment {
-                    label: I18n.t("Полноэкранный")
-                    selected: ShellState.launcherFullscreen
-                    onClicked: ShellState.setLauncherFullscreen(true)
-                }
-            }
-
-            // ---- style pack -----------------------------------------------------
-
-            SettingRow {
-                label: I18n.t("Стиль")
-
-                SettingSegment {
-                    label: "M3 Inspired"
-                    selected: ShellState.styleMode === "m3"
-                    onClicked: ShellState.setStyleMode("m3")
-                }
-
-                SettingSegment {
-                    label: "M3 Blur"
-                    selected: ShellState.styleMode === "blur"
-                    onClicked: ShellState.setStyleMode("blur")
-                }
-
-                SettingSegment {
-                    label: "New"
-                    selected: ShellState.styleMode === "new"
-                    onClicked: ShellState.setStyleMode("new")
-                }
-
-                SettingSegment {
-                    label: "Nothing"
-                    selected: ShellState.styleMode === "nothing"
-                    onClicked: ShellState.setStyleMode("nothing")
-                }
-
-                SettingSegment {
-                    label: "New Nothing"
-                    selected: ShellState.styleMode === "newNothing"
-                    onClicked: ShellState.setStyleMode("newNothing")
-                }
-            }
-
-            // ---- blur source ----------------------------------------------------
-
-            // Only the blur styles have anything to blur, so the row is hidden
-            // under M3 Inspired and Nothing: their surfaces are opaque and no
-            // window requests a background effect (the niri rule stays inert
-            // by itself). Theme.blur is exactly that set.
-            SettingRow {
-                label: I18n.t("Блюр")
-                visible: Theme.blur
-
-                SettingSegment {
-                    label: I18n.t("Обои")
-                    selected: ShellState.blurSource === "wallpaper"
-                    onClicked: ShellState.setBlurSource("wallpaper")
-                }
-
-                SettingSegment {
-                    label: I18n.t("Окна")
-                    selected: ShellState.blurSource === "window"
-                    onClicked: ShellState.setBlurSource("window")
-                }
-            }
-
-            // ---- theme mode -----------------------------------------------------
-
-            SettingRow {
-                label: I18n.t("Тема")
-
-                SettingSegment {
-                    label: I18n.t("Тёмная")
-                    selected: !Theme.light
-                    onClicked: ShellState.setThemeMode("dark")
-                }
-
-                SettingSegment {
-                    label: I18n.t("Светлая")
-                    selected: Theme.light
-                    onClicked: ShellState.setThemeMode("light")
-                }
-            }
-
-            // ---- color scheme ---------------------------------------------------
-
-            SettingRow {
-                label: I18n.t("Цвета")
-
-                SettingSegment {
-                    label: "Matugen"
-                    selected: ShellState.colorScheme === "matugen"
-                    onClicked: ShellState.setColorScheme("matugen")
-                }
-
-                SettingSegment {
-                    label: "OLED"
-                    selected: ShellState.colorScheme === "oled"
-                    onClicked: ShellState.setColorScheme("oled")
-                }
-
-                SettingSegment {
-                    label: "Gruvbox"
-                    selected: ShellState.colorScheme === "gruvbox"
-                    onClicked: ShellState.setColorScheme("gruvbox")
-                }
-            }
-
-            // ---- font -----------------------------------------------------------
-
-            SettingRow {
-                label: I18n.t("Шрифт")
-
-                SettingSegment {
-                    label: "Material"
-                    selected: ShellState.fontMode === "material"
-                    onClicked: ShellState.setFontMode("material")
-                }
-
-                SettingSegment {
-                    label: "Monospace"
-                    selected: ShellState.fontMode === "mono"
-                    onClicked: ShellState.setFontMode("mono")
-                }
-            }
-
-            // ---- power profile --------------------------------------------------
-
-            // Straight from power-profiles-daemon: it is the source of truth,
-            // so there is no shell-side copy to persist. The performance
-            // segment is hidden when the daemon reports no such profile.
-            SettingRow {
-                label: I18n.t("Профиль питания")
-
-                SettingSegment {
-                    label: I18n.t("Экономия")
-                    selected: PowerProfiles.profile === PowerProfile.PowerSaver
-                    onClicked: PowerProfiles.profile = PowerProfile.PowerSaver
-                }
-
-                SettingSegment {
-                    label: I18n.t("Баланс")
-                    selected: PowerProfiles.profile === PowerProfile.Balanced
-                    onClicked: PowerProfiles.profile = PowerProfile.Balanced
-                }
-
-                SettingSegment {
-                    label: I18n.t("Производительность")
-                    visible: PowerProfiles.hasPerformanceProfile
-                    selected: PowerProfiles.profile === PowerProfile.Performance
-                    onClicked: PowerProfiles.profile = PowerProfile.Performance
-                }
-            }
-
-            // ---- muted notification apps ---------------------------------------
-
-            SettingRow {
-                label: I18n.t("Уведомления")
-                visible: Notifications.mutedApps.length > 0
+                readonly property real cellWidth: width / tabs.count
 
                 Repeater {
-                    model: Notifications.mutedApps
+                    id: tabs
 
-                    delegate: SettingSegment {
+                    model: [I18n.t("Оформление"), I18n.t("Интерфейс"), I18n.t("Система")]
+
+                    delegate: Item {
+                        id: tabItem
+
+                        required property int index
                         required property string modelData
 
-                        label: modelData
-                        selected: true
-                        onClicked: Notifications.toggleMuteApp(modelData)
+                        x: index * tabBar.cellWidth
+                        width: tabBar.cellWidth
+                        height: tabBar.height
+
+                        readonly property bool selected: root.tabIndex === index
+
+                        Rectangle {
+                            anchors.centerIn: parent
+                            width: tabLabel.implicitWidth + 32
+                            height: 32
+                            radius: Theme.nothing || Theme.glass ? Theme.shapeMD : Theme.shapeFull
+                            color: "transparent"
+
+                            StateLayer {
+                                hovered: tabHover.hovered
+                                pressed: tabTap.pressed
+                                color: tabItem.selected ? Theme.primary : Theme.surfaceText
+                            }
+
+                            Text {
+                                id: tabLabel
+
+                                anchors.centerIn: parent
+                                text: tabItem.modelData
+                                color: tabItem.selected ? Theme.primary : Theme.surfaceVariantText
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Theme.fontSizeLabelLarge
+                                font.weight: tabItem.selected ? Font.Medium : Font.Normal
+
+                                Behavior on color {
+                                    ColorAnimation {
+                                        duration: Theme.durShort
+                                        easing.type: Easing.BezierSpline
+                                        easing.bezierCurve: Theme.curveEmphasized
+                                    }
+                                }
+                            }
+                        }
+
+                        MouseArea {
+                            id: tabTap
+
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: root.tabIndex = tabItem.index
+                        }
+
+                        HoverHandler {
+                            id: tabHover
+                        }
                     }
                 }
 
-                SettingSegment {
-                    label: I18n.t("Вернуть все")
-                    onClicked: Notifications.unmuteAll()
+                // Hairline under the bar plus the sliding primary indicator.
+                Rectangle {
+                    width: parent.width
+                    height: 1
+                    anchors.bottom: parent.bottom
+                    color: Theme.outlineVariant
+                }
+
+                Rectangle {
+                    width: tabBar.cellWidth - 48
+                    height: 3
+                    x: root.tabIndex * tabBar.cellWidth + 24
+                    anchors.bottom: parent.bottom
+                    radius: Theme.shapeXS
+                    color: Theme.primary
+
+                    Behavior on x {
+                        NumberAnimation {
+                            duration: Theme.durPop
+                            easing.type: Easing.BezierSpline
+                            easing.bezierCurve: Theme.curveEmphasized
+                        }
+                    }
                 }
             }
 
-            // ---- wallpaper ------------------------------------------------------
+            // ---- pages ----------------------------------------------------------
 
-            SettingRow {
-                label: I18n.t("Обои")
+            // Only the active page is reachable; the others sit at a 12 px
+            // offset and fade out. The container clips so a shorter tab never
+            // shows the tail of the previous one while the card resizes.
+            Item {
+                id: pages
 
-                IconButton {
-                    round: true
-                    icon: Theme.iconOrnament
-                    iconFamily: Theme.nerdFont
+                width: parent.width
+                clip: true
+                height: [pageLook, pageInterface, pageSystem][root.tabIndex].implicitHeight
 
-                    onClicked: {
-                        ShellState.closeSettings();
-                        ShellState.toggleWallpaper(root.modelData.name);
+                SettingsPage {
+                    id: pageLook
+
+                    active: root.tabIndex === 0
+                    pageIndex: 0
+
+                    // ---- style pack -----------------------------------------------------
+
+                    SettingRow {
+                        label: I18n.t("Стиль")
+
+                        SettingSegment {
+                            label: "M3 Inspired"
+                            selected: ShellState.styleMode === "m3"
+                            onClicked: ShellState.setStyleMode("m3")
+                        }
+
+                        SettingSegment {
+                            label: "M3 Blur"
+                            selected: ShellState.styleMode === "blur"
+                            onClicked: ShellState.setStyleMode("blur")
+                        }
+
+                        SettingSegment {
+                            label: "New"
+                            selected: ShellState.styleMode === "new"
+                            onClicked: ShellState.setStyleMode("new")
+                        }
+
+                        SettingSegment {
+                            label: "Nothing"
+                            selected: ShellState.styleMode === "nothing"
+                            onClicked: ShellState.setStyleMode("nothing")
+                        }
+
+                        SettingSegment {
+                            label: "New Nothing"
+                            selected: ShellState.styleMode === "newNothing"
+                            onClicked: ShellState.setStyleMode("newNothing")
+                        }
+                    }
+
+                    // ---- blur source ----------------------------------------------------
+
+                    // Only the blur styles have anything to blur, so the row is hidden
+                    // under M3 Inspired and Nothing: their surfaces are opaque and no
+                    // window requests a background effect (the niri rule stays inert
+                    // by itself). Theme.blur is exactly that set.
+                    SettingRow {
+                        label: I18n.t("Блюр")
+                        visible: Theme.blur
+
+                        SettingSegment {
+                            label: I18n.t("Обои")
+                            selected: ShellState.blurSource === "wallpaper"
+                            onClicked: ShellState.setBlurSource("wallpaper")
+                        }
+
+                        SettingSegment {
+                            label: I18n.t("Окна")
+                            selected: ShellState.blurSource === "window"
+                            onClicked: ShellState.setBlurSource("window")
+                        }
+                    }
+
+                    // ---- theme mode -----------------------------------------------------
+
+                    SettingRow {
+                        label: I18n.t("Тема")
+
+                        SettingSegment {
+                            label: I18n.t("Тёмная")
+                            selected: !Theme.light
+                            onClicked: ShellState.setThemeMode("dark")
+                        }
+
+                        SettingSegment {
+                            label: I18n.t("Светлая")
+                            selected: Theme.light
+                            onClicked: ShellState.setThemeMode("light")
+                        }
+                    }
+
+                    // ---- color scheme ---------------------------------------------------
+
+                    SettingRow {
+                        label: I18n.t("Цвета")
+
+                        SettingSegment {
+                            label: "Matugen"
+                            selected: ShellState.colorScheme === "matugen"
+                            onClicked: ShellState.setColorScheme("matugen")
+                        }
+
+                        SettingSegment {
+                            label: "OLED"
+                            selected: ShellState.colorScheme === "oled"
+                            onClicked: ShellState.setColorScheme("oled")
+                        }
+
+                        SettingSegment {
+                            label: "Gruvbox"
+                            selected: ShellState.colorScheme === "gruvbox"
+                            onClicked: ShellState.setColorScheme("gruvbox")
+                        }
+                    }
+
+                    // ---- font -----------------------------------------------------------
+
+                    SettingRow {
+                        label: I18n.t("Шрифт")
+
+                        SettingSegment {
+                            label: "Material"
+                            selected: ShellState.fontMode === "material"
+                            onClicked: ShellState.setFontMode("material")
+                        }
+
+                        SettingSegment {
+                            label: "Monospace"
+                            selected: ShellState.fontMode === "mono"
+                            onClicked: ShellState.setFontMode("mono")
+                        }
+                    }
+
+
+                }
+
+                SettingsPage {
+                    id: pageInterface
+
+                    active: root.tabIndex === 1
+                    pageIndex: 1
+
+                    // ---- language -------------------------------------------------------
+
+                    // Native names on purpose: they need no translation and stay
+                    // readable whichever language is picked.
+                    SettingRow {
+                        label: I18n.t("Язык")
+
+                        SettingSegment {
+                            label: "Русский"
+                            selected: ShellState.language === "ru"
+                            onClicked: ShellState.setLanguage("ru")
+                        }
+
+                        SettingSegment {
+                            label: "English"
+                            selected: ShellState.language === "en"
+                            onClicked: ShellState.setLanguage("en")
+                        }
+
+                        SettingSegment {
+                            label: "Deutsch"
+                            selected: ShellState.language === "de"
+                            onClicked: ShellState.setLanguage("de")
+                        }
+                    }
+
+                    // ---- launcher view --------------------------------------------------
+
+                    SettingRow {
+                        label: I18n.t("Вид лончера")
+
+                        SettingSegment {
+                            label: I18n.t("Классический")
+                            selected: !ShellState.launcherFullscreen
+                            onClicked: ShellState.setLauncherFullscreen(false)
+                        }
+
+                        SettingSegment {
+                            label: I18n.t("Полноэкранный")
+                            selected: ShellState.launcherFullscreen
+                            onClicked: ShellState.setLauncherFullscreen(true)
+                        }
+                    }
+
+                    // ---- wallpaper ------------------------------------------------------
+
+                    SettingRow {
+                        label: I18n.t("Обои")
+
+                        IconButton {
+                            round: true
+                            icon: Theme.iconOrnament
+                            iconFamily: Theme.nerdFont
+
+                            onClicked: {
+                                ShellState.closeSettings();
+                                ShellState.toggleWallpaper(root.modelData.name);
+                            }
+                        }
                     }
                 }
+
+                SettingsPage {
+                    id: pageSystem
+
+                    active: root.tabIndex === 2
+                    pageIndex: 2
+
+                    // ---- muted notification apps ---------------------------------------
+
+                    SettingRow {
+                        label: I18n.t("Уведомления")
+                        visible: Notifications.mutedApps.length > 0
+
+                        Repeater {
+                            model: Notifications.mutedApps
+
+                            delegate: SettingSegment {
+                                required property string modelData
+
+                                label: modelData
+                                selected: true
+                                onClicked: Notifications.toggleMuteApp(modelData)
+                            }
+                        }
+
+                        SettingSegment {
+                            label: I18n.t("Вернуть все")
+                            onClicked: Notifications.unmuteAll()
+                        }
+                    }
+
+                    // ---- power profile --------------------------------------------------
+
+                    // Straight from power-profiles-daemon: it is the source of truth,
+                    // so there is no shell-side copy to persist. The performance
+                    // segment is hidden when the daemon reports no such profile.
+                    SettingRow {
+                        label: I18n.t("Профиль питания")
+
+                        SettingSegment {
+                            label: I18n.t("Экономия")
+                            selected: PowerProfiles.profile === PowerProfile.PowerSaver
+                            onClicked: PowerProfiles.profile = PowerProfile.PowerSaver
+                        }
+
+                        SettingSegment {
+                            label: I18n.t("Баланс")
+                            selected: PowerProfiles.profile === PowerProfile.Balanced
+                            onClicked: PowerProfiles.profile = PowerProfile.Balanced
+                        }
+
+                        SettingSegment {
+                            label: I18n.t("Производительность")
+                            visible: PowerProfiles.hasPerformanceProfile
+                            selected: PowerProfiles.profile === PowerProfile.Performance
+                            onClicked: PowerProfiles.profile = PowerProfile.Performance
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // One tab page. Pages sit on top of each other and slide 12 px against the
+    // switch direction; invisible ones drop out of hit testing.
+    component SettingsPage: Column {
+        id: page
+
+        property bool active: false
+        property int pageIndex: 0
+
+        width: pages.width
+        spacing: 16
+        x: page.active ? 0 : (page.pageIndex < root.tabIndex ? -12 : 12)
+        opacity: page.active ? 1 : 0
+        visible: page.opacity > 0.001
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Theme.durPop
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Theme.curveEmphasized
+            }
+        }
+
+        Behavior on x {
+            NumberAnimation {
+                duration: Theme.durPop
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Theme.curveEmphasizedDecelerate
             }
         }
     }

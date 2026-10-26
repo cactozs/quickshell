@@ -16,6 +16,9 @@ Singleton {
         "en": {
             // settings menu
             "Настройки": "Settings",
+            "Оформление": "Appearance",
+            "Интерфейс": "Interface",
+            "Система": "System",
             "Язык": "Language",
             "Вид лончера": "Launcher view",
             "Классический": "Classic",
@@ -168,6 +171,9 @@ Singleton {
         "de": {
             // settings menu
             "Настройки": "Einstellungen",
+            "Оформление": "Darstellung",
+            "Интерфейс": "Oberfläche",
+            "Система": "System",
             "Язык": "Sprache",
             "Вид лончера": "Launcher-Ansicht",
             "Классический": "Klassisch",
