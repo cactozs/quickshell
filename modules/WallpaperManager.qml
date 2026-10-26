@@ -389,6 +389,8 @@ PanelWindow {
             ListView {
                 id: chipsRow
 
+                reuseItems: true
+
                 width: parent.width
                 height: Theme.chipHeight
                 orientation: ListView.Horizontal
@@ -527,6 +529,8 @@ PanelWindow {
 
                 GridView {
                     id: grid
+
+                    reuseItems: true
 
                     anchors.fill: parent
                     visible: root.results.length > 0

@@ -706,6 +706,8 @@ PanelWindow {
                 ListView {
                     id: list
 
+                    reuseItems: true
+
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.top: parent.top
@@ -740,6 +742,8 @@ PanelWindow {
                 // Scrolls natively; ↓/↑ move the selection a row, ←/→ a tile.
                 GridView {
                     id: grid
+
+                    reuseItems: true
 
                     anchors.left: parent.left
                     anchors.right: parent.right

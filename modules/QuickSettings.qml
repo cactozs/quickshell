@@ -653,6 +653,8 @@ PanelWindow {
                     ListView {
                         id: netList
 
+                        reuseItems: true
+
                         width: parent.width
                         visible: root.wifiEnabled
                         implicitHeight: root.networkList.length * (root.netRowHeight + 2) - 2

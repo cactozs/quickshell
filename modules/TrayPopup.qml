@@ -293,6 +293,8 @@ PanelWindow {
                 ListView {
                     id: itemList
 
+                    reuseItems: true
+
                     anchors.fill: parent
                     visible: root.activeItem === null && root.items.length > 0
                     clip: true
@@ -305,6 +307,8 @@ PanelWindow {
 
                 ListView {
                     id: menuList
+
+                    reuseItems: true
 
                     anchors.fill: parent
                     visible: root.activeItem !== null && root.menuEntries.length > 0

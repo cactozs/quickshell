@@ -516,6 +516,8 @@ PanelWindow {
                 ListView {
                     id: list
 
+                    reuseItems: true
+
                     anchors.fill: parent
                     visible: root.results.length > 0
                     clip: true

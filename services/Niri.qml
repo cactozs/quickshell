@@ -103,6 +103,14 @@ Singleton {
 
         if (ev.WorkspacesChanged) {
             root.workspaces = ev.WorkspacesChanged.workspaces;
+            // Drop seen flags for workspaces that no longer exist, so the
+            // id-keyed map does not grow over the session.
+            const liveSeen = {};
+            for (const w of root.workspaces) {
+                if (root.seenWorkspaceIds[w.id] === true)
+                    liveSeen[w.id] = true;
+            }
+            root.seenWorkspaceIds = liveSeen;
         } else if (ev.WindowsChanged) {
             root.windows = ev.WindowsChanged.windows;
         } else if (ev.WindowOpenedOrChanged) {
@@ -112,9 +120,15 @@ Singleton {
             const win = ev.WindowOpenedOrChanged.window;
             const next = root.windows.filter(w => w.id !== win.id);
             next.push(win);
-            root.windows = win.is_focused
-                ? next.map(w => Object.assign({}, w, { is_focused: w.id === win.id }))
-                : next;
+            if (win.is_focused) {
+                // Clone only the windows whose focus flag actually changed.
+                for (let i = 0; i < next.length; i++) {
+                    const focused = next[i].id === win.id;
+                    if (next[i].is_focused !== focused)
+                        next[i] = Object.assign({}, next[i], { is_focused: focused });
+                }
+            }
+            root.windows = next;
         } else if (ev.WindowClosed) {
             root.windows = root.windows.filter(w => w.id !== ev.WindowClosed.id);
         } else if (ev.KeyboardLayoutsChanged) {
@@ -140,8 +154,14 @@ Singleton {
             refreshWorkspaces();
         } else if (ev.WindowFocusChanged) {
             const id = ev.WindowFocusChanged.id;
-            root.windows = root.windows.map(w =>
-                Object.assign({}, w, { is_focused: id !== null && w.id === id }));
+            // Clone only the windows whose focus flag actually changed.
+            const next = root.windows.slice();
+            for (let i = 0; i < next.length; i++) {
+                const focused = id !== null && next[i].id === id;
+                if (next[i].is_focused !== focused)
+                    next[i] = Object.assign({}, next[i], { is_focused: focused });
+            }
+            root.windows = next;
         }
     }
 

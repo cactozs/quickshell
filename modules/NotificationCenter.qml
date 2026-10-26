@@ -258,6 +258,8 @@ PanelWindow {
                 ListView {
                     id: list
 
+                    reuseItems: true
+
                     anchors.fill: parent
                     visible: Notifications.history.length > 0
                     clip: true

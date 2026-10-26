@@ -240,7 +240,17 @@ Singleton {
         }));
     }
 
-    onHistoryChanged: root.persist()
+    onHistoryChanged: {
+        // Keep the seen map bounded: unreadCount is its only consumer and
+        // only asks about ids still in history.
+        const liveSeen = {};
+        for (const entry of root.history) {
+            if (root.seen[entry.id] === true)
+                liveSeen[entry.id] = true;
+        }
+        root.seen = liveSeen;
+        root.persist();
+    }
 
     Component.onCompleted: Qt.callLater(root.restore)
 
@@ -270,6 +280,7 @@ Singleton {
         const timeout = root.popupTimeout(notif);
         if (timeout > 0)
             root.pendingExpiry = [...root.pendingExpiry, { notif: notif, remaining: timeout, since: Date.now() }];
+        root.armPopupTicker();
     }
 
     // Id of a stack entry, or -1 when the underlying object is already freed.
@@ -293,6 +304,7 @@ Singleton {
         next[id] = true;
         root.leavingIds = next;
         leaveTimer.restart();
+        root.armPopupTicker();
     }
 
     // Hovering a toast pauses its countdown; the remaining time is kept.
@@ -306,6 +318,7 @@ Singleton {
         } else if (!hovered && !entry.since) {
             entry.since = Date.now();
         }
+        root.armPopupTicker();
     }
 
     function checkPopupExpiry(): void {
@@ -318,6 +331,27 @@ Singleton {
             if (entry.since && Date.now() - entry.since >= entry.remaining)
                 entry.notif.expire(); // closed -> the toast reports the id
         }
+        root.armPopupTicker();
+    }
+
+    // Arms popupTicker at the soonest running countdown instead of ticking
+    // 10x/s; hovered toasts are paused and do not arm it.
+    function armPopupTicker(): void {
+        let soonest = -1;
+        const now = Date.now();
+        for (const entry of root.pendingExpiry) {
+            if (!entry.since)
+                continue;
+            const left = Math.max(0, entry.remaining - (now - entry.since));
+            if (soonest < 0 || left < soonest)
+                soonest = left;
+        }
+        if (soonest < 0) {
+            popupTicker.stop();
+            return;
+        }
+        popupTicker.interval = soonest;
+        popupTicker.restart();
     }
 
     // True the first time a toast for this notification is built.
@@ -507,13 +541,10 @@ Singleton {
 
     // ---- popup expiry ------------------------------------------------------
 
-    // Drives popup expiry while anything has a pending timeout.
+    // Drives popup expiry: armed at the next deadline by armPopupTicker.
     Timer {
         id: popupTicker
 
-        interval: 100
-        repeat: true
-        running: root.pendingExpiry.length > 0
         onTriggered: root.checkPopupExpiry()
     }
 

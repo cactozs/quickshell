@@ -49,7 +49,11 @@ Singleton {
     property real netRx1: 0
     property real netTx1: 0
     property real netAt: 0
-    property double lastNvidia: 0
+    // True while a consumer is watching: the SystemPopup is open or the bar
+    // chip is hovered. The 2 s poll and nvidia-smi only run then; waking
+    // refreshes immediately, so displayed values are always fresh.
+    property bool statsHovered: false
+    readonly property bool monitored: ShellState.systemScreen !== "" || root.statsHovered
 
     readonly property string tooltip:
         "CPU\n" +
@@ -101,11 +105,13 @@ Singleton {
             gpuBusyFile.reload();
             gpuTempFile.reload();
         }
-        if (root.hasNvidia && (ShellState.systemScreen !== "" || Date.now() - root.lastNvidia > 10000)) {
-            root.lastNvidia = Date.now();
-            if (!gpuProc.running)
-                gpuProc.running = true;
-        }
+        if (root.hasNvidia && root.monitored && !gpuProc.running)
+            gpuProc.running = true;
+    }
+
+    onMonitoredChanged: {
+        if (root.monitored)
+            root.refresh();
     }
 
     onCpuUsageChanged: cpuHistory = pushHistory(cpuHistory, cpuUsage)
@@ -122,11 +128,13 @@ Singleton {
         printErrors: false
 
         onTextChanged: {
-            const parts = text().trim().split(/\s+/).slice(1).map(Number);
-            if (parts.length < 5)
+            // Read per tick: slice the first line instead of splitting the
+            // whole file. parts[0] is the "cpu" label.
+            const parts = text().slice(0, text().indexOf("\n")).trim().split(/\s+/).map(Number);
+            if (parts.length < 6)
                 return;
-            const idle = parts[3] + (parts[4] || 0);
-            const total = parts.slice(0, 8).reduce((a, b) => a + b, 0);
+            const idle = parts[4] + (parts[5] || 0);
+            const total = parts.slice(1, 9).reduce((a, b) => a + b, 0);
             if (!root.statReady) {
                 root.statTotal1 = total;
                 root.statIdle1 = idle;
@@ -189,15 +197,12 @@ Singleton {
         printErrors: false
 
         onTextChanged: {
-            let total = 0;
-            let available = 0;
-            for (const line of text().split("\n")) {
-                if (line.startsWith("MemTotal:"))
-                    total = parseInt(line.split(/\s+/)[1]);
-                else if (line.startsWith("MemAvailable:"))
-                    available = parseInt(line.split(/\s+/)[1]);
-            }
-            if (total <= 0)
+            // Two indexOf probes instead of splitting all of /proc/meminfo.
+            const data = text();
+            const total = parseInt(data.slice(data.indexOf("MemTotal:") + 9));
+            const available = parseInt(data.slice(data.indexOf("MemAvailable:") + 13));
+            // A missing key parses to NaN; the guard must reject NaN too.
+            if (!(total > 0) || !(available >= 0))
                 return;
             const used = total - available;
             root.ramUsage = Math.round(100 * used / total);
@@ -372,7 +377,7 @@ Singleton {
     Timer {
         interval: 2000
         repeat: true
-        running: true
+        running: root.monitored
         onTriggered: root.refresh()
     }
 
