@@ -10,10 +10,11 @@ import "../style"
 
 // Settings menu: a centered card over a full-screen scrim, unlike the bar's
 // docked panels. Opened from the "Настройки" tile in the quick settings;
-// Esc or a click outside dismisses it. Three tabs — appearance (style pack,
+// Esc or a click outside dismisses it. Four tabs — appearance (style pack,
 // blur source, theme, colors, font), interface (language, launcher view,
-// wallpaper shortcut) and system (muted apps, power profile). The card always
-// opens on the first tab and animates its height between pages.
+// wallpaper shortcut), apps (which desktop color targets are written) and
+// system (muted apps, power profile). The card always opens on the first tab
+// and animates its height between pages.
 PanelWindow {
     id: root
 
@@ -21,8 +22,9 @@ PanelWindow {
 
     readonly property bool shown: ShellState.settingsScreen === root.modelData.name
 
-    // 0 = Оформление, 1 = Интерфейс, 2 = Система. Reset on every open so the
-    // menu is predictable; the window itself outlives a close by 20 s.
+    // 0 = Оформление, 1 = Интерфейс, 2 = Приложения, 3 = Система. Reset on
+    // every open so the menu is predictable; the window itself outlives a close
+    // by 20 s.
     property int tabIndex: 0
 
     // Wide enough for the five style segments next to their label.
@@ -223,7 +225,8 @@ PanelWindow {
                 Repeater {
                     id: tabs
 
-                    model: [I18n.t("Оформление"), I18n.t("Интерфейс"), I18n.t("Система")]
+                    model: [I18n.t("Оформление"), I18n.t("Интерфейс"), I18n.t("Приложения"),
+                        I18n.t("Система")]
 
                     delegate: Item {
                         id: tabItem
@@ -320,7 +323,7 @@ PanelWindow {
 
                 width: parent.width
                 clip: true
-                height: [pageLook, pageInterface, pageSystem][root.tabIndex].implicitHeight
+                height: [pageLook, pageInterface, pageApps, pageSystem][root.tabIndex].implicitHeight
 
                 SettingsPage {
                     id: pageLook
@@ -519,10 +522,50 @@ PanelWindow {
                 }
 
                 SettingsPage {
-                    id: pageSystem
+                    id: pageApps
 
                     active: root.tabIndex === 2
                     pageIndex: 2
+
+                    // ---- desktop color targets ------------------------------------------
+
+                    // One group: which files services/SystemTheme.qml writes at all.
+                    // A chip that is off leaves its file untouched, so the app keeps
+                    // the colors it last got until it is switched back on.
+                    SettingRow {
+                        label: I18n.t("Цвета в приложениях")
+
+                        SettingSegment {
+                            label: "GTK"
+                            selected: ShellState.themeAppEnabled("gtk")
+                            onClicked: ShellState.setThemeApp("gtk", !selected)
+                        }
+
+                        SettingSegment {
+                            label: "Qt"
+                            selected: ShellState.themeAppEnabled("qt")
+                            onClicked: ShellState.setThemeApp("qt", !selected)
+                        }
+
+                        SettingSegment {
+                            label: "Ghostty"
+                            selected: ShellState.themeAppEnabled("ghostty")
+                            onClicked: ShellState.setThemeApp("ghostty", !selected)
+                        }
+
+                        SettingSegment {
+                            label: "Niri"
+                            selected: ShellState.themeAppEnabled("niri")
+                            onClicked: ShellState.setThemeApp("niri", !selected)
+                        }
+                    }
+                }
+
+                SettingsPage {
+                    id: pageSystem
+
+                    active: root.tabIndex === 3
+                    pageIndex: 3
 
                     // ---- muted notification apps ---------------------------------------
 

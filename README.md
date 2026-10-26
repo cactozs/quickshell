@@ -407,6 +407,10 @@ The shell owns the palette, and `services/SystemTheme.qml` is the single writer:
 A file is written only when its content changes. Hand edits survive until the
 next theme change, then they are regenerated.
 
+Which of these targets are written at all is the "Applications" tab in the
+settings menu (or `qs ipc call settings app ghostty false`). A disabled target
+is left alone: its file keeps whatever colors it last got.
+
 **Light mode** is a second matugen pass. The shell runs
 `matugen -m light image <wallpaper> -c ~/.config/matugen/light.toml` when the
 dark palette is newer than `ColorsLight.json`. The two configs must keep the

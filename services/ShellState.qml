@@ -62,6 +62,7 @@ Singleton {
             property string fontMode
             property string blurSource
             property string language
+            property string themeAppsOff
         }
     }
 
@@ -167,6 +168,29 @@ Singleton {
 
     function setLanguage(name: string): void {
         props.language = name === "en" || name === "de" ? name : "ru";
+    }
+
+    // Desktop targets whose colors services/SystemTheme.qml rewrites: "gtk"
+    // (GTK3/GTK4 + the gsettings color-scheme), "qt" (qt6ct), "ghostty" and
+    // "niri" (borders and focus ring). Stored as the ids that are off, so a
+    // missing key keeps every target on — the behavior before the setting.
+    // A disabled target is simply not written: its file keeps the last colors.
+    readonly property string themeAppsOff: props.themeAppsOff
+
+    function themeAppEnabled(id: string): bool {
+        const ids = root.themeAppsOff.split(",");
+        for (let i = 0; i < ids.length; i++) {
+            if (ids[i] === id)
+                return false;
+        }
+        return true;
+    }
+
+    function setThemeApp(id: string, enabled: bool): void {
+        const ids = root.themeAppsOff.split(",").filter(name => name !== "" && name !== id);
+        if (!enabled)
+            ids.push(id);
+        props.themeAppsOff = ids.join(",");
     }
 
     // Resolve an IPC/screen name against the live output list. Unknown names
@@ -328,6 +352,11 @@ Singleton {
         // UI language, so scripts can flip it: `qs ipc call settings language en`.
         function language(name: string): void {
             root.setLanguage(name);
+        }
+
+        // Desktop color target on/off: `qs ipc call settings app ghostty false`.
+        function app(id: string, enabled: bool): void {
+            root.setThemeApp(id, enabled);
         }
     }
 

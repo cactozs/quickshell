@@ -29,7 +29,9 @@ import "../style"
 // plus `gsettings ... color-scheme`, which is what libadwaita apps read for
 // their own light/dark base, and a ghostty config reload so a running terminal
 // recolors without a restart. The one-time plumbing (ghostty theme name, the
-// qt6ct path, the niri include) is documented in README.md.
+// qt6ct path, the niri include) is documented in README.md. Which of the four
+// targets are written at all is the "Приложения" tab in the settings menu
+// (ShellState.themeAppsOff): a disabled target is skipped and keeps its file.
 Singleton {
     id: root
 
@@ -43,6 +45,13 @@ Singleton {
     }
 
     readonly property bool light: Theme.light
+
+    // Targets switched on in the settings menu ("Приложения"). A disabled one
+    // is not written at all: its file keeps the colors it last had.
+    readonly property bool gtkOn: ShellState.themeAppEnabled("gtk")
+    readonly property bool qtOn: ShellState.themeAppEnabled("qt")
+    readonly property bool ghosttyOn: ShellState.themeAppEnabled("ghostty")
+    readonly property bool niriOn: ShellState.themeAppEnabled("niri")
 
     // ---- color formats --------------------------------------------------------
 
@@ -370,24 +379,45 @@ Singleton {
     // Called once from shell.qml: the handlers below only fire on a change, and
     // a first start has nothing to change from.
     function sync(): void {
-        root.writeTo(gtk3File, root.gtk3Text);
-        root.writeTo(gtk4File, root.gtk4Text);
-        root.writeTo(qt6ctFile, root.qt6ctText);
-        root.reloadGhostty();
         // The blur choice is read back before the writer is armed: quickshell.kdl
         // is the record, the shell must not overwrite it with the default.
         root.adoptBlurSource();
         root.niriArmed = true;
-        root.writeTo(niriFile, root.niriText);
-        root.applyColorScheme();
+        root.applyAll();
     }
 
-    onGtk3TextChanged: root.writeTo(gtk3File, root.gtk3Text)
-    onGtk4TextChanged: root.writeTo(gtk4File, root.gtk4Text)
-    onQt6ctTextChanged: root.writeTo(qt6ctFile, root.qt6ctText)
-    onGhosttyTextChanged: root.reloadGhostty()
-    onNiriTextChanged: if (root.niriArmed) root.writeTo(niriFile, root.niriText)
-    onLightChanged: root.applyColorScheme()
+    // Writes every enabled target. Re-run when one is switched back on: the
+    // palette did not change, so no on*Changed fires for it.
+    function applyAll(): void {
+        if (root.gtkOn) {
+            root.writeTo(gtk3File, root.gtk3Text);
+            root.writeTo(gtk4File, root.gtk4Text);
+            root.applyColorScheme();
+        }
+        if (root.qtOn)
+            root.writeTo(qt6ctFile, root.qt6ctText);
+        if (root.ghosttyOn)
+            root.reloadGhostty();
+        if (root.niriArmed && root.niriOn)
+            root.writeTo(niriFile, root.niriText);
+    }
+
+    onGtk3TextChanged: if (root.gtkOn) root.writeTo(gtk3File, root.gtk3Text)
+    onGtk4TextChanged: if (root.gtkOn) root.writeTo(gtk4File, root.gtk4Text)
+    onQt6ctTextChanged: if (root.qtOn) root.writeTo(qt6ctFile, root.qt6ctText)
+    onGhosttyTextChanged: if (root.ghosttyOn) root.reloadGhostty()
+    onNiriTextChanged: if (root.niriArmed && root.niriOn) root.writeTo(niriFile, root.niriText)
+    onLightChanged: if (root.gtkOn) root.applyColorScheme()
+
+    // Switching a target back on writes the current palette right away. The
+    // four gtkOn/qtOn/... bindings carry no change handler of their own.
+    Connections {
+        target: ShellState
+
+        function onThemeAppsOffChanged(): void {
+            root.applyAll();
+        }
+    }
 
     FileView {
         id: gtk3File
