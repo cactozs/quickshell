@@ -54,7 +54,22 @@ Singleton {
         mem: ["/usr/bin/free", "-h"],
         net: ["/usr/bin/ip", "-brief", "addr"],
         failed: ["/usr/bin/systemctl", "--failed", "--no-pager", "--plain"],
+        user_units: ["/usr/bin/systemctl", "--user", "--failed", "--no-pager", "--plain"],
+        journal: ["/usr/bin/journalctl", "-p", "3", "-n", "30", "--no-pager"],
+        top: ["/usr/bin/ps", "-eo", "pcpu,pmem,comm", "--sort=-pcpu"],
+        wifi: ["/usr/bin/nmcli", "-t", "-f", "ACTIVE,SSID,SIGNAL", "dev", "wifi"],
+        windows: ["/usr/bin/niri", "msg", "windows"],
         log: ["/usr/bin/qs", "log", "-t", "40"]
+    })
+
+    // String-valued settings the pet may switch. The allowed values double as
+    // validation, so the schema enum and doAction cannot drift apart.
+    readonly property var switches: ({
+        theme: ["dark", "light"],
+        style: ["m3", "blur", "new", "nothing", "newNothing"],
+        colorscheme: ["matugen", "oled", "gruvbox"],
+        font: ["material", "mono"],
+        blur: ["wallpaper", "window"]
     })
 
     readonly property var tools: ([
@@ -69,9 +84,12 @@ Singleton {
                     "properties": {
                         "command": {
                             "type": "string",
-                            "enum": ["system", "disk", "block", "mem", "net", "failed", "log", "ls"],
+                            "enum": ["system", "disk", "block", "mem", "net", "failed", "user_units",
+                                "journal", "top", "wifi", "windows", "log", "ls"],
                             "description": "system = kernel and architecture; disk = free space; block = disks and partitions; "
                                 + "mem = memory; net = network interfaces; failed = failed systemd units; "
+                                + "user_units = failed user systemd units; journal = recent system errors; "
+                                + "top = processes by CPU; wifi = visible networks and signal; windows = open niri windows; "
                                 + "log = last 40 lines of the shell log; ls = list a directory inside the home directory."
                         },
                         "path": {
@@ -102,19 +120,24 @@ Singleton {
             "type": "function",
             "function": {
                 "name": "shell_action",
-                "description": "Change the desktop: open a shell overlay, switch the theme, change the volume, mute, or take a screenshot. "
-                    + "Use it only when the user asks for that change.",
+                "description": "Change the desktop: open a shell overlay, switch the look, the night light, "
+                    + "the microphone or the workspace, change brightness or volume, mute, set a random wallpaper, "
+                    + "or take a screenshot. Use it only when the user asks for that change.",
                 "parameters": {
                     "type": "object",
                     "properties": {
                         "action": {
                             "type": "string",
                             "enum": ["launcher", "settings", "wallpaper", "clipboard", "notifications", "system",
-                                "weather", "clock", "theme", "mute", "volume", "screenshot"]
+                                "weather", "clock", "theme", "style", "colorscheme", "font", "blur",
+                                "nightlight", "mic_mute", "wallpaper_random", "workspace",
+                                "mute", "volume", "brightness", "screenshot"]
                         },
                         "value": {
                             "type": "string",
-                            "description": "theme: dark or light; volume: delta in percent such as 10 or -10; otherwise empty."
+                            "description": "theme: dark or light; style: m3, blur, new, nothing or newNothing; "
+                                + "colorscheme: matugen, oled or gruvbox; font: material or mono; blur: wallpaper or window; "
+                                + "volume or brightness: delta in percent such as 10 or -10; workspace: prev or next; otherwise empty."
                         }
                     },
                     "required": ["action"]
@@ -330,15 +353,47 @@ Singleton {
         const screen = ShellState.resolveScreen(ShellState.petScreen);
         const value = String(args?.value ?? "");
 
-        if (action === "theme") {
-            if (value !== "dark" && value !== "light")
-                return "refused: theme must be dark or light";
-            ShellState.setThemeMode(value);
-            return "ok: theme is now " + value;
+        const allowed = root.switches[action];
+        if (Array.isArray(allowed)) {
+            if (!allowed.includes(value))
+                return "refused: " + action + " must be one of " + allowed.join(", ");
+            root.applySwitch(action, value);
+            return "ok: " + action + " is now " + value;
         }
         if (action === "mute") {
             Audio.toggleMute();
             return "ok: mute toggled";
+        }
+        if (action === "mic_mute") {
+            Audio.toggleMicMute();
+            return "ok: microphone mute toggled";
+        }
+        if (action === "nightlight") {
+            NightLight.toggle();
+            return "ok: night light is now " + (NightLight.enabled ? "on" : "off");
+        }
+        if (action === "wallpaper_random") {
+            const path = Wallpapers.randomPath();
+            if (path === "")
+                return "refused: no wallpapers found";
+            Wallpapers.apply(path);
+            return "ok: wallpaper is now " + path;
+        }
+        if (action === "brightness") {
+            const delta = Math.round(Number(value));
+            if (isNaN(delta))
+                return "refused: brightness needs a percent delta";
+            Brightness.step(delta);
+            return "ok: brightness is now " + Brightness.percent + "%";
+        }
+        if (action === "workspace") {
+            if (value !== "prev" && value !== "next")
+                return "refused: workspace must be prev or next";
+            if (value === "prev")
+                Niri.focusWorkspaceUp();
+            else
+                Niri.focusWorkspaceDown();
+            return "ok: switched to the " + value + " workspace";
         }
         if (action === "volume") {
             const delta = Number(value);
@@ -353,6 +408,19 @@ Singleton {
             return "ok: screenshot UI opened";
         }
         return root.showOverlay(action, screen);
+    }
+
+    function applySwitch(name: string, value: string): void {
+        if (name === "theme")
+            ShellState.setThemeMode(value);
+        else if (name === "style")
+            ShellState.setStyleMode(value);
+        else if (name === "colorscheme")
+            ShellState.setColorScheme(value);
+        else if (name === "font")
+            ShellState.setFontMode(value);
+        else
+            ShellState.setBlurSource(value);
     }
 
     // Open, not toggle: a second "open the launcher" must not close it.
@@ -541,6 +609,10 @@ Singleton {
                 ? percent + " · " + I18n.t("заряжается")
                 : percent;
         }
+        if (has("громкость", "звук", "volume", "sound"))
+            return Audio.percent + "%" + (Audio.effectiveMuted ? " · " + I18n.t("Выключен") : "");
+        if (has("какое окно", "активное окно", "active window", "what window"))
+            return Niri.focusedWindow?.title ?? I18n.t("Нет активного окна");
         return "";
     }
 
