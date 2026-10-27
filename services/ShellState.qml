@@ -208,7 +208,7 @@ Singleton {
     readonly property int petX: props.petX
     readonly property int petY: props.petY
     // Read straight from the environment; the shell never stores the key.
-    readonly property string openRouterKey: String(Quickshell.env("OPENROUTER_API_KEY") ?? "").trim()
+    readonly property string nvidiaKey: String(Quickshell.env("NVIDIA_API_KEY") ?? "").trim()
 
     function setPetEnabled(enabled: bool): void {
         props.petDisabled = !enabled;

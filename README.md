@@ -39,7 +39,7 @@ English (except for the Russian README).
   menu.
 - **Wallpaper manager** — recursive library, cached previews, favorites,
   random wallpaper, drag-and-drop from the desktop or the bar.
-- **Desktop pet** — a draggable Tux that chats through OpenRouter, answers
+- **Desktop pet** — a draggable Tux that chats through NVIDIA NIM, answers
   time/date/weather/battery questions locally, sleeps when idle and reacts to
   notifications, low battery and mute.
 - **OSD and system popup** — volume/brightness overlay (also for changes made
@@ -463,15 +463,30 @@ from a keybind). Drag him anywhere; the spot is saved per shell. Click to open
 the chat, double-click to pet him, and he sleeps after five idle minutes. The
 window hides itself while a fullscreen window is focused.
 
-Answers come from OpenRouter, or from the shell itself for time, date, weather
-and battery. The key is read from `OPENROUTER_API_KEY` in the shell's
-environment; there is no key field in the settings menu:
+Answers come from NVIDIA NIM (`integrate.api.nvidia.com`), or from the shell
+itself for time, date, weather and battery. The key is read from
+`NVIDIA_API_KEY` in the shell's environment; there is no key field in the
+settings menu:
 
 ```sh
-set -Ux OPENROUTER_API_KEY sk-or-v1-...
+set -Ux NVIDIA_API_KEY nvapi-...
 ```
 
 The shell inherits the variable when it starts, so restart it after exporting.
+
+The pet remembers the last few messages and can use three tools:
+
+- `run_diagnostic` runs one read-only command: kernel, free space, disks,
+  memory, network addresses, failed systemd units, the last lines of `qs log`,
+  or a listing of a folder inside your home. Hidden folders and anything
+  outside `$HOME` are refused; there is no `cat`, `find` or shell.
+- `grep_shell` searches this repository and answers with `file:line`, so
+  questions about the config are checked against the real files.
+- `shell_action` opens a panel, switches the theme, changes the volume, mutes
+  the sound or takes a screenshot. It only runs when you ask for it.
+
+Every question, every command output and every listed file name goes to
+NVIDIA. Without a key the pet still answers the local questions.
 
 ## Troubleshooting
 
