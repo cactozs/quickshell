@@ -8,6 +8,7 @@ singleton NightLight 1.0 NightLight.qml
 singleton Niri 1.0 Niri.qml
 singleton Notifications 1.0 Notifications.qml
 singleton Osd 1.0 Osd.qml
+singleton PetChat 1.0 PetChat.qml
 singleton ShellState 1.0 ShellState.qml
 singleton SystemMonitor 1.0 SystemMonitor.qml
 singleton SystemTheme 1.0 SystemTheme.qml

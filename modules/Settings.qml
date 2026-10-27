@@ -519,6 +519,24 @@ PanelWindow {
                             }
                         }
                     }
+
+                    // ---- desktop pet ----------------------------------------------------
+
+                    SettingRow {
+                        label: I18n.t("Питомец")
+
+                        SettingSegment {
+                            label: I18n.t("Выключен")
+                            selected: !ShellState.petEnabled
+                            onClicked: ShellState.setPetEnabled(false)
+                        }
+
+                        SettingSegment {
+                            label: I18n.t("Включён")
+                            selected: ShellState.petEnabled
+                            onClicked: ShellState.setPetEnabled(true)
+                        }
+                    }
                 }
 
                 SettingsPage {

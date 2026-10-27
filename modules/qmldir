@@ -17,6 +17,8 @@ NotificationBell 1.0 NotificationBell.qml
 NotificationCenter 1.0 NotificationCenter.qml
 NotificationToast 1.0 NotificationToast.qml
 OsdBadge 1.0 OsdBadge.qml
+Pet 1.0 Pet.qml
+PetButton 1.0 PetButton.qml
 PowerButton 1.0 PowerButton.qml
 QuickSettings 1.0 QuickSettings.qml
 Settings 1.0 Settings.qml

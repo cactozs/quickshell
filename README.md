@@ -39,6 +39,9 @@ English (except for the Russian README).
   menu.
 - **Wallpaper manager** — recursive library, cached previews, favorites,
   random wallpaper, drag-and-drop from the desktop or the bar.
+- **Desktop pet** — a draggable Tux that chats through OpenRouter, answers
+  time/date/weather/battery questions locally, sleeps when idle and reacts to
+  notifications, low battery and mute.
 - **OSD and system popup** — volume/brightness overlay (also for changes made
   with `wpctl`/`brightnessctl`), CPU, RAM, temperature and GPU rows (AMD via
   sysfs, `nvidia-smi` fallback).
@@ -378,6 +381,7 @@ Volume, brightness, media and lock binds do not go through the shell: use
 | `system` (monitoring) | — |
 | `settings` (quick settings) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono>`, `blur <wallpaper\|window>`, `language <ru\|en\|de>` |
 | `wallpaper` (manager) | `random` |
+| `pet` (desktop pet) | — |
 | `bar` | `toggle` |
 | `notifs` | `toggleDnd`, `dnd`, `clear`, `mute <app>`, `unmuteAll` |
 
@@ -451,6 +455,23 @@ rim, specular, drop shadow and blur.
 `shell-state.json` and `.qmlls.ini` are local runtime state and are gitignored.
 `style/Colors.json` and `style/ColorsLight.json` are generated palettes, but
 they are tracked so a fresh clone has a usable fallback until matugen runs.
+
+## Desktop pet
+
+The paw button in the bar shows Tux on its screen (`qs ipc call pet toggle`
+from a keybind). Drag him anywhere; the spot is saved per shell. Click to open
+the chat, double-click to pet him, and he sleeps after five idle minutes. The
+window hides itself while a fullscreen window is focused.
+
+Answers come from OpenRouter, or from the shell itself for time, date, weather
+and battery. The key is read from `OPENROUTER_API_KEY` in the shell's
+environment; there is no key field in the settings menu:
+
+```sh
+set -Ux OPENROUTER_API_KEY sk-or-v1-...
+```
+
+The shell inherits the variable when it starts, so restart it after exporting.
 
 ## Troubleshooting
 

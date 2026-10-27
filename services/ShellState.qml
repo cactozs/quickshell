@@ -33,6 +33,7 @@ Singleton {
     property string settingsScreen: ""
     property string wallpaperScreen: ""
     property string trayScreen: ""
+    property string petScreen: ""
 
     // Settings live in shell-state.json: PersistentProperties survives a config
     // reload but not the process restarting at login. The read below is
@@ -63,6 +64,11 @@ Singleton {
             property string blurSource
             property string language
             property string themeAppsOff
+            // Pet: stored negative so a missing key keeps the bar button on.
+            property bool petDisabled
+            property bool petPlaced
+            property int petX
+            property int petY
         }
     }
 
@@ -92,6 +98,8 @@ Singleton {
                 root.wallpaperScreen = "";
             if (root.trayScreen !== "" && !root.screenKnown(root.trayScreen))
                 root.trayScreen = "";
+            if (root.petScreen !== "" && !root.screenKnown(root.petScreen))
+                root.petScreen = "";
         }
     }
 
@@ -193,6 +201,27 @@ Singleton {
         props.themeAppsOff = ids.join(",");
     }
 
+    // Desktop pet. The setting stores the negative, so a missing key keeps the
+    // bar button on; petPlaced tells an untouched first run from a drag to 0,0.
+    readonly property bool petEnabled: !props.petDisabled
+    readonly property bool petPlaced: props.petPlaced
+    readonly property int petX: props.petX
+    readonly property int petY: props.petY
+    // Read straight from the environment; the shell never stores the key.
+    readonly property string openRouterKey: String(Quickshell.env("OPENROUTER_API_KEY") ?? "").trim()
+
+    function setPetEnabled(enabled: bool): void {
+        props.petDisabled = !enabled;
+        if (!enabled)
+            root.petScreen = "";
+    }
+
+    function setPetPosition(x: int, y: int): void {
+        props.petX = x;
+        props.petY = y;
+        props.petPlaced = true;
+    }
+
     // Resolve an IPC/screen name against the live output list. Unknown names
     // (a stale output, a typo) fall back to the first screen instead of
     // leaving an overlay keyed to a screen that does not exist.
@@ -292,6 +321,14 @@ Singleton {
 
     function closeTray(): void {
         root.trayScreen = "";
+    }
+
+    function togglePet(screenName: string): void {
+        root.petScreen = root.petScreen === screenName ? "" : screenName;
+    }
+
+    function closePet(): void {
+        root.petScreen = "";
     }
 
     function setLauncherFullscreen(value: bool): void {
@@ -511,6 +548,24 @@ Singleton {
 
         function close(): void {
             root.closeTray();
+        }
+    }
+
+    IpcHandler {
+        target: "pet"
+
+        // Opens on the first screen; useful for testing and scripted use.
+        function toggle(): void {
+            root.togglePet(root.resolveScreen(""));
+        }
+
+        // Toggles on a specific screen; niri keybinds pass the focused output.
+        function toggleOn(screenName: string): void {
+            root.togglePet(root.resolveScreen(screenName));
+        }
+
+        function close(): void {
+            root.closePet();
         }
     }
 

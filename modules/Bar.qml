@@ -319,6 +319,11 @@ PanelWindow {
                     screenName: root.modelData.name
                 }
 
+                PetButton {
+                    screenName: root.modelData.name
+                    visible: ShellState.petEnabled
+                }
+
                 PowerButton {
                     screenName: root.modelData.name
                 }

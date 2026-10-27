@@ -145,4 +145,13 @@ ShellRoot {
             active: ShellState.wallpaperScreen === modelData.name
         }
     }
+
+    Variants {
+        model: Quickshell.screens
+
+        LazyOverlay {
+            source: Component { Pet {} }
+            active: ShellState.petScreen === modelData.name
+        }
+    }
 }

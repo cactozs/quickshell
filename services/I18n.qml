@@ -38,6 +38,7 @@ Singleton {
             "Экономия": "Power saver",
             "Баланс": "Balanced",
             "Производительность": "Performance",
+            "Питомец": "Pet",
 
             // quick settings
             "Выключен": "Off",
@@ -160,6 +161,23 @@ Singleton {
             "Трей": "Tray",
             "Нет приложений": "No applications",
 
+            // desktop pet
+            "Спросить питомца…": "Ask the pet…",
+            "Думаю…": "Thinking…",
+            "Ключ OpenRouter не задан — задайте OPENROUTER_API_KEY": "No OpenRouter key — set OPENROUTER_API_KEY",
+            "OpenRouter не ответил — проверьте ключ и баланс": "OpenRouter did not answer — check the key and balance",
+            "Неверный ключ OpenRouter — проверьте настройки": "Invalid OpenRouter key — check the settings",
+            "На балансе OpenRouter нет средств": "No OpenRouter balance left",
+            "Слишком много запросов — подождите": "Too many requests — wait a moment",
+            "OpenRouter недоступен — проверьте сеть": "OpenRouter is unreachable — check the network",
+            "OpenRouter вернул пустой ответ": "OpenRouter returned an empty answer",
+            "Батарея не найдена": "No battery found",
+            "Погода ещё не загрузилась": "Weather is not loaded yet",
+            "заряжается": "charging",
+            "Новое уведомление": "New notification",
+            "Батарея садится": "Battery is low",
+            "Звук выключен": "Sound is off",
+
             // bar
             "Brightness: ": "Brightness: ",
             " дн ": " d ",
@@ -195,6 +213,7 @@ Singleton {
             "Экономия": "Energiesparen",
             "Баланс": "Ausgewogen",
             "Производительность": "Leistung",
+            "Питомец": "Haustier",
 
             // quick settings
             "Выключен": "Aus",
@@ -316,6 +335,23 @@ Singleton {
             // tray
             "Трей": "Tray",
             "Нет приложений": "Keine Anwendungen",
+
+            // desktop pet
+            "Спросить питомца…": "Frag das Haustier…",
+            "Думаю…": "Denke nach…",
+            "Ключ OpenRouter не задан — задайте OPENROUTER_API_KEY": "Kein OpenRouter-Schlüssel — setze OPENROUTER_API_KEY",
+            "OpenRouter не ответил — проверьте ключ и баланс": "OpenRouter hat nicht geantwortet — prüfe Schlüssel und Guthaben",
+            "Неверный ключ OpenRouter — проверьте настройки": "Ungültiger OpenRouter-Schlüssel — prüfe die Einstellungen",
+            "На балансе OpenRouter нет средств": "Kein Guthaben auf OpenRouter",
+            "Слишком много запросов — подождите": "Zu viele Anfragen — bitte warten",
+            "OpenRouter недоступен — проверьте сеть": "OpenRouter ist nicht erreichbar — prüfe die Verbindung",
+            "OpenRouter вернул пустой ответ": "OpenRouter hat eine leere Antwort geliefert",
+            "Батарея не найдена": "Keine Batterie gefunden",
+            "Погода ещё не загрузилась": "Wetter ist noch nicht geladen",
+            "заряжается": "lädt",
+            "Новое уведомление": "Neue Benachrichtigung",
+            "Батарея садится": "Batterie wird schwach",
+            "Звук выключен": "Ton ist aus",
 
             // bar
             "Brightness: ": "Helligkeit: ",
