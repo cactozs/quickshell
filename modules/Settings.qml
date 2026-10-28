@@ -96,15 +96,23 @@ PanelWindow {
         onTriggered: keyCatcher.forceActiveFocus()
     }
 
-    // niri composites the blur only where the surface damaged it, so a changed
-    // region waits for the next repaint. Re-applying the region and pumping one
-    // full-surface frame during a morph makes the compositor pick it up at once
-    // instead of on the next stray repaint.
+    // niri takes the region from the commit that follows the frame that set it,
+    // so the last frame of a morph can leave the screen one step small, and it
+    // composites the blur only where the surface damaged it, so nothing repaints
+    // that strip. Re-applying the region and pumping full-surface frames through
+    // the morph picks it up; blurSettleTimer repeats it once the plate has stopped.
     // shortcut: a repaint nudge, not a guarantee — drop it once Quickshell/niri
     // repaint on a region change.
     function nudgeBlur(): void {
         root.blurSettle = !root.blurSettle;
         blurRegion.changed();
+    }
+
+    Timer {
+        id: blurSettleTimer
+
+        interval: 80
+        onTriggered: root.nudgeBlur()
     }
 
     Rectangle {
@@ -208,7 +216,10 @@ PanelWindow {
 
         // Each tab has its own height; the card follows with the M3 container
         // timing while the pages clip their own overflow.
-        onHeightChanged: root.nudgeBlur()
+        onHeightChanged: {
+            root.nudgeBlur();
+            blurSettleTimer.restart();
+        }
         onScaleChanged: root.nudgeBlur()
 
         Behavior on height {
