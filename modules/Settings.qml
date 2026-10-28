@@ -58,18 +58,16 @@ PanelWindow {
     // compositor blur region cannot fade, so it would hang under the card.
     BackgroundEffect.blurRegion: Theme.blur && root.shown ? blurRegion : null
 
-    // The region repeats the plate's own rect, entrance scale included: `scale`
-    // grows a Qt item from its top-left corner, so the card's x/y stay put while
-    // its size shrinks — centring the region here instead left the plate sticking
-    // out of it during the entrance. It never reaches past the plate either: the
-    // animated height on the way up, the destination on the way down, so a late
-    // region update can only leave a mismatch under the acrylic.
+    // The region is the plate's rect about the same centre, entrance scale
+    // included. It never reaches past the plate either: the animated height on
+    // the way up, the destination on the way down, so a late region update can
+    // only leave a mismatch under the acrylic.
     Region {
         id: blurRegion
 
         Region {
-            x: card.x
-            y: card.y
+            x: Math.round(card.x + card.width * (1 - card.scale) / 2)
+            y: Math.round(card.y + (card.height - card.blurHeight * card.scale) / 2)
             width: Math.round(card.width * card.scale)
             height: Math.round(card.blurHeight * card.scale)
             radius: Math.round(card.radius * card.scale)
@@ -161,6 +159,7 @@ PanelWindow {
         visible: Theme.glass
         opacity: card.opacity
         scale: card.scale
+        transformOrigin: Item.Center
     }
 
     Rectangle {
@@ -184,6 +183,9 @@ PanelWindow {
 
         GlassEdge {}
 
+        // About the centre: growing from the top-left corner slid the plate ~30x40
+        // px up-left during the entrance.
+        transformOrigin: Item.Center
         scale: root.shown ? 1 : 0.9
         opacity: root.shown ? 1 : 0
 
