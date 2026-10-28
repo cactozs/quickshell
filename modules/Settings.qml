@@ -27,6 +27,10 @@ PanelWindow {
     // by 20 s.
     property int tabIndex: 0
 
+    // Toggled by nudgeBlur() to keep one full-surface repaint going through a
+    // morph; see the repaint rectangle at the end of the file.
+    property bool blurSettle: false
+
     // Wide enough for the style segments next to their label.
     readonly property int cardWidth: 620
     readonly property int cardPadding: 20
@@ -54,17 +58,20 @@ PanelWindow {
     // compositor blur region cannot fade, so it would hang under the card.
     BackgroundEffect.blurRegion: Theme.blur && root.shown ? blurRegion : null
 
-    // Unscaled twin of the card for the blur region: it only rebuilds on
-    // x/y/w/h changes, so it must not see the entrance scale.
-    Item {
-        id: blurAnchor
-        anchors.fill: card
-    }
-
+    // The region is the plate's *destination*, entrance scale included: it is set
+    // once at the start of a morph instead of chasing the animation frame by
+    // frame, which the compositor can only follow a frame late. The scale is here
+    // because the M3E spring overshoots past the card's own size on open.
     Region {
         id: blurRegion
 
-        Region { item: blurAnchor; radius: card.radius }
+        Region {
+            x: Math.round((root.width - card.width * card.scale) / 2)
+            y: Math.round((root.height - card.targetHeight * card.scale) / 2)
+            width: Math.round(card.width * card.scale)
+            height: Math.round(card.targetHeight * card.scale)
+            radius: Math.round(card.radius * card.scale)
+        }
     }
 
     // A lazily built window (LazyOverlay) is born already open, where
@@ -87,6 +94,17 @@ PanelWindow {
         id: focusKick
         interval: 50
         onTriggered: keyCatcher.forceActiveFocus()
+    }
+
+    // niri composites the blur only where the surface damaged it, so a changed
+    // region waits for the next repaint. Re-applying the region and pumping one
+    // full-surface frame during a morph makes the compositor pick it up at once
+    // instead of on the next stray repaint.
+    // shortcut: a repaint nudge, not a guarantee — drop it once Quickshell/niri
+    // repaint on a region change.
+    function nudgeBlur(): void {
+        root.blurSettle = !root.blurSettle;
+        blurRegion.changed();
     }
 
     Rectangle {
@@ -146,9 +164,14 @@ PanelWindow {
     Rectangle {
         id: card
 
+        // The height the card is heading for, without the morph. The blur region
+        // is built from this, so it never has to chase an animation it can only
+        // follow a frame late.
+        readonly property real targetHeight: column.implicitHeight + 2 * root.cardPadding
+
         anchors.centerIn: parent
         width: Math.min(root.cardWidth, root.width - 48)
-        height: column.implicitHeight + 2 * root.cardPadding
+        height: targetHeight
         radius: Theme.shapeXL
         color: Theme.surfaceContainerHigh
         border.width: Theme.hairlineWidth
@@ -178,6 +201,9 @@ PanelWindow {
 
         // Each tab has its own height; the card follows with the M3 container
         // timing while the pages clip their own overflow.
+        onHeightChanged: root.nudgeBlur()
+        onScaleChanged: root.nudgeBlur()
+
         Behavior on height {
             NumberAnimation {
                 duration: Theme.durPop
@@ -810,6 +836,23 @@ PanelWindow {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    // Invisible repaint driver, toggled by nudgeBlur() on every frame of a morph
+    // and then faded out: the trailing frames keep the whole surface damaged, so
+    // the compositor picks the settled region up while the plate is still moving.
+    // 0.002 alpha is under one 8-bit step.
+    Rectangle {
+        anchors.fill: parent
+        color: Theme.surface
+        opacity: root.blurSettle ? 0.002 : 0
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Theme.durShort
+                easing.type: Easing.Linear
             }
         }
     }
