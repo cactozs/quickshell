@@ -441,6 +441,57 @@ PanelWindow {
                         }
                     }
 
+                    // ---- motion ---------------------------------------------------------
+
+                    // Two settings: the shell's own durations (style/Theme.qml)
+                    // and the compositor's animations, which are written into the
+                    // generated niri file.
+                    SettingRow {
+                        label: I18n.t("Анимации")
+
+                        SettingSegment {
+                            label: I18n.t("Выключены")
+                            selected: ShellState.animationMode === "off"
+                            onClicked: ShellState.setAnimationMode("off")
+                        }
+
+                        SettingSegment {
+                            label: I18n.t("Обычные")
+                            selected: ShellState.animationMode === "normal"
+                            onClicked: ShellState.setAnimationMode("normal")
+                        }
+
+                        SettingSegment {
+                            label: I18n.t("Медленные")
+                            selected: ShellState.animationMode === "slow"
+                            onClicked: ShellState.setAnimationMode("slow")
+                        }
+                    }
+
+                    // Only reaches niri while the Niri target in the "Приложения"
+                    // tab is on: it lives in that same generated file.
+                    SettingRow {
+                        label: I18n.t("Анимации niri")
+
+                        SettingSegment {
+                            label: I18n.t("Выключены")
+                            selected: ShellState.niriAnimation === "off"
+                            onClicked: ShellState.setNiriAnimation("off")
+                        }
+
+                        SettingSegment {
+                            label: I18n.t("Обычные")
+                            selected: ShellState.niriAnimation === "normal"
+                            onClicked: ShellState.setNiriAnimation("normal")
+                        }
+
+                        SettingSegment {
+                            label: I18n.t("Медленные")
+                            selected: ShellState.niriAnimation === "slow"
+                            onClicked: ShellState.setNiriAnimation("slow")
+                        }
+                    }
+
                     // ---- theme mode -----------------------------------------------------
 
                     SettingRow {

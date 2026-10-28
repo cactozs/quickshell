@@ -403,7 +403,7 @@ Mod+Alt+L   repeat=false { spawn "qs" "ipc" "call" "lock" "lock"; }
 | `weather` | — |
 | `clock` (таймер и секундомер) | — |
 | `system` (мониторинг) | — |
-| `settings` (быстрые настройки) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing\|old>`, `panel <islands\|island\|panel>`, `panelwidth <full\|fit>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono\|old>`, `blur <wallpaper\|window>`, `ambient <off\|xmas>`, `language <ru\|en\|de>` |
+| `settings` (быстрые настройки) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing\|old>`, `panel <islands\|island\|panel>`, `panelwidth <full\|fit>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono\|old>`, `animations <normal\|slow\|off>`, `nirianimations <normal\|slow\|off>`, `blur <wallpaper\|window>`, `ambient <off\|xmas>`, `language <ru\|en\|de>` |
 | `wallpaper` (менеджер) | `random` |
 | `pet` (питомец) | — |
 | `lock` (экран блокировки) | `lock` |
@@ -432,7 +432,7 @@ qs ipc call lock lock
 - `~/.config/ghostty/themes/Quickshell` (перезагрузка через `pkill -USR2 -x ghostty`)
 - `~/.config/qt6ct/colors/matugen.conf`
 - `~/.config/niri/quickshell.kdl` — цвета границ и focus-ring niri плюс
-  `layer-rule`, который выбирает источник блюра
+  `layer-rule`, который выбирает источник блюра, и переключатель `animations`
 - `gsettings set org.gnome.desktop.interface color-scheme …`
 
 Файл пишется, только если содержимое изменилось. Ручные правки живут до
@@ -452,6 +452,14 @@ qs ipc call lock lock
 акриловыми плашками тоже размываются. Выбор читается из
 `~/.config/niri/quickshell.kdl` при старте оболочки, поэтому переживает
 перезагрузку.
+
+**Анимации** — две настройки. «Анимации» — движение самой оболочки
+(`qs ipc call settings animations <normal|slow|off>`): `Медленные` растягивают
+все длительности в 1.6 раза, `Выключены` обнуляют их (зашитые идут через
+`Theme.dur()`), а сезонный ambient-декор хранит своё движение. «Анимации niri» —
+движение композитора (`qs ipc call settings nirianimations <normal|slow|off>`):
+`Обычные` ничего не пишут, поэтому niri остаётся с блоком `animations` из вашего
+`animations.kdl`; `Медленные` пишут `slowdown 1.0`, `Выключены` — `animations { off }`.
 
 **Стили** переключаются в меню настроек или через
 `qs ipc call settings style …`. `M3 Inspired` — палитра matugen с формами M3,
@@ -475,7 +483,7 @@ qs ipc call lock lock
 | терминал | `$TERMINAL`; fallback в `modules/Launcher.qml` |
 | шрифты | `style/Theme.qml` → `fontFamily`, `iconFont`, `nerdFont` |
 | переводы интерфейса | `services/I18n.qml` |
-| стиль, палитра, раскладка панели (островки/остров/панель), тема, шрифт, язык | меню настроек или `qs ipc call settings …` |
+| стиль, палитра, раскладка панели (островки/остров/панель), тема, шрифт, анимации (оболочки и niri), язык | меню настроек или `qs ipc call settings …` |
 | конфиги matugen | `~/.config/matugen/config.toml`, `light.toml` |
 | сгенерированные цвета niri | `~/.config/niri/quickshell.kdl` |
 | запись темы рабочего стола | `services/SystemTheme.qml` |

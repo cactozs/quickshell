@@ -136,7 +136,7 @@ PanelWindow {
         // Expressive pop-in; on hide the same spring reads as a light shrink.
         Behavior on scale {
             NumberAnimation {
-                duration: 100
+                duration: Theme.dur(100)
                 easing.type: Easing.OutBack
                 easing.overshoot: Theme.springOvershoot
             }
@@ -157,7 +157,7 @@ PanelWindow {
 
             Behavior on x {
                 NumberAnimation {
-                    duration: 100
+                    duration: Theme.dur(100)
                     easing.type: Easing.BezierSpline
                     easing.bezierCurve: Theme.curveEmphasizedDecelerate
                 }
@@ -165,7 +165,7 @@ PanelWindow {
 
             Behavior on width {
                 NumberAnimation {
-                    duration: 100
+                    duration: Theme.dur(100)
                     easing.type: Easing.OutBack
                     easing.overshoot: Theme.springOvershoot
                 }

@@ -911,15 +911,25 @@ Singleton {
     // Emphasized-family easing curves from the M3 motion spec, as cubic bezier
     // control points for `easing.bezierCurve`.
 
-    readonly property int durShort: root.old ? 0 : 150 // state feedback, tooltips
-    readonly property int durPop: root.old ? 0 : 130 // expressive pop-out
-    readonly property int durSettle: root.old ? 0 : 220 // spring-back
-    readonly property int durMorph: root.old ? 0 : 240 // shape morphs (press)
-    readonly property int durMedium: root.old ? 0 : 250
-    readonly property int durMedium3: root.old ? 0 : 350 // M3E container morph
-    readonly property int durLong: root.old ? 0 : 400
-    readonly property int durLong2: root.old ? 0 : 500 // M3E shared-axis
-    readonly property int durExtraLong: root.old ? 0 : 700 // M3E container transform
+    // ShellState.animationMode: 0 turns motion off entirely, 1.6 stretches it
+    // ("Медленные" in the settings menu). dur() is the same scale for the few
+    // hardcoded micro-durations outside this block; Old stays still regardless.
+    readonly property real motion: ShellState.animationMode === "off" ? 0
+        : ShellState.animationMode === "slow" ? 1.6 : 1
+
+    function dur(ms: int): int {
+        return Math.round(ms * root.motion);
+    }
+
+    readonly property int durShort: root.old ? 0 : root.dur(150) // state feedback, tooltips
+    readonly property int durPop: root.old ? 0 : root.dur(130) // expressive pop-out
+    readonly property int durSettle: root.old ? 0 : root.dur(220) // spring-back
+    readonly property int durMorph: root.old ? 0 : root.dur(240) // shape morphs (press)
+    readonly property int durMedium: root.old ? 0 : root.dur(250)
+    readonly property int durMedium3: root.old ? 0 : root.dur(350) // M3E container morph
+    readonly property int durLong: root.old ? 0 : root.dur(400)
+    readonly property int durLong2: root.old ? 0 : root.dur(500) // M3E shared-axis
+    readonly property int durExtraLong: root.old ? 0 : root.dur(700) // M3E container transform
 
     // ---- elevation (M3 levels; surfaces carry depth via container tones) -------
 

@@ -95,7 +95,7 @@ Item {
 
         Behavior on x {
             NumberAnimation {
-                duration: 100
+                duration: Theme.dur(100)
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: Theme.curveEmphasizedDecelerate
             }
@@ -103,7 +103,7 @@ Item {
 
         Behavior on width {
             NumberAnimation {
-                duration: 100
+                duration: Theme.dur(100)
                 easing.type: Easing.OutBack
                 easing.overshoot: Theme.springOvershoot
             }
@@ -127,7 +127,7 @@ Item {
 
         Behavior on x {
             NumberAnimation {
-                duration: 100
+                duration: Theme.dur(100)
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: Theme.curveEmphasizedDecelerate
             }

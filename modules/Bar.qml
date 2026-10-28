@@ -232,7 +232,7 @@ PanelWindow {
 
             Behavior on width {
                 NumberAnimation {
-                    duration: 100
+                    duration: Theme.dur(100)
                     easing.type: Easing.BezierSpline
                     easing.bezierCurve: Theme.curveEmphasizedDecelerate
                 }

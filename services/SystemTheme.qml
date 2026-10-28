@@ -278,12 +278,16 @@ Singleton {
 
     // ---- niri -----------------------------------------------------------------
 
-    // niri reads two things from the shell: the focus-ring/border colors and the
-    // blur source ("Блюр" in the settings menu). Both go into one generated file,
-    // quickshell.kdl, which config.kdl includes after layout.kdl: includes are
-    // positional in niri, so ours has to come later to win, and niri live-reloads
-    // on save. Gradients are written whole — niri replaces a gradient node
-    // instead of merging its properties, so the angles live here, in the file.
+    // niri reads three things from the shell: the focus-ring/border colors, the
+    // blur source ("Блюр" in the settings menu) and the animations switch
+    // ("Анимации niri"). All go into one generated file, quickshell.kdl, which
+    // config.kdl includes after layout.kdl: includes are positional in niri, so
+    // ours has to come later to win, and niri live-reloads on save. Gradients are
+    // written whole — niri replaces a gradient node instead of merging its
+    // properties, so the angles live here, in the file. "Обычные" writes no
+    // animations block at all, so niri keeps whatever the user's own
+    // animations.kdl (included earlier, and merged per property) sets. The shell
+    // has its own motion setting, Theme.motion.
     readonly property color niriActive: Theme.primary
     readonly property color niriInactive: root.alpha(Theme.primary, 0.35)
     readonly property color niriUrgent: Theme.error
@@ -344,6 +348,14 @@ Singleton {
                 ? "\n\n    background-effect {\n        xray false\n    }"
                 : ""),
         "}",
+        // "Анимации niri" in the settings menu. "Медленные" overrides niri's own
+        // slowdown (the user's animations.kdl is faster than 1.0); "Обычные"
+        // leaves niri's block alone.
+        ShellState.niriAnimation === "off"
+            ? "\nanimations {\n    off\n}"
+            : ShellState.niriAnimation === "slow"
+                ? "\nanimations {\n    slowdown 1.0\n}"
+                : "",
         ""
     ].join("\n")
 

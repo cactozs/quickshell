@@ -29,6 +29,7 @@ Item {
     readonly property real viewportWidth: Math.max(0, root.width - textStartX - 4)
     readonly property bool needsScroll: measurer.implicitWidth > root.viewportWidth + 1
     readonly property bool scrolling: hover.hovered && root.needsScroll && root.win !== null
+        && Theme.motion > 0
 
     property real scrollX: 0
     property real scrollDist: 0
@@ -46,7 +47,7 @@ Item {
 
     Behavior on width {
         NumberAnimation {
-            duration: 100
+            duration: Theme.dur(100)
             easing.type: Easing.BezierSpline
             easing.bezierCurve: Theme.curveEmphasizedDecelerate
         }
@@ -60,7 +61,7 @@ Item {
             target: root
             property: "opacity"
             to: 0.25
-            duration: 40
+            duration: Theme.dur(40)
             easing.type: Easing.Linear
         }
 
@@ -68,7 +69,7 @@ Item {
             target: root
             property: "opacity"
             to: 1
-            duration: 80
+            duration: Theme.dur(80)
             easing.type: Easing.BezierSpline
             easing.bezierCurve: Theme.curveEmphasized
         }
@@ -83,7 +84,7 @@ Item {
         loops: Animation.Infinite
 
         PauseAnimation {
-            duration: 250
+            duration: Theme.dur(250)
         }
 
         NumberAnimation {
@@ -91,19 +92,19 @@ Item {
             property: "scrollX"
             from: 0
             to: -root.scrollDist
-            duration: Math.min(2000, Math.max(300, root.scrollDist * 12))
+            duration: Theme.dur(Math.min(2000, Math.max(300, root.scrollDist * 12)))
             easing.type: Easing.Linear
         }
 
         PauseAnimation {
-            duration: 250
+            duration: Theme.dur(250)
         }
 
         NumberAnimation {
             target: root
             property: "scrollX"
             to: 0
-            duration: 160
+            duration: Theme.dur(160)
             easing.type: Easing.BezierSpline
             easing.bezierCurve: Theme.curveEmphasizedDecelerate
         }

@@ -398,7 +398,7 @@ Volume, brightness and media binds do not go through the shell: use `wpctl`,
 | `weather` | — |
 | `clock` (timer and stopwatch) | — |
 | `system` (monitoring) | — |
-| `settings` (quick settings) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing\|old>`, `panel <islands\|island\|panel>`, `panelwidth <full\|fit>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono\|old>`, `blur <wallpaper\|window>`, `ambient <off\|xmas>`, `language <ru\|en\|de>` |
+| `settings` (quick settings) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing\|old>`, `panel <islands\|island\|panel>`, `panelwidth <full\|fit>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono\|old>`, `animations <normal\|slow\|off>`, `nirianimations <normal\|slow\|off>`, `blur <wallpaper\|window>`, `ambient <off\|xmas>`, `language <ru\|en\|de>` |
 | `wallpaper` (manager) | `random` |
 | `pet` (desktop pet) | — |
 | `lock` (lock screen) | `lock` |
@@ -426,7 +426,7 @@ The shell owns the palette, and `services/SystemTheme.qml` is the single writer:
 - `~/.config/ghostty/themes/Quickshell` (reloaded with `pkill -USR2 -x ghostty`)
 - `~/.config/qt6ct/colors/matugen.conf`
 - `~/.config/niri/quickshell.kdl` — niri border and focus-ring colors, plus the
-  `layer-rule` that selects the blur source
+  `layer-rule` that selects the blur source and the `animations` switch
 - `gsettings set org.gnome.desktop.interface color-scheme …`
 
 A file is written only when its content changes. Hand edits survive until the
@@ -445,6 +445,14 @@ same source-color settings; `light.toml` intentionally has no wallpaper command.
 alone. «Окна» writes `xray false` into the generated `layer-rule`, so windows
 under the acrylic plates blur too. The choice is read back from
 `~/.config/niri/quickshell.kdl` at shell start, so it survives a reboot.
+
+**Animations** are two settings. «Анимации» is the shell's own motion
+(`qs ipc call settings animations <normal|slow|off>`): `Slow` stretches every
+duration by 1.6, `Off` zeroes them (the hardcoded ones go through `Theme.dur()`),
+and the seasonal ambient dressing keeps its own. «Анимации niri» is the
+compositor's (`qs ipc call settings nirianimations <normal|slow|off>`): `Normal`
+writes nothing, so niri keeps the `animations` block from your own
+`animations.kdl`; `Slow` writes `slowdown 1.0`, `Off` writes `animations { off }`.
 
 **Style packs** are switched in the settings menu or with
 `qs ipc call settings style …`. `M3 Inspired` is the matugen palette with the
@@ -468,7 +476,7 @@ It keeps the current font; pick **Old** for the Courier look.
 | terminal | `$TERMINAL`; fallback in `modules/Launcher.qml` |
 | fonts | `style/Theme.qml` → `fontFamily`, `iconFont`, `nerdFont` |
 | UI translations | `services/I18n.qml` |
-| style, palette, bar layout (islands/island/panel), light/dark, font mode, language | settings menu, or `qs ipc call settings …` |
+| style, palette, bar layout (islands/island/panel), light/dark, font mode, animations (shell and niri), language | settings menu, or `qs ipc call settings …` |
 | matugen dark/light configs | `~/.config/matugen/config.toml`, `light.toml` |
 | generated niri colors | `~/.config/niri/quickshell.kdl` |
 | desktop theme writer | `services/SystemTheme.qml` |

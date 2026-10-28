@@ -46,6 +46,11 @@ Singleton {
             "Баланс": "Balanced",
             "Производительность": "Performance",
             "Питомец": "Pet",
+            "Анимации": "Animations",
+            "Анимации niri": "Niri animations",
+            "Выключены": "Off",
+            "Обычные": "Normal",
+            "Медленные": "Slow",
 
             // quick settings
             "Выключен": "Off",
@@ -235,6 +240,11 @@ Singleton {
             "Баланс": "Ausgewogen",
             "Производительность": "Leistung",
             "Питомец": "Haustier",
+            "Анимации": "Animationen",
+            "Анимации niri": "Niri-Animationen",
+            "Выключены": "Aus",
+            "Обычные": "Normal",
+            "Медленные": "Langsam",
 
             // quick settings
             "Выключен": "Aus",

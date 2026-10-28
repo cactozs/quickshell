@@ -63,6 +63,8 @@ Singleton {
             property string colorScheme
             property string themeMode
             property string fontMode
+            property string animationMode
+            property string niriAnimation
             property string blurSource
             property string ambient
             property string language
@@ -200,6 +202,31 @@ Singleton {
 
     function setFontMode(name: string): void {
         props.fontMode = name === "mono" || name === "old" ? name : "material";
+    }
+
+    // Motion of the shell itself: "normal" (default, the M3 timings), "slow"
+    // (everything stretched, style/Theme.qml) or "off" (no shell motion at all).
+    // Normalized like the other modes.
+    readonly property string animationMode: props.animationMode === "slow"
+        || props.animationMode === "off"
+        ? props.animationMode
+        : "normal"
+
+    function setAnimationMode(name: string): void {
+        props.animationMode = name === "slow" || name === "off" ? name : "normal";
+    }
+
+    // Motion of the compositor, a separate choice: "normal" (default) writes
+    // nothing into the generated niri file, so niri keeps the animations block
+    // from the user's own animations.kdl; "slow" writes `slowdown 1.0` and "off"
+    // writes `animations { off }`. See services/SystemTheme.qml.
+    readonly property string niriAnimation: props.niriAnimation === "slow"
+        || props.niriAnimation === "off"
+        ? props.niriAnimation
+        : "normal"
+
+    function setNiriAnimation(name: string): void {
+        props.niriAnimation = name === "slow" || name === "off" ? name : "normal";
     }
 
     // UI language: "ru" (default, the source strings in services/I18n.qml),
@@ -433,6 +460,16 @@ Singleton {
         // Font family, so scripts can flip it: `qs ipc call settings font mono`.
         function font(name: string): void {
             root.setFontMode(name);
+        }
+
+        // Motion of the shell, so scripts can flip it: `qs ipc call settings animations off`.
+        function animations(name: string): void {
+            root.setAnimationMode(name);
+        }
+
+        // Motion of niri: `qs ipc call settings nirianimations off`.
+        function nirianimations(name: string): void {
+            root.setNiriAnimation(name);
         }
 
         // UI language, so scripts can flip it: `qs ipc call settings language en`.

@@ -420,17 +420,17 @@ PanelWindow {
     SequentialAnimation {
         id: heartAnim
 
-        NumberAnimation { target: heart; property: "opacity"; from: 0; to: 1; duration: 100 }
+        NumberAnimation { target: heart; property: "opacity"; from: 0; to: 1; duration: Theme.dur(100) }
         ParallelAnimation {
             NumberAnimation {
                 target: heart
                 property: "y"
                 from: pet.y + 30
                 to: pet.y + 2
-                duration: 800
+                duration: Theme.dur(800)
                 easing.type: Easing.OutCubic
             }
-            NumberAnimation { target: heart; property: "opacity"; to: 0; duration: 800 }
+            NumberAnimation { target: heart; property: "opacity"; to: 0; duration: Theme.dur(800) }
         }
     }
 
@@ -442,14 +442,14 @@ PanelWindow {
             property: "scale"
             from: 1
             to: 1.12
-            duration: 120
+            duration: Theme.dur(120)
             easing.type: Easing.OutQuad
         }
         NumberAnimation {
             target: pet
             property: "scale"
             to: 1
-            duration: 220
+            duration: Theme.dur(220)
             easing.type: Easing.OutBack
         }
     }
