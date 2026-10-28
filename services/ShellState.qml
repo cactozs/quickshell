@@ -58,6 +58,8 @@ Singleton {
             property bool barHidden
             property bool launcherFullscreen
             property string styleMode
+            property string panelStyle
+            property string panelWidth
             property string colorScheme
             property string themeMode
             property string fontMode
@@ -121,6 +123,25 @@ Singleton {
 
     function setBlurSource(name: string): void {
         props.blurSource = name === "window" ? "window" : "wallpaper";
+    }
+
+    // Bar layout: "islands" = the three floating islands (default), "island" =
+    // one floating plate, "panel" = that plate flush to the screen walls. See
+    // modules/Bar.qml. Normalized like the other modes.
+    readonly property string panelStyle: props.panelStyle === "island" || props.panelStyle === "panel"
+        ? props.panelStyle
+        : "islands"
+
+    function setPanelStyle(name: string): void {
+        props.panelStyle = name === "island" || name === "panel" ? name : "islands";
+    }
+
+    // Width of the single plate (ignored while panelStyle is "islands"):
+    // "full" = stretched across the output, "fit" = hugging the content.
+    readonly property string panelWidth: props.panelWidth === "fit" ? "fit" : "full"
+
+    function setPanelWidth(name: string): void {
+        props.panelWidth = name === "fit" ? "fit" : "full";
     }
 
     // Seasonal desktop dressing: "off" (default) or "xmas" (falling snow and
@@ -377,6 +398,16 @@ Singleton {
         // Style pack, so scripts can flip it: `qs ipc call settings style new`.
         function style(name: string): void {
             root.setStyleMode(name);
+        }
+
+        // Bar layout, so scripts can flip it: `qs ipc call settings panel island`.
+        function panel(name: string): void {
+            root.setPanelStyle(name);
+        }
+
+        // Plate width, so scripts can flip it: `qs ipc call settings panelwidth fit`.
+        function panelwidth(name: string): void {
+            root.setPanelWidth(name);
         }
 
         // Color scheme, so scripts can flip it: `qs ipc call settings colorscheme oled`.

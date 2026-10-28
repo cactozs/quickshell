@@ -25,7 +25,8 @@
 
 - **Панель** — рабочие пространства, заголовок окна, часы (таймер и секундомер)
   и дата (погода), раскладка, громкость, яркость, батарея, уведомления,
-  системный трей и кнопка питания.
+  системный трей и кнопка питания. Три раскладки: три плавающих островка, один
+  плавающий остров или одна панель вплотную к стенкам экрана.
 - **Лаунчер** — приложения, арифметика и записи `Terminal=true` из `.desktop`;
   терминал настраивается через `$TERMINAL` (`alacritty` по умолчанию).
 - **История буфера обмена** — `cliphist` + `wl-clipboard`, текст и картинки.
@@ -402,7 +403,7 @@ Mod+Alt+L   repeat=false { spawn "qs" "ipc" "call" "lock" "lock"; }
 | `weather` | — |
 | `clock` (таймер и секундомер) | — |
 | `system` (мониторинг) | — |
-| `settings` (быстрые настройки) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing\|old>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono\|old>`, `blur <wallpaper\|window>`, `ambient <off\|xmas>`, `language <ru\|en\|de>` |
+| `settings` (быстрые настройки) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing\|old>`, `panel <islands\|island\|panel>`, `panelwidth <full\|fit>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono\|old>`, `blur <wallpaper\|window>`, `ambient <off\|xmas>`, `language <ru\|en\|de>` |
 | `wallpaper` (менеджер) | `random` |
 | `pet` (питомец) | — |
 | `lock` (экран блокировки) | `lock` |
@@ -474,7 +475,7 @@ qs ipc call lock lock
 | терминал | `$TERMINAL`; fallback в `modules/Launcher.qml` |
 | шрифты | `style/Theme.qml` → `fontFamily`, `iconFont`, `nerdFont` |
 | переводы интерфейса | `services/I18n.qml` |
-| стиль, палитра, тема, шрифт, язык | меню настроек или `qs ipc call settings …` |
+| стиль, палитра, раскладка панели (островки/остров/панель), тема, шрифт, язык | меню настроек или `qs ipc call settings …` |
 | конфиги matugen | `~/.config/matugen/config.toml`, `light.toml` |
 | сгенерированные цвета niri | `~/.config/niri/quickshell.kdl` |
 | запись темы рабочего стола | `services/SystemTheme.qml` |

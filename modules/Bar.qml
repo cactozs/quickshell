@@ -7,8 +7,11 @@ import QtQuick.Effects
 import "../services"
 import "../style"
 
-// M3 Expressive bar: three floating islands (all surfaceContainer) hosting the
-// niri workspaces, window title, clock and status chips.
+// M3 Expressive bar. Three layouts (the "Стиль панели" setting): "islands" —
+// three floating islands hosting the niri workspaces, window title, clock and
+// status chips; "island" — the same clusters on one floating plate; "panel" —
+// that plate flush to the screen walls. The clusters are the same Rectangles in
+// every layout, only their background changes (see `barPlate`).
 PanelWindow {
     id: root
 
@@ -27,8 +30,22 @@ PanelWindow {
     // barMargin to the screen edge (like under "m3"), and what the shadow would
     // paint past the edge is clipped, exactly as it already is above them.
     // Under "m3" both numbers collapse to the old ones.
-    readonly property int bandTop: Theme.glass ? Theme.barMargin : 0
-    readonly property int shadowInset: Theme.glass ? Theme.cardShadowBlur + Theme.cardShadowOffset : 0
+    readonly property int bandTop: root.flushPanel ? 0 : (Theme.glass ? Theme.barMargin : 0)
+    readonly property int shadowInset: Theme.glass && !root.flushPanel
+        ? Theme.cardShadowBlur + Theme.cardShadowOffset : 0
+
+    // The plate is measured against the window, which already carries the
+    // `margins` inset: 0 on both sides of a flush panel, barMargin otherwise.
+    readonly property bool islandsMode: ShellState.panelStyle === "islands"
+    readonly property bool flushPanel: ShellState.panelStyle === "panel"
+    // A "fit" plate holds the centred clock with equal room on both sides (three
+    // barPaddings of gap per side), so an off-centre side cannot push a cluster
+    // under it. Capped at the window.
+    readonly property int plateWidth: ShellState.panelWidth === "fit"
+        ? Math.min(2 * Math.max(leftRow.implicitWidth, rightRow.implicitWidth)
+            + centerRow.implicitWidth + 6 * Theme.barPadding, root.width)
+        : root.width
+    readonly property int plateX: Math.round((root.width - root.plateWidth) / 2)
 
     // The left island may use all the room up to the centered clock island.
     // A percentage cap cannot hold a growing workspace list: everything past
@@ -42,9 +59,9 @@ PanelWindow {
         root.leftIslandMaxWidth - 2 * Theme.barPadding)
 
     margins {
-        top: Theme.glass ? 0 : Theme.barMargin
-        left: Theme.barMargin
-        right: Theme.barMargin
+        top: root.flushPanel ? 0 : (Theme.glass ? 0 : Theme.barMargin)
+        left: root.flushPanel ? 0 : Theme.barMargin
+        right: root.flushPanel ? 0 : Theme.barMargin
     }
 
     // Bar bottom sits at barMargin + barHeight; windows start one barMargin
@@ -102,12 +119,23 @@ PanelWindow {
         height: rightIsland.height
     }
 
+    // Zero-sized while the islands are shown, so the union below is exactly the
+    // three islands in that layout and exactly the plate in the other two.
+    Item {
+        id: plateAnchor
+        x: barPlate.x
+        y: barPlate.y
+        width: root.islandsMode ? 0 : barPlate.width
+        height: root.islandsMode ? 0 : barPlate.height
+    }
+
     Region {
         id: blurRegion
 
         Region { item: leftAnchor; radius: leftIsland.radius }
         Region { item: centerAnchor; radius: centerIsland.radius }
         Region { item: rightAnchor; radius: rightIsland.radius }
+        Region { item: plateAnchor; radius: barPlate.radius }
     }
 
     readonly property bool shown: !ShellState.barHidden
@@ -143,6 +171,35 @@ PanelWindow {
             }
         }
 
+        // Single plate behind the clusters ("island" and "panel"). Hidden while
+        // the three islands carry their own surfaces; the island rectangles then
+        // turn into transparent content slots (see their color/radius below).
+        RectangularShadow {
+            anchors.fill: barPlate
+            radius: barPlate.radius
+            blur: Theme.cardShadowBlur
+            offset.y: Theme.cardShadowOffset
+            color: Theme.cardShadow
+            // A flush panel has no room for a shadow: its top edge is clipped.
+            visible: Theme.glass && !root.islandsMode && !root.flushPanel
+        }
+
+        Rectangle {
+            id: barPlate
+
+            visible: !root.islandsMode
+            x: root.plateX
+            y: root.bandTop
+            width: root.plateWidth
+            height: Theme.barHeight
+            radius: root.flushPanel ? 0 : Theme.barRadius
+            color: Theme.surfaceContainer
+            border.width: Theme.hairlineWidth
+            border.color: Theme.hairline
+
+            GlassEdge {}
+        }
+
         // left island: workspaces + focused window title
         RectangularShadow {
             anchors.fill: leftIsland
@@ -150,23 +207,26 @@ PanelWindow {
             blur: Theme.cardShadowBlur
             offset.y: Theme.cardShadowOffset
             color: Theme.cardShadow
-            visible: Theme.glass
+            visible: Theme.glass && root.islandsMode
         }
 
         Rectangle {
             id: leftIsland
 
             anchors.left: parent.left
+            anchors.leftMargin: root.islandsMode ? 0 : root.plateX
             anchors.top: parent.top
             anchors.topMargin: root.bandTop
             width: Math.min(leftRow.implicitWidth + 2 * Theme.barPadding, root.leftIslandMaxWidth)
             height: Theme.barHeight
-            radius: Theme.barRadius
-            color: Theme.surfaceContainer
-            border.width: Theme.hairlineWidth
+            radius: root.islandsMode ? Theme.barRadius : 0
+            color: root.islandsMode ? Theme.surfaceContainer : "transparent"
+            border.width: root.islandsMode ? Theme.hairlineWidth : 0
             border.color: Theme.hairline
 
-            GlassEdge {}
+            GlassEdge {
+                visible: root.islandsMode
+            }
 
             clip: true
 
@@ -221,7 +281,7 @@ PanelWindow {
             blur: Theme.cardShadowBlur
             offset.y: Theme.cardShadowOffset
             color: Theme.cardShadow
-            visible: Theme.glass
+            visible: Theme.glass && root.islandsMode
         }
 
         Rectangle {
@@ -232,12 +292,14 @@ PanelWindow {
             anchors.topMargin: root.bandTop
             width: centerRow.implicitWidth + 2 * Theme.barPadding
             height: Theme.barHeight
-            radius: Theme.barRadius
-            color: Theme.surfaceContainer
-            border.width: Theme.hairlineWidth
+            radius: root.islandsMode ? Theme.barRadius : 0
+            color: root.islandsMode ? Theme.surfaceContainer : "transparent"
+            border.width: root.islandsMode ? Theme.hairlineWidth : 0
             border.color: Theme.hairline
 
-            GlassEdge {}
+            GlassEdge {
+                visible: root.islandsMode
+            }
 
             Behavior on color {
                 ColorAnimation {
@@ -270,23 +332,26 @@ PanelWindow {
             blur: Theme.cardShadowBlur
             offset.y: Theme.cardShadowOffset
             color: Theme.cardShadow
-            visible: Theme.glass
+            visible: Theme.glass && root.islandsMode
         }
 
         Rectangle {
             id: rightIsland
 
             anchors.right: parent.right
+            anchors.rightMargin: root.islandsMode ? 0 : root.plateX
             anchors.top: parent.top
             anchors.topMargin: root.bandTop
             width: rightRow.implicitWidth + 2 * Theme.barPadding
             height: Theme.barHeight
-            radius: Theme.barRadius
-            color: Theme.surfaceContainer
-            border.width: Theme.hairlineWidth
+            radius: root.islandsMode ? Theme.barRadius : 0
+            color: root.islandsMode ? Theme.surfaceContainer : "transparent"
+            border.width: root.islandsMode ? Theme.hairlineWidth : 0
             border.color: Theme.hairline
 
-            GlassEdge {}
+            GlassEdge {
+                visible: root.islandsMode
+            }
 
             Behavior on color {
                 ColorAnimation {

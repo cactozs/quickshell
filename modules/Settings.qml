@@ -373,6 +373,51 @@ PanelWindow {
                         }
                     }
 
+                    // ---- panel style ----------------------------------------------------
+
+                    SettingRow {
+                        label: I18n.t("Стиль панели")
+
+                        SettingSegment {
+                            label: I18n.t("Островки")
+                            selected: ShellState.panelStyle === "islands"
+                            onClicked: ShellState.setPanelStyle("islands")
+                        }
+
+                        SettingSegment {
+                            label: I18n.t("Остров")
+                            selected: ShellState.panelStyle === "island"
+                            onClicked: ShellState.setPanelStyle("island")
+                        }
+
+                        SettingSegment {
+                            label: I18n.t("Панель")
+                            selected: ShellState.panelStyle === "panel"
+                            onClicked: ShellState.setPanelStyle("panel")
+                        }
+                    }
+
+                    // ---- plate width ----------------------------------------------------
+
+                    // Only the single-plate layouts have a width to choose: the
+                    // islands are three fixed-width plates.
+                    SettingRow {
+                        label: I18n.t("Ширина панели")
+                        visible: ShellState.panelStyle !== "islands"
+
+                        SettingSegment {
+                            label: I18n.t("Во всю ширину")
+                            selected: ShellState.panelWidth === "full"
+                            onClicked: ShellState.setPanelWidth("full")
+                        }
+
+                        SettingSegment {
+                            label: I18n.t("По содержимому")
+                            selected: ShellState.panelWidth === "fit"
+                            onClicked: ShellState.setPanelWidth("fit")
+                        }
+                    }
+
                     // ---- blur source ----------------------------------------------------
 
                     // Only the blur styles have anything to blur, so the row is hidden

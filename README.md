@@ -24,7 +24,8 @@ English (except for the Russian README).
 
 - **Bar** — workspaces, window title, clock (timer/stopwatch) and date
   (weather), keyboard layout, volume, brightness, battery, notifications, the
-  system tray and a power button.
+  system tray and a power button. Three layouts: three floating islands, one
+  floating plate or one plate flush to the screen walls.
 - **Launcher** — applications, arithmetic and `Terminal=true` desktop entries,
   with a configurable terminal (`$TERMINAL`, `alacritty` by default).
 - **Clipboard history** — `cliphist` + `wl-clipboard`, with images and text.
@@ -397,7 +398,7 @@ Volume, brightness and media binds do not go through the shell: use `wpctl`,
 | `weather` | — |
 | `clock` (timer and stopwatch) | — |
 | `system` (monitoring) | — |
-| `settings` (quick settings) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing\|old>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono\|old>`, `blur <wallpaper\|window>`, `ambient <off\|xmas>`, `language <ru\|en\|de>` |
+| `settings` (quick settings) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing\|old>`, `panel <islands\|island\|panel>`, `panelwidth <full\|fit>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono\|old>`, `blur <wallpaper\|window>`, `ambient <off\|xmas>`, `language <ru\|en\|de>` |
 | `wallpaper` (manager) | `random` |
 | `pet` (desktop pet) | — |
 | `lock` (lock screen) | `lock` |
@@ -467,7 +468,7 @@ It keeps the current font; pick **Old** for the Courier look.
 | terminal | `$TERMINAL`; fallback in `modules/Launcher.qml` |
 | fonts | `style/Theme.qml` → `fontFamily`, `iconFont`, `nerdFont` |
 | UI translations | `services/I18n.qml` |
-| style, palette, light/dark, font mode, language | settings menu, or `qs ipc call settings …` |
+| style, palette, bar layout (islands/island/panel), light/dark, font mode, language | settings menu, or `qs ipc call settings …` |
 | matugen dark/light configs | `~/.config/matugen/config.toml`, `light.toml` |
 | generated niri colors | `~/.config/niri/quickshell.kdl` |
 | desktop theme writer | `services/SystemTheme.qml` |
