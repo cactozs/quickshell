@@ -17,7 +17,7 @@ Singleton {
     readonly property string thinkingImagePath: Quickshell.shellPath("assets/pet/laytux.gif")
 
     // NVIDIA NIM; swap for another hosted slug here.
-    readonly property string model: "nvidia/nemotron-3.5-lightning-30b-a3b"
+    readonly property string model: "nvidia/nemotron-3.5-bolt-e4b"
     readonly property string endpoint: "https://integrate.api.nvidia.com/v1/chat/completions"
 
     property bool chatOpen: false
