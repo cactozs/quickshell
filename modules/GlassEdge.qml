@@ -16,17 +16,23 @@ Item {
     // Inverts the bevel for pressed buttons and selected segments.
     property bool sunken: false
 
-    // The parent card's corner, one pixel in — where the rim runs.
-    readonly property real corner: parent ? Math.max(0, (parent.radius ?? 0) - 1) : 0
+    // The parent card's corner, one pixel in — where the rim runs. The card may
+    // round only some of its corners (the bar plate under "panel" + "fit"), so
+    // the rim reads each one; a parent with no corner property at all (an Item)
+    // falls back to the card's plain radius.
+    readonly property real cardRadius: parent ? (parent.radius ?? 0) : 0
+    readonly property real corner: Math.max(0, root.cardRadius - 1)
+    readonly property real cornerBottomLeft: parent
+        ? Math.max(0, (parent.bottomLeftRadius ?? root.cardRadius) - 1) : 0
+    readonly property real cornerBottomRight: parent
+        ? Math.max(0, (parent.bottomRightRadius ?? root.cardRadius) - 1) : 0
 
     Rectangle {
         anchors.fill: parent
         anchors.margins: 1
         radius: root.corner
-        // A plate may round only its bottom corners (a narrow flush panel);
-        // everywhere else the per-corner values fall back to `radius`.
-        bottomLeftRadius: Math.max(0, (parent.bottomLeftRadius ?? 0) - 1)
-        bottomRightRadius: Math.max(0, (parent.bottomRightRadius ?? 0) - 1)
+        bottomLeftRadius: root.cornerBottomLeft
+        bottomRightRadius: root.cornerBottomRight
         color: "transparent"
         border.width: Theme.hairlineWidth
         border.color: Theme.cardRim
