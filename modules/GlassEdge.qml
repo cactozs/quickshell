@@ -23,6 +23,10 @@ Item {
         anchors.fill: parent
         anchors.margins: 1
         radius: root.corner
+        // A plate may round only its bottom corners (a narrow flush panel);
+        // everywhere else the per-corner values fall back to `radius`.
+        bottomLeftRadius: Math.max(0, (parent.bottomLeftRadius ?? 0) - 1)
+        bottomRightRadius: Math.max(0, (parent.bottomRightRadius ?? 0) - 1)
         color: "transparent"
         border.width: Theme.hairlineWidth
         border.color: Theme.cardRim

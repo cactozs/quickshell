@@ -46,6 +46,10 @@ PanelWindow {
             + centerRow.implicitWidth + 6 * Theme.barPadding, root.width)
         : root.width
     readonly property int plateX: Math.round((root.width - root.plateWidth) / 2)
+    // A full-width flush panel reaches three walls and stays square; a narrower
+    // one ("fit") only reaches the top, so its bottom rounds like a plate's.
+    readonly property int plateBottomRadius: root.flushPanel
+        && ShellState.panelWidth === "full" ? 0 : Theme.barRadius
 
     // The left island may use all the room up to the centered clock island.
     // A percentage cap cannot hold a growing workspace list: everything past
@@ -95,28 +99,30 @@ PanelWindow {
 
     // Unscaled twins of the islands for the blur region: it only rebuilds on
     // x/y/w/h changes, so it must not see the islands' entrance translate.
+    // Zero-sized outside "islands": their square corners would otherwise cut
+    // the single plate's rounded blur back to a rectangle.
     Item {
         id: leftAnchor
         x: leftIsland.x
         y: leftIsland.y
-        width: leftIsland.width
-        height: leftIsland.height
+        width: root.islandsMode ? leftIsland.width : 0
+        height: root.islandsMode ? leftIsland.height : 0
     }
 
     Item {
         id: centerAnchor
         x: centerIsland.x
         y: centerIsland.y
-        width: centerIsland.width
-        height: centerIsland.height
+        width: root.islandsMode ? centerIsland.width : 0
+        height: root.islandsMode ? centerIsland.height : 0
     }
 
     Item {
         id: rightAnchor
         x: rightIsland.x
         y: rightIsland.y
-        width: rightIsland.width
-        height: rightIsland.height
+        width: root.islandsMode ? rightIsland.width : 0
+        height: root.islandsMode ? rightIsland.height : 0
     }
 
     // Zero-sized while the islands are shown, so the union below is exactly the
@@ -135,7 +141,12 @@ PanelWindow {
         Region { item: leftAnchor; radius: leftIsland.radius }
         Region { item: centerAnchor; radius: centerIsland.radius }
         Region { item: rightAnchor; radius: rightIsland.radius }
-        Region { item: plateAnchor; radius: barPlate.radius }
+        Region {
+            item: plateAnchor
+            radius: barPlate.radius
+            bottomLeftRadius: root.plateBottomRadius
+            bottomRightRadius: root.plateBottomRadius
+        }
     }
 
     readonly property bool shown: !ShellState.barHidden
@@ -193,6 +204,8 @@ PanelWindow {
             width: root.plateWidth
             height: Theme.barHeight
             radius: root.flushPanel ? 0 : Theme.barRadius
+            bottomLeftRadius: root.plateBottomRadius
+            bottomRightRadius: root.plateBottomRadius
             color: Theme.surfaceContainer
             border.width: Theme.hairlineWidth
             border.color: Theme.hairline
