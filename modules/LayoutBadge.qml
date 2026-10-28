@@ -31,9 +31,10 @@ PanelWindow {
     // Follows niri directly, so the highlight re-targets on rapid switches.
     property int activeIdx: Niri.keyboardLayouts.currentIdx
 
-    // Live segment behind the highlight; Row.children tracks the Repeater.
-    readonly property Item activeSeg: (root.activeIdx >= 0 && segments.children.length > root.activeIdx)
-        ? segments.children[root.activeIdx] : null
+    // itemAt, not Row.children: the Repeater is itself a child item and its
+    // stacking position among the delegates is not their model order.
+    readonly property Item activeSeg: root.activeIdx >= 0 && root.activeIdx < repeater.count
+        ? repeater.itemAt(root.activeIdx) : null
 
     // ---- panel window ----------------------------------------------------------
 
@@ -177,6 +178,8 @@ PanelWindow {
             anchors.centerIn: parent
 
             Repeater {
+                id: repeater
+
                 model: root.layouts
 
                 // One layout segment: the code centers on the shared

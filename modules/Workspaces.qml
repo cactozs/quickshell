@@ -66,11 +66,11 @@ Item {
         return Math.max(-cell.x, Math.min(0, root.width - cell.x - cell.width));
     }
 
-    // Live delegate behind the highlight. Row.children tracks rebuilds, so
-    // the pill animates from the old x to the new one instead of jumping.
+    // Live delegate behind the highlight; itemAt, not Row.children: the
+    // Repeater is itself a child item and does not have the delegates' order.
     // var (not Item): delegates carry a custom `pressed` property.
-    readonly property var activeCell: (root.activeIndex >= 0 && row.children.length > root.activeIndex)
-        ? row.children[root.activeIndex] : null
+    readonly property var activeCell: root.activeIndex >= 0 && root.activeIndex < repeater.count
+        ? repeater.itemAt(root.activeIndex) : null
     readonly property bool activePressed: root.activeCell !== null && root.activeCell.pressed === true
 
     onActiveIndexChanged: {
@@ -132,6 +132,8 @@ Item {
         }
 
         Repeater {
+            id: repeater
+
             model: root.wsList
 
             delegate: Item {
