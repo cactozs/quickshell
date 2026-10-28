@@ -29,7 +29,9 @@ Item {
     implicitHeight: Theme.barHeight
     width: implicitWidth
     height: implicitHeight
-    clip: true
+    // Clip only a dense row's overflow. Clipping at the content width would
+    // cut the pill while it slides out of a chip that niri just closed.
+    clip: root.contentWidth > root.maxWidth
 
     readonly property var wsList: root.screenName !== "" ? Niri.workspacesFor(root.screenName) : []
     readonly property int activeIndex: {
