@@ -348,14 +348,22 @@ Singleton {
                 ? "\n\n    background-effect {\n        xray false\n    }"
                 : ""),
         "}",
-        // "Анимации niri" in the settings menu. "Медленные" overrides niri's own
+        // The optional niri blocks ("Скругление окон", "Анимации niri"), built as
+        // one element so an unset choice leaves no stray blank line. A radius of
+        // -1 (untouched) leaves the user's own window rules alone; otherwise a
+        // catch-all rule wins, because this file is included last and niri applies
+        // matching window rules in order. clip-to-geometry makes the corners cut
+        // the content, not just the border. "Медленные" overrides niri's own
         // slowdown (the user's animations.kdl is faster than 1.0); "Обычные"
         // leaves niri's block alone.
-        ShellState.niriAnimation === "off"
-            ? "\nanimations {\n    off\n}"
-            : ShellState.niriAnimation === "slow"
-                ? "\nanimations {\n    slowdown 1.0\n}"
-                : "",
+        (ShellState.windowRadius < 0 ? ""
+            : "\nwindow-rule {\n    geometry-corner-radius " + ShellState.windowRadius
+                + "\n    clip-to-geometry true\n}\n")
+            + (ShellState.niriAnimation === "off"
+                ? "\nanimations {\n    off\n}"
+                : ShellState.niriAnimation === "slow"
+                    ? "\nanimations {\n    slowdown 1.0\n}"
+                    : ""),
         ""
     ].join("\n")
 

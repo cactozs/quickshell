@@ -398,7 +398,7 @@ Volume, brightness and media binds do not go through the shell: use `wpctl`,
 | `weather` | — |
 | `clock` (timer and stopwatch) | — |
 | `system` (monitoring) | — |
-| `settings` (quick settings) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing\|old>`, `panel <islands\|island\|panel>`, `panelwidth <full\|fit>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono\|old>`, `animations <normal\|slow\|off>`, `nirianimations <normal\|slow\|off>`, `blur <wallpaper\|window>`, `ambient <off\|xmas>`, `language <ru\|en\|de>` |
+| `settings` (quick settings) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing\|old>`, `panel <islands\|island\|panel>`, `panelwidth <full\|fit>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono\|old>`, `animations <normal\|slow\|off>`, `nirianimations <normal\|slow\|off>`, `windowsradius <0-24>`, `blur <wallpaper\|window>`, `ambient <off\|xmas>`, `language <ru\|en\|de>` |
 | `wallpaper` (manager) | `random` |
 | `pet` (desktop pet) | — |
 | `lock` (lock screen) | `lock` |
@@ -453,6 +453,11 @@ and the seasonal ambient dressing keeps its own. «Анимации niri» is th
 compositor's (`qs ipc call settings nirianimations <normal|slow|off>`): `Normal`
 writes nothing, so niri keeps the `animations` block from your own
 `animations.kdl`; `Slow` writes `slowdown 1.0`, `Off` writes `animations { off }`.
+
+**Window rounding** (`qs ipc call settings windowsradius <0-24>`) is a niri
+window rule written into that same generated file. Untouched, it writes nothing,
+so your own `window-rules.kdl` keeps its radius; the first slide takes over and
+clips the windows to the rounded geometry too.
 
 **Style packs** are switched in the settings menu or with
 `qs ipc call settings style …`. `M3 Inspired` is the matugen palette with the

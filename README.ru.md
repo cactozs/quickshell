@@ -403,7 +403,7 @@ Mod+Alt+L   repeat=false { spawn "qs" "ipc" "call" "lock" "lock"; }
 | `weather` | — |
 | `clock` (таймер и секундомер) | — |
 | `system` (мониторинг) | — |
-| `settings` (быстрые настройки) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing\|old>`, `panel <islands\|island\|panel>`, `panelwidth <full\|fit>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono\|old>`, `animations <normal\|slow\|off>`, `nirianimations <normal\|slow\|off>`, `blur <wallpaper\|window>`, `ambient <off\|xmas>`, `language <ru\|en\|de>` |
+| `settings` (быстрые настройки) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing\|old>`, `panel <islands\|island\|panel>`, `panelwidth <full\|fit>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono\|old>`, `animations <normal\|slow\|off>`, `nirianimations <normal\|slow\|off>`, `windowsradius <0-24>`, `blur <wallpaper\|window>`, `ambient <off\|xmas>`, `language <ru\|en\|de>` |
 | `wallpaper` (менеджер) | `random` |
 | `pet` (питомец) | — |
 | `lock` (экран блокировки) | `lock` |
@@ -460,6 +460,11 @@ qs ipc call lock lock
 движение композитора (`qs ipc call settings nirianimations <normal|slow|off>`):
 `Обычные` ничего не пишут, поэтому niri остаётся с блоком `animations` из вашего
 `animations.kdl`; `Медленные` пишут `slowdown 1.0`, `Выключены` — `animations { off }`.
+
+**Скругление окон** (`qs ipc call settings windowsradius <0-24>`) — это
+window-rule niri в том же сгенерированном файле. Пока слайдер не тронут, в файл
+ничего не пишется, и ваш собственный `window-rules.kdl` сохраняет свой радиус;
+первое перетаскивание перехватывает радиус и заодно обрезает окна по скруглению.
 
 **Стили** переключаются в меню настроек или через
 `qs ipc call settings style …`. `M3 Inspired` — палитра matugen с формами M3,

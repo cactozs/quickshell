@@ -24,6 +24,7 @@ OsdBadge 1.0 OsdBadge.qml
 Pet 1.0 Pet.qml
 PetButton 1.0 PetButton.qml
 PowerButton 1.0 PowerButton.qml
+QsSlider 1.0 QsSlider.qml
 QuickSettings 1.0 QuickSettings.qml
 Settings 1.0 Settings.qml
 StateLayer 1.0 StateLayer.qml

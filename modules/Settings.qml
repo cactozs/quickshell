@@ -492,6 +492,54 @@ PanelWindow {
                         }
                     }
 
+                    // ---- window rounding ------------------------------------------------
+
+                    // niri window rule written into the generated file. The slider
+                    // starts untouched (windows keep the user's own radius); the
+                    // first drag takes over. Only reaches niri while the Niri target
+                    // in "Приложения" is on.
+                    SettingRow {
+                        label: I18n.t("Скругление окон")
+
+                        QsSlider {
+                            id: radiusSlider
+
+                            // Item width follows implicitWidth; it also sizes the
+                            // SettingRow Flow, which skips zero-width children.
+                            implicitWidth: 180
+
+                            // Live while dragging, committed once: writing the adapter
+                            // on every pixel would rewrite shell-state.json each move.
+                            property real dragValue: -1
+                            value: radiusSlider.dragValue >= 0
+                                ? radiusSlider.dragValue
+                                : (ShellState.windowRadius < 0 ? 10 : ShellState.windowRadius) / 24
+
+                            onMoved: v => radiusSlider.dragValue = v
+                            onCommitted: v => {
+                                radiusSlider.dragValue = -1;
+                                ShellState.setWindowRadius(Math.round(v * 24));
+                            }
+                        }
+
+                        // Fixed-width box so the number's digits do not shift the
+                        // slider mid-drag.
+                        Item {
+                            implicitWidth: 32
+                            implicitHeight: 40
+
+                            Text {
+                                anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: Math.round(radiusSlider.value * 24)
+                                color: Theme.surfaceText
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Theme.fontSizeLabelLarge
+                                font.weight: Font.Medium
+                            }
+                        }
+                    }
+
                     // ---- theme mode -----------------------------------------------------
 
                     SettingRow {

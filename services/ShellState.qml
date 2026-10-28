@@ -65,6 +65,7 @@ Singleton {
             property string fontMode
             property string animationMode
             property string niriAnimation
+            property string windowRadius
             property string blurSource
             property string ambient
             property string language
@@ -227,6 +228,20 @@ Singleton {
 
     function setNiriAnimation(name: string): void {
         props.niriAnimation = name === "slow" || name === "off" ? name : "normal";
+    }
+
+    // Corner rounding of the compositor's windows ("Скругление окон"): -1 writes
+    // nothing, so the user's own window rules keep their value; 0-24 is written
+    // as `geometry-corner-radius` into the generated niri file. Kept as a string
+    // in the adapter because an absent key must read as unset, and an int would
+    // default to 0 (square corners). See services/SystemTheme.qml.
+    readonly property int windowRadius: {
+        const value = parseInt(props.windowRadius, 10);
+        return isNaN(value) || value < 0 || value > 24 ? -1 : value;
+    }
+
+    function setWindowRadius(value: int): void {
+        props.windowRadius = value < 0 || value > 24 ? "" : String(Math.round(value));
     }
 
     // UI language: "ru" (default, the source strings in services/I18n.qml),
@@ -470,6 +485,13 @@ Singleton {
         // Motion of niri: `qs ipc call settings nirianimations off`.
         function nirianimations(name: string): void {
             root.setNiriAnimation(name);
+        }
+
+        // Window corner radius: `qs ipc call settings windowsradius 16`.
+        // parseInt can yield NaN, which an `int` parameter would coerce to 0.
+        function windowsradius(name: string): void {
+            const value = parseInt(name, 10);
+            root.setWindowRadius(isNaN(value) ? -1 : value);
         }
 
         // UI language, so scripts can flip it: `qs ipc call settings language en`.
