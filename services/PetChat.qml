@@ -66,9 +66,9 @@ Singleton {
     // validation, so the schema enum and doAction cannot drift apart.
     readonly property var switches: ({
         theme: ["dark", "light"],
-        style: ["m3", "blur", "new", "nothing", "newNothing"],
+        style: ["m3", "blur", "new", "nothing", "newNothing", "old"],
         colorscheme: ["matugen", "oled", "gruvbox"],
-        font: ["material", "mono"],
+        font: ["material", "mono", "old"],
         blur: ["wallpaper", "window"]
     })
 
@@ -135,8 +135,8 @@ Singleton {
                         },
                         "value": {
                             "type": "string",
-                            "description": "theme: dark or light; style: m3, blur, new, nothing or newNothing; "
-                                + "colorscheme: matugen, oled or gruvbox; font: material or mono; blur: wallpaper or window; "
+                            "description": "theme: dark or light; style: m3, blur, new, nothing, newNothing or old; "
+                                + "colorscheme: matugen, oled or gruvbox; font: material, mono or old; blur: wallpaper or window; "
                                 + "volume or brightness: delta in percent such as 10 or -10; workspace: prev or next; otherwise empty."
                         }
                     },
@@ -542,7 +542,7 @@ Singleton {
             + "- shell.qml is the entry point; services/*.qml are pragma Singleton state; modules/*.qml are windows and widgets; style/Theme.qml holds the design tokens.\n"
             + "- Colors must come from Theme.* roles and are generated from the wallpaper by matugen; never suggest hardcoded hex.\n"
             + "- Every overlay is keyed by screen name in services/ShellState.qml (\"\" means closed); IPC: qs ipc call <name> toggle, toggleOn <screen> or close.\n"
-            + "- qs ipc call settings theme dark|light, style m3|blur|new|nothing|newNothing, colorscheme matugen|oled|gruvbox, font material|mono, blur wallpaper|window.\n"
+            + "- qs ipc call settings theme dark|light, style m3|blur|new|nothing|newNothing|old, colorscheme matugen|oled|gruvbox, font material|mono|old, blur wallpaper|window.\n"
             + "- Config points: weather coordinates in services/Weather.qml, wallpaper directory in services/Wallpapers.qml, UI strings in services/I18n.qml.\n"
             + "- Frequent fixes: a plain sans font means Google Sans is missing; square glyphs mean Material Symbols is missing; "
             + "a wallpaper change without recoloring means the awww shim or matugen failed; no blur means niri does not include quickshell.kdl.\n"

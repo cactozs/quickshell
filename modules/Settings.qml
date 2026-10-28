@@ -27,7 +27,7 @@ PanelWindow {
     // by 20 s.
     property int tabIndex: 0
 
-    // Wide enough for the five style segments next to their label.
+    // Wide enough for the style segments next to their label.
     readonly property int cardWidth: 620
     readonly property int cardPadding: 20
 
@@ -365,13 +365,19 @@ PanelWindow {
                             selected: ShellState.styleMode === "newNothing"
                             onClicked: ShellState.setStyleMode("newNothing")
                         }
+
+                        SettingSegment {
+                            label: "Old"
+                            selected: ShellState.styleMode === "old"
+                            onClicked: ShellState.setStyleMode("old")
+                        }
                     }
 
                     // ---- blur source ----------------------------------------------------
 
                     // Only the blur styles have anything to blur, so the row is hidden
-                    // under M3 Inspired and Nothing: their surfaces are opaque and no
-                    // window requests a background effect (the niri rule stays inert
+                    // under M3 Inspired, Nothing and Old: their surfaces are opaque and
+                    // no window requests a background effect (the niri rule stays inert
                     // by itself). Theme.blur is exactly that set.
                     SettingRow {
                         label: I18n.t("Блюр")
@@ -447,6 +453,12 @@ PanelWindow {
                             label: "Monospace"
                             selected: ShellState.fontMode === "mono"
                             onClicked: ShellState.setFontMode("mono")
+                        }
+
+                        SettingSegment {
+                            label: "Old"
+                            selected: ShellState.fontMode === "old"
+                            onClicked: ShellState.setFontMode("old")
                         }
                     }
 
@@ -770,6 +782,11 @@ PanelWindow {
             hovered: segHover.hovered
             pressed: segTap.pressed
             color: seg.selected ? Theme.secondaryContainerText : Theme.surfaceText
+        }
+
+        GlassEdge {
+            visible: Theme.old
+            sunken: seg.selected
         }
 
         Text {

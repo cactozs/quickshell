@@ -48,9 +48,10 @@ English (except for the Russian README).
 - **OSD and system popup** — volume/brightness overlay (also for changes made
   with `wpctl`/`brightnessctl`), CPU, RAM, temperature and GPU rows (AMD via
   sysfs, `nvidia-smi` fallback).
-- **Five style packs** — `M3 Inspired`, `M3 Blur`, `New` (graphite acrylic),
-  `Nothing` (opaque graphite, hard corners) and `New Nothing` (the same graphite
-  with the acrylic dressing and blur).
+- **Six style packs** — `M3 Inspired`, `M3 Blur`, `New` (graphite acrylic),
+  `Nothing` (opaque graphite, hard corners), `New Nothing` (the same graphite
+  with the acrylic dressing and blur) and `Old` (retro gray/charcoal chrome with
+  square corners and bevels).
 - **Light and dark** — a second matugen pass writes the light palette; the
   shell switches both its own colors and the desktop.
 
@@ -99,7 +100,7 @@ The installer is deliberately conservative:
 | step | what it does | skip it with |
 |---|---|---|
 | packages | installs the missing Arch packages with `pacman -S --needed` | `--no-packages` |
-| fonts | downloads **Google Sans** to `~/.local/share/fonts/GoogleSans.ttf` if it is missing | `--no-fonts` |
+| fonts | downloads **Google Sans** to `~/.local/share/fonts/` if it is missing; the Old font comes from `gsfonts` | `--no-fonts` |
 | matugen | writes `~/.config/matugen/config.toml`, `light.toml` and the template with **absolute paths to this checkout** | — |
 | shim | installs `/usr/local/bin/awww`, backing up an existing file | `--no-shim` |
 | directories | creates `~/Pictures/Wallpapers` and the config folders the theme writer uses | — |
@@ -188,6 +189,14 @@ fc-match "Google Sans"        # must print Google Sans, not a fallback
 The **Monospace** option in the settings menu is **JetBrainsMono Nerd Font
 Mono**, installed by `ttf-jetbrains-mono-nerd`. If it is missing, monospace mode
 falls back to the default sans.
+
+The **Old** option is **Nimbus Mono PS** from `gsfonts` — a Courier-style
+monospace with Cyrillic, installed by the packages step:
+
+```sh
+sudo pacman -S gsfonts
+fc-match "Nimbus Mono PS"      # must print Nimbus Mono PS, not a fallback
+```
 
 #### 4. matugen
 
@@ -388,7 +397,7 @@ Volume, brightness and media binds do not go through the shell: use `wpctl`,
 | `weather` | — |
 | `clock` (timer and stopwatch) | — |
 | `system` (monitoring) | — |
-| `settings` (quick settings) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono>`, `blur <wallpaper\|window>`, `ambient <off\|xmas>`, `language <ru\|en\|de>` |
+| `settings` (quick settings) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing\|old>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono\|old>`, `blur <wallpaper\|window>`, `ambient <off\|xmas>`, `language <ru\|en\|de>` |
 | `wallpaper` (manager) | `random` |
 | `pet` (desktop pet) | — |
 | `lock` (lock screen) | `lock` |
@@ -441,7 +450,12 @@ under the acrylic plates blur too. The choice is read back from
 M3 shape scale, `M3 Blur` adds acrylic plates and compositor blur, `New` is
 graphite acrylic, `Nothing` is opaque graphite with hard corners, and
 `New Nothing` is that graphite and those corners with the New acrylic dressing —
-rim, specular, drop shadow and blur.
+rim, specular, drop shadow and blur. `Old` is the retro pack: gray/charcoal
+plates with light and dark twins, square corners, a black hairline and
+raised/sunken bevels, no blur, shadow or motion. The accent roles come from the
+current matugen palette and the plates take a faint tint of its primary, so a
+wallpaper change recolors the selection and buttons while the chrome stays gray.
+It keeps the current font; pick **Old** for the Courier look.
 
 ## Configuration
 
@@ -561,8 +575,9 @@ left alone.
 - [niri](https://github.com/YaLTeR/niri) — the compositor this is built around.
 - [matugen](https://github.com/InioX/matugen) — Material You palettes from images.
 - [awww](https://codeberg.org/LGFae/awww) — wallpaper daemon.
-- [Google Sans](https://fonts.google.com/specimen/Google+Sans) and
-  [Material Symbols](https://fonts.google.com/icons) — OFL fonts.
+- [Google Sans](https://fonts.google.com/specimen/Google+Sans),
+  [Nimbus Mono PS](https://github.com/ArtifexSoftware/urw-base35-fonts) and
+  [Material Symbols](https://fonts.google.com/icons) — UI fonts.
 - Material 3 Expressive for the shape, color and motion language.
 - The QML, installer and documentation were written with AI assistance and
   reviewed by [cactozs](https://github.com/cactozs).

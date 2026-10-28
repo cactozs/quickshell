@@ -81,6 +81,11 @@ Item {
             color: root.contentColor
         }
 
+        GlassEdge {
+            visible: Theme.old
+            sunken: clickArea.pressed
+        }
+
         RowLayout {
             id: content
 

@@ -48,9 +48,10 @@
 - **OSD и системное окно** — громкость/яркость (в том числе для изменений через
   `wpctl`/`brightnessctl`), CPU, RAM, температура и GPU (AMD через sysfs,
   запасной вариант — `nvidia-smi`).
-- **Пять стилей** — `M3 Inspired`, `M3 Blur`, `New` (графитовый акрил),
-  `Nothing` (непрозрачный графит, жёсткие углы) и `New Nothing` (тот же графит
-  с акриловой отделкой и блюром).
+- **Шесть стилей** — `M3 Inspired`, `M3 Blur`, `New` (графитовый акрил),
+  `Nothing` (непрозрачный графит, жёсткие углы), `New Nothing` (тот же графит
+  с акриловой отделкой и блюром) и `Old` (ретро-хром: серые и угольные пластины,
+  прямые углы и фаски).
 - **Светлая и тёмная темы** — второй проход matugen пишет светлую палитру;
   переключается и оболочка, и остальной рабочий стол.
 
@@ -99,7 +100,7 @@ cd ~/.config/quickshell
 | шаг | что делает | отключить |
 |---|---|---|
 | пакеты | ставит недостающие пакеты Arch через `pacman -S --needed` | `--no-packages` |
-| шрифты | скачивает **Google Sans** в `~/.local/share/fonts/GoogleSans.ttf`, если его нет | `--no-fonts` |
+| шрифты | скачивает **Google Sans** в `~/.local/share/fonts/`, если его нет; шрифт Old берётся из `gsfonts` | `--no-fonts` |
 | matugen | пишет `~/.config/matugen/config.toml`, `light.toml` и шаблон с **абсолютными путями к этому репозиторию** | — |
 | шим | ставит `/usr/local/bin/awww`, делая бэкап существующего файла | `--no-shim` |
 | каталоги | создаёт `~/Pictures/Wallpapers` и каталоги, в которые оболочка пишет темы | — |
@@ -190,6 +191,14 @@ fc-match "Google Sans"        # должен напечатать Google Sans, �
 Режим **Monospace** в настройках — это **JetBrainsMono Nerd Font Mono** из
 `ttf-jetbrains-mono-nerd`. Если шрифта нет, моноширинный режим откатится на
 обычный sans.
+
+Режим **Old** — **Nimbus Mono PS** из `gsfonts`: моноширинный шрифт в духе
+Courier с кириллицей, ставится вместе с пакетами:
+
+```sh
+sudo pacman -S gsfonts
+fc-match "Nimbus Mono PS"     # должен напечатать Nimbus Mono PS, не fallback
+```
 
 #### 4. matugen
 
@@ -393,7 +402,7 @@ Mod+Alt+L   repeat=false { spawn "qs" "ipc" "call" "lock" "lock"; }
 | `weather` | — |
 | `clock` (таймер и секундомер) | — |
 | `system` (мониторинг) | — |
-| `settings` (быстрые настройки) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono>`, `blur <wallpaper\|window>`, `ambient <off\|xmas>`, `language <ru\|en\|de>` |
+| `settings` (быстрые настройки) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing\|old>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono\|old>`, `blur <wallpaper\|window>`, `ambient <off\|xmas>`, `language <ru\|en\|de>` |
 | `wallpaper` (менеджер) | `random` |
 | `pet` (питомец) | — |
 | `lock` (экран блокировки) | `lock` |
@@ -448,6 +457,12 @@ qs ipc call lock lock
 `M3 Blur` добавляет акрил и блюр композитора, `New` — графитовый акрил,
 `Nothing` — непрозрачный графит с жёсткими углами, а `New Nothing` — тот же
 графит и те же углы с акриловой отделкой `New`: рамка, блик, тень и блюр.
+`Old` — ретро-пак: серые и угольные пластины со светлой и тёмной версиями,
+прямые углы, чёрный контур и выпуклые/вдавленные фаски, без блюра, теней и
+анимаций. Акцентные роли берутся из текущей палитры matugen, а пластины
+получают лёгкий оттенок её primary, поэтому смена обоев перекрашивает выделение
+и кнопки, а хром остаётся серым. Шрифт он не навязывает: выбери **Old** для
+вида Courier.
 
 ## Настройка
 
@@ -569,8 +584,9 @@ rm -f  ~/.config/gtk-3.0/gtk.css ~/.config/gtk-4.0/gtk.css
 - [niri](https://github.com/YaLTeR/niri) — композитор, под который всё сделано.
 - [matugen](https://github.com/InioX/matugen) — палитры Material You из картинок.
 - [awww](https://codeberg.org/LGFae/awww) — демон обоев.
-- [Google Sans](https://fonts.google.com/specimen/Google+Sans) и
-  [Material Symbols](https://fonts.google.com/icons) — шрифты OFL.
+- [Google Sans](https://fonts.google.com/specimen/Google+Sans),
+  [Nimbus Mono PS](https://github.com/ArtifexSoftware/urw-base35-fonts) и
+  [Material Symbols](https://fonts.google.com/icons) — шрифты интерфейса.
 - Material 3 Expressive — язык форм, цвета и анимаций.
 - QML, установщик и документация написаны с помощью ИИ и проверены
   [cactozs](https://github.com/cactozs).

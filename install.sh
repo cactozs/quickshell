@@ -32,7 +32,7 @@ REQUIRED_PACKAGES=(
     quickshell niri matugen awww fd ripgrep jq curl cliphist wl-clipboard
     brightnessctl pipewire wireplumber upower power-profiles-daemon
     networkmanager ttf-material-symbols-variable ttf-nerd-fonts-symbols
-    ttf-jetbrains-mono-nerd alacritty gtk3 gtk4 qt6ct ghostty
+    ttf-jetbrains-mono-nerd gsfonts alacritty gtk3 gtk4 qt6ct ghostty
     imagemagick wlsunset playerctl libnotify libpulse sound-theme-freedesktop
 )
 OPTIONAL_PACKAGES=(papirus-icon-theme nvidia-utils)
@@ -164,31 +164,42 @@ install_packages() {
     fi
 }
 
+# Downloads an OFL font into the user font dir when fontconfig cannot see it.
+install_ofl_font() {
+    local family="$1" file="$2" url="$3"
+    if fc-match -f '%{family}\n' "$family" 2>/dev/null | head -n 1 | grep -qF "$family"; then
+        ok "$family is installed"
+        return 0
+    fi
+    note "  downloading $family (OFL)…"
+    mkdir -p -- "$HOME/.local/share/fonts"
+    local dest="$HOME/.local/share/fonts/$file" tmp
+    tmp="$dest.tmp.$$"
+    if have curl && curl -fL --retry 3 --connect-timeout 15 -o "$tmp" "$url"; then
+        mv -f -- "$tmp" "$dest"
+        fc-cache -f >/dev/null 2>&1 || true
+        if fc-match -f '%{family}\n' "$family" 2>/dev/null | head -n 1 | grep -qF "$family"; then
+            ok "$family installed to $dest"
+        else
+            warn "$family downloaded but fontconfig does not see it"
+        fi
+    else
+        rm -f -- "$tmp"
+        warn "could not download $family; text falls back to the default sans"
+    fi
+}
+
 install_fonts() {
     note "${C_BOLD}Fonts${C_RESET}"
     if ! have fc-match; then
         warn "fontconfig not found; cannot check fonts"
         return 0
     fi
-    if fc-match -f '%{family}\n' "Google Sans" 2>/dev/null | head -n 1 | grep -q '^Google Sans'; then
-        ok "Google Sans is installed"
+    install_ofl_font "Google Sans" "GoogleSans.ttf" "$GOOGLE_SANS_URL"
+    if fc-match -f '%{family}\n' "Nimbus Mono PS" 2>/dev/null | head -n 1 | grep -q '^Nimbus Mono PS'; then
+        ok "Nimbus Mono PS is installed"
     else
-        note "  downloading Google Sans (OFL)…"
-        mkdir -p -- "$HOME/.local/share/fonts"
-        local dest="$HOME/.local/share/fonts/GoogleSans.ttf" tmp
-        tmp="$dest.tmp.$$"
-        if have curl && curl -fL --retry 3 --connect-timeout 15 -o "$tmp" "$GOOGLE_SANS_URL"; then
-            mv -f -- "$tmp" "$dest"
-            fc-cache -f >/dev/null 2>&1 || true
-            if fc-match -f '%{family}\n' "Google Sans" 2>/dev/null | head -n 1 | grep -q '^Google Sans'; then
-                ok "Google Sans installed to $dest"
-            else
-                warn "Google Sans downloaded but fontconfig does not see it"
-            fi
-        else
-            rm -f -- "$tmp"
-            warn "could not download Google Sans; text falls back to the default sans"
-        fi
+        warn "Nimbus Mono PS is missing (gsfonts)"
     fi
     if fc-match -f '%{family}\n' "Material Symbols Rounded" 2>/dev/null | head -n 1 | grep -q '^Material Symbols Rounded'; then
         ok "Material Symbols Rounded is installed"
@@ -632,6 +643,7 @@ run_checks() {
     fi
     note "${C_BOLD}Fonts${C_RESET}"
     check_font "Google Sans" "GoogleSans.ttf"
+    check_font "Nimbus Mono PS" "gsfonts"
     check_font "Material Symbols Rounded" "ttf-material-symbols-variable"
     check_font "JetBrainsMono Nerd Font Mono" "ttf-jetbrains-mono-nerd"
     check_font "Symbols Nerd Font" "ttf-nerd-fonts-symbols"

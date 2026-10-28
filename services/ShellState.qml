@@ -135,15 +135,17 @@ Singleton {
     // palette (default), "blur" = that pack with acrylic backdrops and the
     // compositor blur behind them, "new" = graphite acrylic, "nothing" =
     // opaque graphite with hairline edges and one red accent, "newNothing" =
-    // that graphite with the New acrylic dressing (see style/Theme.qml).
+    // that graphite with the New acrylic dressing, "old" = retro gray/charcoal
+    // chrome with square corners and bevels (see style/Theme.qml).
     // Normalized, so a fresh install or a stale value reads as "m3".
     readonly property string styleMode: props.styleMode === "new" || props.styleMode === "blur"
-        || props.styleMode === "nothing" || props.styleMode === "newNothing"
+        || props.styleMode === "nothing" || props.styleMode === "newNothing" || props.styleMode === "old"
         ? props.styleMode
         : "m3"
 
     function setStyleMode(name: string): void {
-        props.styleMode = name === "new" || name === "blur" || name === "nothing" || name === "newNothing"
+        props.styleMode = name === "new" || name === "blur" || name === "nothing"
+            || name === "newNothing" || name === "old"
             ? name
             : "m3";
     }
@@ -169,12 +171,14 @@ Singleton {
     }
 
     // UI font: "material" = Google Sans (default, the M3 look), "mono" =
-    // JetBrainsMono Nerd Font Mono (see style/Theme.qml). Normalized like the
-    // other modes.
-    readonly property string fontMode: props.fontMode === "mono" ? "mono" : "material"
+    // JetBrainsMono Nerd Font Mono, "old" = Nimbus Mono PS (see style/Theme.qml).
+    // Normalized like the other modes.
+    readonly property string fontMode: props.fontMode === "mono" || props.fontMode === "old"
+        ? props.fontMode
+        : "material"
 
     function setFontMode(name: string): void {
-        props.fontMode = name === "mono" ? "mono" : "material";
+        props.fontMode = name === "mono" || name === "old" ? name : "material";
     }
 
     // UI language: "ru" (default, the source strings in services/I18n.qml),

@@ -21,7 +21,7 @@ import "../services"
 // the bar in either mode; switching ShellState.themeMode just swaps which file
 // feeds the tokens.
 //
-// Five style packs share these tokens (ShellState.styleMode, switched in the
+// Six style packs share these tokens (ShellState.styleMode, switched in the
 // settings menu): "m3" is the wallpaper palette above; "blur" keeps that
 // palette and the M3 shape scale but turns the backdrops acrylic and asks the
 // compositor to blur behind them; "new" swaps in fixed graphite surfaces with
@@ -30,10 +30,12 @@ import "../services"
 // "nothing" is opaque graphite with a hairline edge, hard corners and a single
 // signal-red accent (no glass dressing, no blur); "newNothing" is that graphite
 // and those hard corners wearing the New acrylic dressing — the same acrylic
-// alpha, rim, specular and shadow, with the compositor blur behind them. Tokens
-// only the dressing needs hang off `glass`, the acrylic ones off `blur`, the
-// hard-edge ones off `nothing`, New's own palette and opaque popups off
-// `newLook`, so the M3 look is untouched.
+// alpha, rim, specular and shadow, with the compositor blur behind them;
+// "old" is the retro chrome: fixed gray plates (charcoal in the dark twin),
+// square corners, a black hairline and raised/sunken bevels, no blur, shadow or
+// motion. Tokens only the dressing needs hang off `glass`, the acrylic ones off
+// `blur`, the hard-edge ones off `nothing`, the retro ones off `old`, New's own
+// palette and opaque popups off `newLook`, so the M3 look is untouched.
 //
 // ShellState.colorScheme picks the palette source: "matugen" (the file above),
 // "oled" (strict black/white) or "gruvbox" (Gruvbox). Each fixed pack has a
@@ -67,6 +69,9 @@ Singleton {
     // Opaque graphite, hard corners, one-pixel edges, one signal-red accent.
     // "newNothing" keeps the palette and the corners and only adds the dressing.
     readonly property bool nothing: ShellState.styleMode === "nothing" || ShellState.styleMode === "newNothing"
+
+    // Retro chrome: fixed palettes, square corners, black hairlines, bevels.
+    readonly property bool old: ShellState.styleMode === "old"
 
     // Translucent backdrops plus the compositor blur behind them ("New" carries
     // it with the graphite palette, "blur" with the wallpaper one).
@@ -303,6 +308,88 @@ Singleton {
         "shadow": "#ff000000"
     })
 
+    // "Old" light palette: the classic 16-colour desktop chrome — gray plates
+    // and black type. The accent roles are the fallback; under the default
+    // matugen scheme they are replaced by the wallpaper palette and the plates
+    // take a hint of its primary (see `scheme`). The dark twin below keeps the
+    // same bevel and selection structure on charcoal plates.
+    readonly property var oldLightScheme: ({
+        "primary": "#ff000080",
+        "on_primary": "#ffffffff",
+        "primary_container": "#ff000080",
+        "on_primary_container": "#ffffffff",
+        "secondary": "#ff008080",
+        "on_secondary": "#ffffffff",
+        "secondary_container": "#ff000080",
+        "on_secondary_container": "#ffffffff",
+        "tertiary": "#ff800080",
+        "on_tertiary": "#ffffffff",
+        "tertiary_container": "#ff008080",
+        "on_tertiary_container": "#ffffffff",
+        "error": "#ff800000",
+        "on_error": "#ffffffff",
+        "error_container": "#ff800000",
+        "on_error_container": "#ffffffff",
+        "surface": "#ffc0c0c0",
+        "on_surface": "#ff000000",
+        "surface_variant": "#ffdfdfdf",
+        "on_surface_variant": "#ff404040",
+        "surface_dim": "#ffa8a8a8",
+        "surface_bright": "#ffdfdfdf",
+        "surface_container_lowest": "#ffffffff",
+        "surface_container_low": "#ffd4d0c8",
+        "surface_container": "#ffc0c0c0",
+        "surface_container_high": "#ffc0c0c0",
+        "surface_container_highest": "#ffdfdfdf",
+        "outline": "#ff808080",
+        "outline_variant": "#ff808080",
+        "inverse_surface": "#ff000080",
+        "inverse_on_surface": "#ffffffff",
+        "inverse_primary": "#ffffe000",
+        "scrim": "#ff000000",
+        "shadow": "#ff000000",
+        "surface_tint": "#ff000080"
+    })
+
+    // "Old" dark twin: charcoal plates, light type, the same fallback accents.
+    readonly property var oldScheme: ({
+        "primary": "#ff5a82b8",
+        "on_primary": "#ffffffff",
+        "primary_container": "#ff000080",
+        "on_primary_container": "#ffffffff",
+        "secondary": "#ff3aa0a0",
+        "on_secondary": "#ffffffff",
+        "secondary_container": "#ff000080",
+        "on_secondary_container": "#ffffffff",
+        "tertiary": "#ffb07ab0",
+        "on_tertiary": "#ffffffff",
+        "tertiary_container": "#ff005050",
+        "on_tertiary_container": "#ffffffff",
+        "error": "#ffc05050",
+        "on_error": "#ffffffff",
+        "error_container": "#ff700000",
+        "on_error_container": "#ffffffff",
+        "surface": "#ff262626",
+        "on_surface": "#fff0f0f0",
+        "surface_variant": "#ff3a3a3a",
+        "on_surface_variant": "#ffb8b8b8",
+        "surface_dim": "#ff141414",
+        "surface_bright": "#ff4a4a4a",
+        "surface_container_lowest": "#ff101010",
+        "surface_container_low": "#ff1a1a1a",
+        "surface_container": "#ff262626",
+        "surface_container_high": "#ff2e2e2e",
+        "surface_container_highest": "#ff3a3a3a",
+        "outline": "#ff707070",
+        "outline_variant": "#ff505050",
+        "inverse_surface": "#ff000080",
+        "inverse_on_surface": "#ffffffff",
+        "inverse_primary": "#ff9ab8e0",
+        "scrim": "#ff000000",
+        "shadow": "#ff000000",
+        "surface_tint": "#ff5a82b8"
+    })
+
     // "Oled" pack: true black surfaces, white foreground and accents (strict
     // monochrome). Containers stay near-black grays so stacked cards keep
     // their layers.
@@ -458,6 +545,8 @@ Singleton {
         ? Object.assign({}, root.activeBaseline, root.light ? root.gruvboxLightScheme : root.gruvboxScheme)
         : root.nothing
         ? Object.assign({}, root.activeBaseline, root.light ? root.nothingLightScheme : root.nothingScheme)
+        : root.old
+        ? Object.assign({}, root.activeBaseline, root.light ? root.oldLightScheme : root.oldScheme)
         : root.activeM3
 
     readonly property var activeBaseline: root.light ? root.baselineLightScheme : root.baselineScheme
@@ -473,10 +562,17 @@ Singleton {
     // alpha is applied here (and they take no accent tint: Nothing's palette is
     // fixed).
     readonly property var scheme: {
+        const matugenOld = root.old && ShellState.colorScheme === "matugen";
         const matugenGlass = root.newLook && ShellState.colorScheme === "matugen";
         const base = matugenGlass
             ? Object.assign({}, root.activeScheme, root.light ? root.newLightScheme : root.newScheme)
             : root.activeScheme;
+        if (matugenOld) {
+            for (const key of root.oldAccentKeys)
+                base[key] = root.activeM3[key];
+            for (const key of root.glassSurfaceKeys)
+                base[key] = root.mixColor(base[key], root.activeM3.primary, root.glassTintAmount);
+        }
         if (!root.blur)
             return base;
         const glassScheme = Object.assign({}, base, { "surface_container_highest": root.chipVeil });
@@ -686,16 +782,16 @@ Singleton {
     // out as near-background grays for muted wallpapers. Containers are fills
     // (close to the surface), so they are skipped and slots repeat roles.
 
-    readonly property color terminalBlack: root.light ? root.surfaceText : root.surfaceContainerLowest
+    readonly property color terminalBlack: root.old ? "#ff000000" : (root.light ? root.surfaceText : root.surfaceContainerLowest)
     readonly property color terminalRed: root.error
     readonly property color terminalGreen: root.secondary
     readonly property color terminalYellow: root.tertiary
     readonly property color terminalBlue: root.primary
     readonly property color terminalMagenta: root.tertiary
     readonly property color terminalCyan: root.secondary
-    readonly property color terminalWhite: root.light ? root.surfaceVariantText : root.surfaceText
+    readonly property color terminalWhite: root.old ? root.surfaceText : (root.light ? root.surfaceVariantText : root.surfaceText)
     readonly property color terminalBrightBlack: root.outline
-    readonly property color terminalBrightWhite: root.light ? root.surfaceContainerLowest : root.surfaceText
+    readonly property color terminalBrightWhite: root.old ? "#ffffffff" : (root.light ? root.surfaceContainerLowest : root.surfaceText)
 
     // ---- state layers ----------------------------------------------------------
 
@@ -706,43 +802,49 @@ Singleton {
     readonly property real stateDragged: root.glass ? 0.12 : 0.16
     readonly property real disabledContent: 0.38
     readonly property real disabledContainer: 0.12
-    readonly property real scrimOpacity: root.nothing ? 0.60 : (root.glass ? 0.45 : 0.32)
+    readonly property real scrimOpacity: root.nothing ? 0.60 : (root.glass || root.old ? 0.45 : 0.32)
 
-    // ---- shape scale (M3 Expressive: 4/8/12/16/20/28/32/48/full; Nothing: 2..12) ----
+    // ---- shape scale (M3 Expressive: 4/8/12/16/20/28/32/48/full; Nothing: 2..12; Old: square) ----
 
-    readonly property int shapeXS: root.nothing ? 2 : 4
-    readonly property int shapeSM: root.nothing ? 3 : 8
-    readonly property int shapeMD: root.nothing ? 4 : 12
-    readonly property int shapeLG: root.nothing ? 6 : 16
-    readonly property int shapeLGI: root.nothing ? 6 : (root.glass ? 14 : 20) // large increased
-    readonly property int shapeXL: root.nothing ? 8 : (root.glass ? 16 : 28)
-    readonly property int shapeXLI: root.nothing ? 10 : (root.glass ? 18 : 32) // extra large increased
-    readonly property int shapeXXL: root.nothing ? 12 : (root.glass ? 22 : 48) // extra extra large (hero surfaces)
-    readonly property int shapeFull: 9999
+    readonly property int shapeXS: root.old ? 0 : (root.nothing ? 2 : 4)
+    readonly property int shapeSM: root.old ? 0 : (root.nothing ? 3 : 8)
+    readonly property int shapeMD: root.old ? 0 : (root.nothing ? 4 : 12)
+    readonly property int shapeLG: root.old ? 0 : (root.nothing ? 6 : 16)
+    readonly property int shapeLGI: root.old ? 0 : (root.nothing ? 6 : (root.glass ? 14 : 20)) // large increased
+    readonly property int shapeXL: root.old ? 0 : (root.nothing ? 8 : (root.glass ? 16 : 28))
+    readonly property int shapeXLI: root.old ? 0 : (root.nothing ? 10 : (root.glass ? 18 : 32)) // extra large increased
+    readonly property int shapeXXL: root.old ? 0 : (root.nothing ? 12 : (root.glass ? 22 : 48)) // extra extra large (hero surfaces)
+    readonly property int shapeFull: root.old ? 0 : 9999
 
-    // ---- style extras (New and Nothing; no-ops under m3) ----------------------
+    // ---- style extras (New, Nothing and Old; no-ops under m3) -----------------
 
-    // Bar islands stop being pills under "new" and under "nothing".
-    readonly property int barRadius: root.nothing ? 4 : (root.glass ? 12 : shapeFull)
+    // Bar islands stop being pills under "new", "nothing" and "old".
+    readonly property int barRadius: root.old ? 0 : (root.nothing ? 4 : (root.glass ? 12 : shapeFull))
 
     // Chips and icon buttons stop being pills too: 10/30 is the same
     // proportion as the islands' 12/36, so the two read as one family. The
     // pressed value is what the M3E corner morph springs to. Under m3 these
     // are the pill/medium pair the morph always used.
-    readonly property int chipRadius: root.nothing ? 4 : (root.glass ? 10 : shapeFull)
-    readonly property int chipRadiusPressed: root.nothing ? 2 : (root.glass ? 8 : shapeMD)
+    readonly property int chipRadius: root.old ? 0 : (root.nothing ? 4 : (root.glass ? 10 : shapeFull))
+    readonly property int chipRadiusPressed: root.old ? 0 : (root.nothing ? 2 : (root.glass ? 8 : shapeMD))
 
     // Hairline edges: 0 width under m3, so borders can be added unconditionally.
-    readonly property int hairlineWidth: root.glass || root.nothing ? 1 : 0
+    readonly property int hairlineWidth: root.glass || root.nothing || root.old ? 1 : 0
     // Outer edge stays faint; the bright edge is cardRim, one pixel inside it.
     // Both modes are lit from above, so the bevel is white in both: over
     // graphite it is the visible edge, over paper a faint lift. The opaque
     // Nothing pack has no rim, so there its hairline carries the edge alone and
-    // stays brighter.
+    // stays brighter. Old replaces the rim with its bevel below.
     readonly property color hairline: root.glass
         ? (root.light ? "#14000000" : "#14ffffff")
-        : root.nothing ? (root.light ? "#22000000" : "#26ffffff") : "transparent"
+        : root.nothing ? (root.light ? "#22000000" : "#26ffffff")
+        : root.old ? "#ff000000" : "transparent"
     readonly property color cardRim: root.glass ? (root.light ? "#33ffffff" : "#26ffffff") : "transparent"
+
+    // The "old" bevel: white top/left and gray bottom/right on the gray chrome;
+    // the dark twin lights it with #606060 against black. Drawn by GlassEdge.
+    readonly property color bevelLight: root.old ? (root.light ? "#ffffffff" : "#ff606060") : "transparent"
+    readonly property color bevelDark: root.old ? (root.light ? "#ff808080" : "#ff000000") : "transparent"
 
     // Neutral drop shadow under cards, as RectangularShadow args. Invisible
     // over dark wallpaper, which is why every surface also draws cardRim.
@@ -786,6 +888,17 @@ Singleton {
         "surface_container", "surface_container_high"
     ]
 
+    // Old keeps its gray chrome, but the wallpaper owns the accents; the same
+    // 4% primary tint then pulls the plates toward the wallpaper just enough
+    // that a warm and a cool one do not look identical.
+    readonly property var oldAccentKeys: [
+        "primary", "on_primary", "primary_container", "on_primary_container",
+        "secondary", "on_secondary", "secondary_container", "on_secondary_container",
+        "tertiary", "on_tertiary", "tertiary_container", "on_tertiary_container",
+        "error", "on_error", "error_container", "on_error_container",
+        "inverse_surface", "inverse_on_surface", "inverse_primary"
+    ]
+
     // ---- seasonal ambient ------------------------------------------------------
 
     // Snow for modules/Ambient.qml. Fixed rather than palette-derived; the
@@ -798,15 +911,15 @@ Singleton {
     // Emphasized-family easing curves from the M3 motion spec, as cubic bezier
     // control points for `easing.bezierCurve`.
 
-    readonly property int durShort: 150 // state feedback, tooltips
-    readonly property int durPop: 130 // expressive pop-out
-    readonly property int durSettle: 220 // spring-back
-    readonly property int durMorph: 240 // shape morphs (press)
-    readonly property int durMedium: 250
-    readonly property int durMedium3: 350 // M3E container morph
-    readonly property int durLong: 400
-    readonly property int durLong2: 500 // M3E shared-axis
-    readonly property int durExtraLong: 700 // M3E container transform
+    readonly property int durShort: root.old ? 0 : 150 // state feedback, tooltips
+    readonly property int durPop: root.old ? 0 : 130 // expressive pop-out
+    readonly property int durSettle: root.old ? 0 : 220 // spring-back
+    readonly property int durMorph: root.old ? 0 : 240 // shape morphs (press)
+    readonly property int durMedium: root.old ? 0 : 250
+    readonly property int durMedium3: root.old ? 0 : 350 // M3E container morph
+    readonly property int durLong: root.old ? 0 : 400
+    readonly property int durLong2: root.old ? 0 : 500 // M3E shared-axis
+    readonly property int durExtraLong: root.old ? 0 : 700 // M3E container transform
 
     // ---- elevation (M3 levels; surfaces carry depth via container tones) -------
 
@@ -820,8 +933,8 @@ Singleton {
     // Overshoot for the spatial springs; QML has no real spring easing, so
     // Easing.OutBack with this factor stands in for the M3E spring curves.
     // Nothing keeps the same springs without the bounce: motion reports state,
-    // it does not perform.
-    readonly property real springOvershoot: root.nothing ? 1.0 : 1.3
+    // it does not perform. Old does not move at all.
+    readonly property real springOvershoot: root.nothing || root.old ? 1.0 : 1.3
 
     readonly property var curveEmphasized: [0.2, 0.0, 0.0, 1.0]
     readonly property var curveEmphasizedDecelerate: [0.05, 0.7, 0.1, 1.0]
@@ -831,8 +944,11 @@ Singleton {
 
     // ShellState.fontMode: "material" = Google Sans, "mono" =
     // JetBrainsMono Nerd Font Mono (the fontconfig family name — a missing
-    // font falls back to the default sans). Icons keep Theme.iconFont.
-    readonly property string fontFamily: ShellState.fontMode === "mono" ? "JetBrainsMono Nerd Font Mono" : "Google Sans"
+    // font falls back to the default sans), "old" = Nimbus Mono PS, the
+    // Courier clone the old chrome is meant to wear. Icons keep Theme.iconFont.
+    readonly property string fontFamily: ShellState.fontMode === "mono"
+        ? "JetBrainsMono Nerd Font Mono"
+        : ShellState.fontMode === "old" ? "Nimbus Mono PS" : "Google Sans"
     readonly property string iconFont: "Material Symbols Rounded"
     // Nerd Font symbols-only family; used by the few glyphs (like md-ornament
     // below) that Material Symbols does not carry.
@@ -855,12 +971,12 @@ Singleton {
 
     // ---- bar metrics -----------------------------------------------------------
 
-    // New packs the bar one notch tighter; so does Nothing, with the type.
-    readonly property int barHeight: root.glass || root.nothing ? 36 : 40
-    readonly property int barMargin: 4
+    // New packs the bar one notch tighter; so do Nothing and the 30 px Old strip.
+    readonly property int barHeight: root.old ? 30 : (root.glass || root.nothing ? 36 : 40)
+    readonly property int barMargin: root.old ? 0 : 4
     readonly property int barPadding: 4
-    readonly property int chipHeight: root.glass || root.nothing ? 30 : 32
-    readonly property int iconButtonSize: root.glass || root.nothing ? 30 : 32
+    readonly property int chipHeight: root.old ? 26 : (root.glass || root.nothing ? 30 : 32)
+    readonly property int iconButtonSize: root.old ? 26 : (root.glass || root.nothing ? 30 : 32)
     readonly property int iconSize: 20
     readonly property int iconSizeMedium: 24
     readonly property int iconSizeSmall: 16

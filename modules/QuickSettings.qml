@@ -1153,6 +1153,11 @@ PanelWindow {
             color: tile.active ? Theme.primaryContainerText : Theme.surfaceText
         }
 
+        GlassEdge {
+            visible: Theme.old
+            sunken: tileTap.pressed
+        }
+
         Item {
             anchors.fill: parent
             anchors.margins: 12
