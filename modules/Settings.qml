@@ -58,18 +58,19 @@ PanelWindow {
     // compositor blur region cannot fade, so it would hang under the card.
     BackgroundEffect.blurRegion: Theme.blur && root.shown ? blurRegion : null
 
-    // The region is the plate's *destination*, entrance scale included: it is set
-    // once at the start of a morph instead of chasing the animation frame by
-    // frame, which the compositor can only follow a frame late. The scale is here
-    // because the M3E spring overshoots past the card's own size on open.
+    // The region never reaches past the plate: it follows the animated height on
+    // the way up and takes the destination on the way down, so any mismatch a
+    // late region update leaves is under the acrylic instead of glowing outside
+    // it. At rest both heights are equal, so there is nothing to be stale. The
+    // scale is here because the M3E spring overshoots the card's own size on open.
     Region {
         id: blurRegion
 
         Region {
             x: Math.round((root.width - card.width * card.scale) / 2)
-            y: Math.round((root.height - card.targetHeight * card.scale) / 2)
+            y: Math.round((root.height - card.blurHeight * card.scale) / 2)
             width: Math.round(card.width * card.scale)
-            height: Math.round(card.targetHeight * card.scale)
+            height: Math.round(card.blurHeight * card.scale)
             radius: Math.round(card.radius * card.scale)
         }
     }
@@ -164,15 +165,18 @@ PanelWindow {
     Rectangle {
         id: card
 
-        // The height the card is heading for, without the morph. The blur region
-        // is built from this, so it never has to chase an animation it can only
-        // follow a frame late.
+        // The height the card is heading for, without the morph. The blur region is
+        // built from this and from the animated height; see blurRegion.
         readonly property real targetHeight: column.implicitHeight + 2 * root.cardPadding
+        readonly property real blurHeight: Math.min(height, targetHeight)
 
         anchors.centerIn: parent
         width: Math.min(root.cardWidth, root.width - 48)
         height: targetHeight
         radius: Theme.shapeXL
+        // The pages are laid out for the final height at once, so without this
+        // the taller page draws outside the still-growing plate.
+        clip: true
         color: Theme.surfaceContainerHigh
         border.width: Theme.hairlineWidth
         border.color: Theme.hairline
