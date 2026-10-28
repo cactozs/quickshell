@@ -504,8 +504,8 @@ PanelWindow {
                         QsSlider {
                             id: radiusSlider
 
-                            // Item width follows implicitWidth; it also sizes the
-                            // SettingRow Flow, which skips zero-width children.
+                            // Item width follows implicitWidth; the SettingRow
+                            // layout skips zero-width children.
                             implicitWidth: 180
 
                             // Live while dragging, committed once: writing the adapter
@@ -855,22 +855,6 @@ PanelWindow {
         property string label: ""
         default property alias content: options.data
 
-        // Width the segments need on one line. A Flow always packs from its own
-        // left edge, so right-aligning them means giving it exactly this width
-        // and letting it grow to the full gap only when it has to wrap.
-        readonly property real optionsWidth: {
-            let width = 0;
-            let count = 0;
-            for (let i = 0; i < options.children.length; ++i) {
-                const child = options.children[i];
-                if (!child.visible || child.width === 0)
-                    continue;
-                width += child.implicitWidth;
-                ++count;
-            }
-            return width + Math.max(0, count - 1) * options.spacing;
-        }
-
         width: parent.width
         height: Math.max(rowLabel.height, options.height)
 
@@ -886,14 +870,119 @@ PanelWindow {
             wrapMode: Text.WordWrap
         }
 
-        Flow {
+        // A Flow packs every line from its left edge, so a wrapped last line
+        // starts under the first segment instead of sitting flush right; this
+        // breaks the same children into lines itself, spreads them evenly over
+        // those lines and right-aligns each one.
+        Item {
             id: options
 
-            width: Math.min(Math.max(0, row.width - rowLabel.width - 8), row.optionsWidth)
+            // Reruns the layout when a segment resizes (font, language) or a
+            // row is hidden; the reads inside the binding are what Qt tracks.
+            readonly property string layoutKey: {
+                const sizes = [width];
+                for (let i = 0; i < children.length; ++i) {
+                    const child = children[i];
+                    sizes.push(child.width, child.height, child.visible);
+                }
+                return sizes.join(":");
+            }
+
+            width: Math.max(0, row.width - rowLabel.width - 8)
+            height: layoutHeight
             x: row.width - width
             anchors.verticalCenter: parent.verticalCenter
 
-            spacing: 8
+            property real layoutHeight: 0
+
+            onLayoutKeyChanged: options.relayout()
+            onChildrenChanged: Qt.callLater(options.relayout)
+
+            function relayout(): void {
+                const gap = 8;
+                const items = [];
+                for (let i = 0; i < children.length; ++i) {
+                    const child = children[i];
+                    if (child.visible && child.width > 0)
+                        items.push(child);
+                }
+                const count = items.length;
+                if (count === 0) {
+                    options.layoutHeight = 0;
+                    return;
+                }
+
+                const span = (a, b) => {
+                    let w = gap * (b - a - 1);
+                    for (let i = a; i < b; ++i)
+                        w += items[i].width;
+                    return w;
+                };
+
+                // Fewest lines the row can take, then keep that count and pick
+                // the breaks with the least slack: 5 + 1 becomes 3 + 3.
+                let lines = 1;
+                let used = 0;
+                for (let i = 0; i < count; ++i) {
+                    if (used > 0 && used + gap + items[i].width > width) {
+                        ++lines;
+                        used = 0;
+                    }
+                    used += (used > 0 ? gap : 0) + items[i].width;
+                }
+
+                const cost = [];
+                const start = [];
+                for (let l = 0; l <= lines; ++l) {
+                    cost.push(new Array(count + 1).fill(Infinity));
+                    start.push(new Array(count + 1).fill(0));
+                }
+                cost[0][0] = 0;
+                for (let l = 1; l <= lines; ++l) {
+                    for (let j = 1; j <= count; ++j) {
+                        for (let i = l - 1; i < j; ++i) {
+                            if (cost[l - 1][i] === Infinity)
+                                continue;
+                            const w = span(i, j);
+                            // Overflow just means this start is too early; a
+                            // lone item wider than the block still takes a line.
+                            if (w > width && j - i > 1)
+                                continue;
+                            const c = cost[l - 1][i] + (width - w) * (width - w);
+                            if (c < cost[l][j]) {
+                                cost[l][j] = c;
+                                start[l][j] = i;
+                            }
+                        }
+                    }
+                }
+
+                const breaks = [count];
+                for (let l = lines, j = count; l > 0; --l) {
+                    j = start[l][j];
+                    breaks.unshift(j);
+                }
+
+                let y = 0;
+                for (let l = 0; l < lines; ++l) {
+                    const first = breaks[l];
+                    const last = breaks[l + 1];
+                    let total = 0;
+                    let lineHeight = 0;
+                    for (let i = first; i < last; ++i) {
+                        total += items[i].width + (i > first ? gap : 0);
+                        lineHeight = Math.max(lineHeight, items[i].height);
+                    }
+                    let x = width - total;
+                    for (let i = first; i < last; ++i) {
+                        items[i].x = x;
+                        items[i].y = y;
+                        x += items[i].width + gap;
+                    }
+                    y += lineHeight + gap;
+                }
+                options.layoutHeight = Math.max(0, y - gap);
+            }
         }
     }
 
