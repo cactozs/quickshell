@@ -488,7 +488,7 @@ window-rule niri в том же сгенерированном файле. По�
 | терминал | `$TERMINAL`; fallback в `modules/Launcher.qml` |
 | шрифты | `style/Theme.qml` → `fontFamily`, `iconFont`, `nerdFont` |
 | переводы интерфейса | `services/I18n.qml` |
-| стиль, палитра, раскладка панели (островки/остров/панель), тема, шрифт, анимации (оболочки и niri), язык | меню настроек или `qs ipc call settings …` |
+| стиль, палитра, раскладка панели (островки/остров/панель), расположение панели (сверху/слева/снизу/справа), тема, шрифт, анимации (оболочки и niri), язык | меню настроек или `qs ipc call settings …` |
 | конфиги matugen | `~/.config/matugen/config.toml`, `light.toml` |
 | сгенерированные цвета niri | `~/.config/niri/quickshell.kdl` |
 | запись темы рабочего стола | `services/SystemTheme.qml` |

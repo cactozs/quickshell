@@ -481,7 +481,7 @@ It keeps the current font; pick **Old** for the Courier look.
 | terminal | `$TERMINAL`; fallback in `modules/Launcher.qml` |
 | fonts | `style/Theme.qml` → `fontFamily`, `iconFont`, `nerdFont` |
 | UI translations | `services/I18n.qml` |
-| style, palette, bar layout (islands/island/panel), light/dark, font mode, animations (shell and niri), language | settings menu, or `qs ipc call settings …` |
+| style, palette, bar layout (islands/island/panel), bar position (top/left/bottom/right), light/dark, font mode, animations (shell and niri), language | settings menu, or `qs ipc call settings …` |
 | matugen dark/light configs | `~/.config/matugen/config.toml`, `light.toml` |
 | generated niri colors | `~/.config/niri/quickshell.kdl` |
 | desktop theme writer | `services/SystemTheme.qml` |

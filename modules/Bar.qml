@@ -7,90 +7,129 @@ import QtQuick.Effects
 import "../services"
 import "../style"
 
-// M3 Expressive bar. Three layouts (the "Стиль панели" setting): "islands" —
+// M3 Expressive bar, docked to any screen edge ("Расположение панели"):
+// "top"/"bottom" keep the horizontal strip, "left"/"right" turn it into a
+// vertical rail. Three layouts (the "Стиль панели" setting): "islands" —
 // three floating islands hosting the niri workspaces, window title, clock and
 // status chips; "island" — the same clusters on one floating plate; "panel" —
-// that plate flush to the screen walls. The clusters are the same Rectangles in
-// every layout, only their background changes (see `barPlate`).
+// that plate flush to the screen walls. The clusters are the same Rectangles
+// in every layout and position, only their background and axis change (see
+// `barPlate`).
 PanelWindow {
     id: root
 
     required property ShellScreen modelData
     screen: modelData
 
+    readonly property string edge: ShellState.barPosition
+    readonly property bool vertical: root.edge === "left" || root.edge === "right"
+    // "bottom"/"right" dock to the far edge; the band and the shadow room
+    // swap to the near side.
+    readonly property bool flipped: root.edge === "bottom" || root.edge === "right"
+    // The bar's extent across its axis: height when horizontal, width when
+    // vertical.
+    readonly property int thickness: root.vertical ? Theme.barThickness : Theme.barHeight
+    // Rail chips stretch to the content width, so the Grid's single column is
+    // centered on the plate instead of hugging its left edge.
+    readonly property int railContentWidth: Theme.barThickness - 2 * Theme.barPadding
+
     anchors {
-        top: true
-        left: true
-        right: true
+        top: root.vertical || !root.flipped
+        bottom: root.vertical || root.flipped
+        left: !root.vertical || !root.flipped
+        right: !root.vertical || root.flipped
     }
 
-    // Under "new" the surface grows downwards around the islands so the shadow
-    // has room to render; the band mask keeps that extra area click-through.
-    // Left and right there is no such room on purpose: the islands keep only
-    // barMargin to the screen edge (like under "m3"), and what the shadow would
-    // paint past the edge is clipped, exactly as it already is above them.
-    // Under "m3" both numbers collapse to the old ones.
-    readonly property int bandTop: root.flushPanel ? 0 : (Theme.glass ? Theme.barMargin : 0)
-    readonly property int shadowInset: Theme.glass && !root.flushPanel
-        ? Theme.cardShadowBlur + Theme.cardShadowOffset : 0
-
-    // The plate is measured against the window, which already carries the
-    // `margins` inset: 0 on both sides of a flush panel, barMargin otherwise.
     readonly property bool islandsMode: ShellState.panelStyle === "islands"
     readonly property bool flushPanel: ShellState.panelStyle === "panel"
-    // A "fit" plate holds the centred clock with equal room on both sides (three
-    // barPaddings of gap per side), so an off-centre side cannot push a cluster
-    // under it. Capped at the window.
-    readonly property int plateWidth: ShellState.panelWidth === "fit"
-        ? Math.min(2 * Math.max(leftRow.implicitWidth, rightRow.implicitWidth)
-            + centerRow.implicitWidth + 6 * Theme.barPadding, root.width)
-        : root.width
-    readonly property int plateX: Math.round((root.width - root.plateWidth) / 2)
-    // A full-width flush panel reaches three walls and stays square; a narrower
-    // one ("fit") only reaches the top, so its bottom rounds like a plate's.
-    readonly property int plateBottomRadius: root.flushPanel
-        && ShellState.panelWidth === "full" ? 0 : Theme.barRadius
+
+    // Under "new" the surface grows inwards around the islands so the shadow
+    // has room to render; the band mask keeps that extra area click-through.
+    // The side margins keep barMargin to the screen edge; only the docked edge
+    // drops it when the plate already carries the gap (glass).
+    readonly property int band: root.flushPanel ? 0 : (Theme.glass ? Theme.barMargin : 0)
+    readonly property int shadowInset: Theme.glass && !root.flushPanel
+        ? Theme.cardShadowBlur + Theme.cardShadowOffset : 0
+    readonly property int edgeMargin: root.flushPanel ? 0 : (Theme.glass ? 0 : Theme.barMargin)
+    readonly property int crossMargin: root.flushPanel ? 0 : Theme.barMargin
+    // Window origin of the plate along the cross axis: the band and the shadow
+    // room sit on the inner side, which swaps with the edge.
+    readonly property int plateOffset: root.flipped ? root.shadowInset : root.band
+    readonly property int shadowSign: root.flipped ? -1 : 1
+
+    // The length of the single plate along the bar axis; "fit" hugs the
+    // content. The islands are three fixed plates and ignore it. A side rail
+    // measures the same clusters along its height.
+    readonly property int clusterLeft: root.vertical
+        ? leftRow.implicitHeight : leftRow.implicitWidth
+    readonly property int clusterCenter: root.vertical
+        ? centerRow.implicitHeight : centerRow.implicitWidth
+    readonly property int clusterRight: root.vertical
+        ? rightRow.implicitHeight : rightRow.implicitWidth
 
     // The left island may use all the room up to the centered clock island.
     // A percentage cap cannot hold a growing workspace list: everything past
     // it is silently clipped, and niri creates workspaces on demand. The chips
     // compact themselves inside this width (and, at the physical limit, shift
     // to keep the active one visible); the island itself never crosses the
-    // clock.
+    // clock. The rail caps the same room along its height.
     readonly property int leftIslandMaxWidth: Math.max(0,
         Math.floor((root.width - centerIsland.width) / 2) - 2 * Theme.barPadding)
     readonly property int leftContentMaxWidth: Math.max(0,
         root.leftIslandMaxWidth - 2 * Theme.barPadding)
+    readonly property int topIslandMaxHeight: Math.max(0,
+        Math.floor((root.height - centerIsland.height) / 2) - 2 * Theme.barPadding)
+    readonly property int topContentMaxHeight: Math.max(0,
+        root.topIslandMaxHeight - 2 * Theme.barPadding)
+
+    readonly property int span: root.vertical ? root.height : root.width
+    readonly property int plateLength: ShellState.panelWidth === "fit"
+        ? Math.min(2 * Math.max(root.clusterLeft, root.clusterRight)
+            + root.clusterCenter + 6 * Theme.barPadding, root.span)
+        : root.span
+    readonly property int platePos: Math.round((root.span - root.plateLength) / 2)
+    // In islands mode the three plates spread over the window; otherwise the
+    // outer two sit at the ends of the single plate.
+    readonly property int plateStart: root.islandsMode ? 0 : root.platePos
+    readonly property int plateEnd: root.islandsMode ? root.span : root.platePos + root.plateLength
+
+    // A full-length flush plate reaches the screen ends and stays square; a
+    // docked edge is square too, and only the inner corners round.
+    readonly property int dockedRadius: root.flushPanel ? 0 : Theme.barRadius
+    readonly property int innerRadius: root.flushPanel
+        && ShellState.panelWidth === "full" ? 0 : Theme.barRadius
 
     margins {
-        top: root.flushPanel ? 0 : (Theme.glass ? 0 : Theme.barMargin)
-        left: root.flushPanel ? 0 : Theme.barMargin
-        right: root.flushPanel ? 0 : Theme.barMargin
+        top: root.edge === "top" ? root.edgeMargin : root.crossMargin
+        bottom: root.edge === "bottom" ? root.edgeMargin : root.crossMargin
+        left: root.edge === "left" ? root.edgeMargin : root.crossMargin
+        right: root.edge === "right" ? root.edgeMargin : root.crossMargin
     }
 
-    // Bar bottom sits at barMargin + barHeight; windows start one barMargin
-    // below it. Quickshell adds `margins` to this value on top of it.
-    exclusiveZone: Theme.barHeight + Theme.barMargin
-    implicitHeight: root.bandTop + Theme.barHeight + root.shadowInset
+    // The bar's docked edge sits at barMargin + thickness; windows start one
+    // barMargin away. Quickshell adds `margins` to this value on top of it.
+    exclusiveZone: root.thickness + Theme.barMargin
+    implicitHeight: root.vertical ? 0 : root.band + Theme.barHeight + root.shadowInset
+    implicitWidth: root.vertical ? root.band + Theme.barThickness + root.shadowInset : 0
     color: "transparent"
 
     WlrLayershell.namespace: "quickshell:bar"
 
-    // Only the bar band takes input; the shadow strip below it stays click-through.
+    // Only the bar band takes input; the shadow strip stays click-through.
     mask: Region {
-        x: 0
-        y: root.bandTop
-        width: root.width
-        height: Theme.barHeight
+        x: root.vertical ? root.plateOffset : 0
+        y: root.vertical ? 0 : root.plateOffset
+        width: root.vertical ? root.thickness : root.width
+        height: root.vertical ? root.height : root.thickness
     }
 
     // Any image dropped on the bar band becomes the wallpaper. Declared under
     // the islands so it never affects their click handling.
     WallpaperDropArea {
-        x: 0
-        y: root.bandTop
-        width: root.width
-        height: Theme.barHeight
+        x: root.vertical ? root.plateOffset : 0
+        y: root.vertical ? 0 : root.plateOffset
+        width: root.vertical ? root.thickness : root.width
+        height: root.vertical ? root.height : root.thickness
     }
 
     // Acrylic behind the three islands (New and Blur). Off as soon as the
@@ -144,8 +183,10 @@ PanelWindow {
         Region {
             item: plateAnchor
             radius: barPlate.radius
-            bottomLeftRadius: root.plateBottomRadius
-            bottomRightRadius: root.plateBottomRadius
+            topLeftRadius: barPlate.topLeftRadius
+            topRightRadius: barPlate.topRightRadius
+            bottomLeftRadius: barPlate.bottomLeftRadius
+            bottomRightRadius: barPlate.bottomRightRadius
         }
     }
 
@@ -163,7 +204,16 @@ PanelWindow {
         opacity: root.shown ? 1 : 0
 
         transform: Translate {
-            y: root.shown ? 0 : -Theme.barHeight
+            x: root.vertical ? (root.shown ? 0 : (root.flipped ? root.thickness : -root.thickness)) : 0
+            y: root.vertical ? 0 : (root.shown ? 0 : (root.flipped ? root.thickness : -root.thickness))
+
+            Behavior on x {
+                NumberAnimation {
+                    duration: Theme.durMedium
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curveEmphasizedDecelerate
+                }
+            }
 
             Behavior on y {
                 NumberAnimation {
@@ -189,9 +239,10 @@ PanelWindow {
             anchors.fill: barPlate
             radius: barPlate.radius
             blur: Theme.cardShadowBlur
-            offset.y: Theme.cardShadowOffset
+            offset.x: root.vertical ? root.shadowSign * Theme.cardShadowOffset : 0
+            offset.y: root.vertical ? 0 : root.shadowSign * Theme.cardShadowOffset
             color: Theme.cardShadow
-            // A flush panel has no room for a shadow: its top edge is clipped.
+            // A flush panel has no room for a shadow: its docked edge is clipped.
             visible: Theme.glass && !root.islandsMode && !root.flushPanel
         }
 
@@ -199,13 +250,19 @@ PanelWindow {
             id: barPlate
 
             visible: !root.islandsMode
-            x: root.plateX
-            y: root.bandTop
-            width: root.plateWidth
-            height: Theme.barHeight
-            radius: root.flushPanel ? 0 : Theme.barRadius
-            bottomLeftRadius: root.plateBottomRadius
-            bottomRightRadius: root.plateBottomRadius
+            x: root.vertical ? root.plateOffset : root.platePos
+            y: root.vertical ? root.platePos : root.plateOffset
+            width: root.vertical ? root.thickness : root.plateLength
+            height: root.vertical ? root.plateLength : Theme.barHeight
+            radius: Theme.barRadius
+            topLeftRadius: root.edge === "left" || root.edge === "top"
+                ? root.dockedRadius : root.innerRadius
+            topRightRadius: root.edge === "right" || root.edge === "top"
+                ? root.dockedRadius : root.innerRadius
+            bottomLeftRadius: root.edge === "left" || root.edge === "bottom"
+                ? root.dockedRadius : root.innerRadius
+            bottomRightRadius: root.edge === "right" || root.edge === "bottom"
+                ? root.dockedRadius : root.innerRadius
             color: Theme.surfaceContainer
             border.width: Theme.hairlineWidth
             border.color: Theme.hairline
@@ -213,12 +270,14 @@ PanelWindow {
             GlassEdge {}
         }
 
-        // left island: workspaces + focused window title
+        // first island: workspaces + focused window title (the marquee has no
+        // room in a rail, so the title is left out there)
         RectangularShadow {
             anchors.fill: leftIsland
             radius: leftIsland.radius
             blur: Theme.cardShadowBlur
-            offset.y: Theme.cardShadowOffset
+            offset.x: root.vertical ? root.shadowSign * Theme.cardShadowOffset : 0
+            offset.y: root.vertical ? 0 : root.shadowSign * Theme.cardShadowOffset
             color: Theme.cardShadow
             visible: Theme.glass && root.islandsMode
         }
@@ -226,12 +285,13 @@ PanelWindow {
         Rectangle {
             id: leftIsland
 
-            anchors.left: parent.left
-            anchors.leftMargin: root.islandsMode ? 0 : root.plateX
-            anchors.top: parent.top
-            anchors.topMargin: root.bandTop
-            width: Math.min(leftRow.implicitWidth + 2 * Theme.barPadding, root.leftIslandMaxWidth)
-            height: Theme.barHeight
+            x: root.vertical ? root.plateOffset : root.plateStart
+            y: root.vertical ? root.plateStart : root.plateOffset
+            width: root.vertical ? root.thickness
+                : Math.min(leftRow.implicitWidth + 2 * Theme.barPadding, root.leftIslandMaxWidth)
+            height: root.vertical
+                ? Math.min(leftRow.implicitHeight + 2 * Theme.barPadding, root.topIslandMaxHeight)
+                : Theme.barHeight
             radius: root.islandsMode ? Theme.barRadius : 0
             color: root.islandsMode ? Theme.surfaceContainer : "transparent"
             border.width: root.islandsMode ? Theme.hairlineWidth : 0
@@ -251,6 +311,14 @@ PanelWindow {
                 }
             }
 
+            Behavior on height {
+                NumberAnimation {
+                    duration: Theme.dur(100)
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curveEmphasizedDecelerate
+                }
+            }
+
             Behavior on color {
                 ColorAnimation {
                     duration: Theme.durLong
@@ -259,30 +327,36 @@ PanelWindow {
                 }
             }
 
-            Row {
+            Grid {
                 id: leftRow
 
-                anchors.left: parent.left
-                anchors.leftMargin: Theme.barPadding
-                anchors.verticalCenter: parent.verticalCenter
+                x: root.vertical
+                    ? Math.round((parent.width - width) / 2) : Theme.barPadding
+                y: root.vertical
+                    ? Theme.barPadding : Math.round((parent.height - height) / 2)
+                // A Grid is the one positioner that turns from a row into a
+                // column: one row while horizontal, a single column in a rail.
+                columns: root.vertical ? 1 : 1000000
                 spacing: 2
 
                 Workspaces {
                     id: workspacesItem
 
                     screenName: root.modelData.name
-                    // The row gap is reserved twice: once here, and once by
-                    // the title width below, so the two never overrun the
-                    // island even when the title is hidden.
-                    maxWidth: Math.max(0, root.leftContentMaxWidth - leftRow.spacing)
+                    vertical: root.vertical
+                    maxWidth: root.vertical
+                        ? root.thickness - 2 * Theme.barPadding
+                        : Math.max(0, root.leftContentMaxWidth - leftRow.spacing)
+                    maxHeight: root.vertical ? root.topContentMaxHeight : 1e9
                 }
 
                 WindowTitle {
                     // The old 18% cap only shrinks the title; workspaces get
                     // the first claim on the room, and a sliver of title is
                     // not worth keeping (see WindowTitle's visible rule).
-                    maxWidth: Math.max(0, Math.min(Math.floor(root.width * 0.18),
-                        root.leftContentMaxWidth - workspacesItem.width - leftRow.spacing))
+                    maxWidth: root.vertical ? 0
+                        : Math.max(0, Math.min(Math.floor(root.width * 0.18),
+                            root.leftContentMaxWidth - workspacesItem.width - leftRow.spacing))
                 }
             }
         }
@@ -292,7 +366,8 @@ PanelWindow {
             anchors.fill: centerIsland
             radius: centerIsland.radius
             blur: Theme.cardShadowBlur
-            offset.y: Theme.cardShadowOffset
+            offset.x: root.vertical ? root.shadowSign * Theme.cardShadowOffset : 0
+            offset.y: root.vertical ? 0 : root.shadowSign * Theme.cardShadowOffset
             color: Theme.cardShadow
             visible: Theme.glass && root.islandsMode
         }
@@ -300,11 +375,14 @@ PanelWindow {
         Rectangle {
             id: centerIsland
 
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: parent.top
-            anchors.topMargin: root.bandTop
-            width: centerRow.implicitWidth + 2 * Theme.barPadding
-            height: Theme.barHeight
+            x: root.vertical
+                ? root.plateOffset : Math.round((root.width - width) / 2)
+            y: root.vertical
+                ? Math.round((root.height - height) / 2) : root.plateOffset
+            width: root.vertical
+                ? root.thickness : centerRow.implicitWidth + 2 * Theme.barPadding
+            height: root.vertical
+                ? centerRow.implicitHeight + 2 * Theme.barPadding : Theme.barHeight
             radius: root.islandsMode ? Theme.barRadius : 0
             color: root.islandsMode ? Theme.surfaceContainer : "transparent"
             border.width: root.islandsMode ? Theme.hairlineWidth : 0
@@ -322,28 +400,39 @@ PanelWindow {
                 }
             }
 
-            Row {
+            Grid {
                 id: centerRow
 
-                anchors.centerIn: parent
+                x: Math.round((parent.width - width) / 2)
+                y: Math.round((parent.height - height) / 2)
+                columns: root.vertical ? 1 : 1000000
                 spacing: 4
 
-                KeyboardLayout {}
+                KeyboardLayout {
+                    width: root.vertical ? root.railContentWidth : implicitWidth
+                    labelOnly: root.vertical
+                    hPadding: root.vertical ? 4 : 12
+                }
                 DateClock {
+                    width: root.vertical ? root.railContentWidth : implicitWidth
                     screenName: root.modelData.name
+                    compact: root.vertical
                 }
                 TimeClock {
+                    width: root.vertical ? root.railContentWidth : implicitWidth
                     screenName: root.modelData.name
+                    compact: root.vertical
                 }
             }
         }
 
-        // right island: status cluster + notification + power FAB
+        // last island: status cluster + notification + power FAB
         RectangularShadow {
             anchors.fill: rightIsland
             radius: rightIsland.radius
             blur: Theme.cardShadowBlur
-            offset.y: Theme.cardShadowOffset
+            offset.x: root.vertical ? root.shadowSign * Theme.cardShadowOffset : 0
+            offset.y: root.vertical ? 0 : root.shadowSign * Theme.cardShadowOffset
             color: Theme.cardShadow
             visible: Theme.glass && root.islandsMode
         }
@@ -351,12 +440,12 @@ PanelWindow {
         Rectangle {
             id: rightIsland
 
-            anchors.right: parent.right
-            anchors.rightMargin: root.islandsMode ? 0 : root.plateX
-            anchors.top: parent.top
-            anchors.topMargin: root.bandTop
-            width: rightRow.implicitWidth + 2 * Theme.barPadding
-            height: Theme.barHeight
+            x: root.vertical ? root.plateOffset : root.plateEnd - width
+            y: root.vertical ? root.plateEnd - height : root.plateOffset
+            width: root.vertical
+                ? root.thickness : rightRow.implicitWidth + 2 * Theme.barPadding
+            height: root.vertical
+                ? rightRow.implicitHeight + 2 * Theme.barPadding : Theme.barHeight
             radius: root.islandsMode ? Theme.barRadius : 0
             color: root.islandsMode ? Theme.surfaceContainer : "transparent"
             border.width: root.islandsMode ? Theme.hairlineWidth : 0
@@ -374,35 +463,59 @@ PanelWindow {
                 }
             }
 
-            Row {
+            Grid {
                 id: rightRow
 
-                anchors.right: parent.right
-                anchors.rightMargin: Theme.barPadding
-                anchors.verticalCenter: parent.verticalCenter
+                x: root.vertical
+                    ? Math.round((parent.width - width) / 2)
+                    : parent.width - width - Theme.barPadding
+                y: root.vertical
+                    ? Theme.barPadding : Math.round((parent.height - height) / 2)
+                columns: root.vertical ? 1 : 1000000
                 spacing: 4
 
-                Backlight {}
-                SystemStats {
-                    screenName: root.modelData.name
+                // The rail shows the values themselves: the layout code, the
+                // brightness and the volume percentage.
+                Backlight {
+                    width: root.vertical ? root.railContentWidth : implicitWidth
+                    labelOnly: root.vertical
+                    hPadding: root.vertical ? 4 : 12
                 }
-                Volume {}
-                Battery {}
+                SystemStats {
+                    width: root.vertical ? root.railContentWidth : implicitWidth
+                    screenName: root.modelData.name
+                    compact: root.vertical
+                    round: root.vertical
+                }
+                Volume {
+                    width: root.vertical ? root.railContentWidth : implicitWidth
+                    labelOnly: root.vertical
+                    hPadding: root.vertical ? 4 : 12
+                }
+                Battery {
+                    width: root.vertical ? root.railContentWidth : implicitWidth
+                    compact: root.vertical
+                    round: root.vertical
+                }
 
                 Tray {
+                    width: root.vertical ? root.railContentWidth : implicitWidth
                     screenName: root.modelData.name
                 }
 
                 NotificationBell {
+                    width: root.vertical ? root.railContentWidth : implicitWidth
                     screenName: root.modelData.name
                 }
 
                 PetButton {
+                    width: root.vertical ? root.railContentWidth : implicitWidth
                     screenName: root.modelData.name
                     visible: ShellState.petEnabled
                 }
 
                 PowerButton {
+                    width: root.vertical ? root.railContentWidth : implicitWidth
                     screenName: root.modelData.name
                 }
             }

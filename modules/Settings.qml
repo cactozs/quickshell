@@ -417,6 +417,36 @@ PanelWindow {
                         }
                     }
 
+                    // ---- bar position ---------------------------------------------------
+
+                    SettingRow {
+                        label: I18n.t("Расположение панели")
+
+                        SettingSegment {
+                            label: I18n.t("Сверху")
+                            selected: ShellState.barPosition === "top"
+                            onClicked: ShellState.setBarPosition("top")
+                        }
+
+                        SettingSegment {
+                            label: I18n.t("Слева")
+                            selected: ShellState.barPosition === "left"
+                            onClicked: ShellState.setBarPosition("left")
+                        }
+
+                        SettingSegment {
+                            label: I18n.t("Снизу")
+                            selected: ShellState.barPosition === "bottom"
+                            onClicked: ShellState.setBarPosition("bottom")
+                        }
+
+                        SettingSegment {
+                            label: I18n.t("Справа")
+                            selected: ShellState.barPosition === "right"
+                            onClicked: ShellState.setBarPosition("right")
+                        }
+                    }
+
                     // ---- panel style ----------------------------------------------------
 
                     SettingRow {
@@ -443,14 +473,21 @@ PanelWindow {
 
                     // ---- plate width ----------------------------------------------------
 
-                    // Only the single-plate layouts have a width to choose: the
-                    // islands are three fixed-width plates.
+                    // Only the single-plate layouts have a length to choose: the
+                    // islands are three fixed plates. A side rail measures it
+                    // along its height, a top/bottom bar along its width.
                     SettingRow {
-                        label: I18n.t("Ширина панели")
+                        id: plateWidthRow
+
+                        readonly property bool rail: ShellState.barPosition === "left"
+                            || ShellState.barPosition === "right"
+
+                        label: rail ? I18n.t("Длина панели") : I18n.t("Ширина панели")
                         visible: ShellState.panelStyle !== "islands"
 
                         SettingSegment {
-                            label: I18n.t("Во всю ширину")
+                            label: plateWidthRow.rail
+                                ? I18n.t("Во всю длину") : I18n.t("Во всю ширину")
                             selected: ShellState.panelWidth === "full"
                             onClicked: ShellState.setPanelWidth("full")
                         }

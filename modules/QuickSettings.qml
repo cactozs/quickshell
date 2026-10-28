@@ -362,10 +362,16 @@ PanelWindow {
     Rectangle {
         id: card
 
-        anchors.top: parent.top
-        anchors.right: parent.right
-        anchors.topMargin: Theme.barHeight + 2 * Theme.barMargin
-        anchors.rightMargin: Theme.barMargin
+        // Opens against the bar's edge: under a top bar, above a bottom one,
+        // beside a rail.
+        anchors.top: Theme.popupBottom ? undefined : parent.top
+        anchors.bottom: Theme.popupBottom ? parent.bottom : undefined
+        anchors.left: Theme.popupLeft ? parent.left : undefined
+        anchors.right: Theme.popupLeft ? undefined : parent.right
+        anchors.topMargin: Theme.popupTopMargin
+        anchors.bottomMargin: Theme.popupBottomMargin
+        anchors.leftMargin: Theme.popupLeftMargin
+        anchors.rightMargin: Theme.popupRightMargin
 
         width: root.cardWidth
         height: column.implicitHeight + 2 * root.cardPadding

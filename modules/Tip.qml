@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import QtQuick
 import QtQuick.Effects
+import "../services"
 import "../style"
 
 // M3 plain tooltip: surface container, extra-small corner, no border; fades
@@ -20,9 +21,19 @@ PopupWindow {
     visible: shown || surface.opacity > 0.001
     color: "transparent"
 
+    // Opens away from the bar's docking edge: below a top bar, above a bottom
+    // one, sideways off a rail. A tip flipped back over its chip by the
+    // compositor would drop the hover that shows it.
+    readonly property string edge: ShellState.barPosition
     anchor.item: target
-    anchor.edges: Edges.Bottom | Edges.Left
-    anchor.gravity: Edges.Bottom | Edges.Right
+    anchor.edges: root.edge === "bottom" ? Edges.Top | Edges.Left
+        : root.edge === "left" ? Edges.Right | Edges.Top
+        : root.edge === "right" ? Edges.Left | Edges.Top
+        : Edges.Bottom | Edges.Left
+    anchor.gravity: root.edge === "bottom" ? Edges.Top | Edges.Right
+        : root.edge === "left" ? Edges.Right | Edges.Bottom
+        : root.edge === "right" ? Edges.Left | Edges.Bottom
+        : Edges.Bottom | Edges.Right
 
     implicitWidth: label.implicitWidth + 16
     implicitHeight: label.implicitHeight + 12

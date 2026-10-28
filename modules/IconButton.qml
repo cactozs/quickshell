@@ -15,6 +15,10 @@ Item {
     property string iconFamily: Theme.iconFont
     property string label: ""
     property bool round: false
+    // Glyph only, for the vertical rail where a chip has no room for its text.
+    property bool compact: false
+    // Text only, for the rail: a value like "US" or "65%" is what the chip is for.
+    property bool labelOnly: false
     property color containerColor: Theme.surfaceContainerHigh
     property color contentColor: Theme.surfaceText
     property color iconColor: root.contentColor
@@ -94,7 +98,7 @@ Item {
 
             Text {
                 Layout.alignment: Qt.AlignVCenter
-                visible: text !== ""
+                visible: text !== "" && !root.labelOnly
                 text: root.icon
                 color: root.iconColor
                 font.family: root.iconFamily
@@ -111,11 +115,13 @@ Item {
 
             Text {
                 Layout.alignment: Qt.AlignVCenter
-                visible: text !== ""
+                visible: text !== "" && !root.compact
                 text: root.label
                 color: root.labelColor
                 font.family: Theme.fontFamily
-                font.pixelSize: Theme.fontSizeLabelLarge
+                // The rail's value chips sit in a 46–48 px plate; one step
+                // down keeps "100%" inside it.
+                font.pixelSize: root.labelOnly ? Theme.fontSizeLabelMedium : Theme.fontSizeLabelLarge
                 font.weight: Font.Medium
 
                 Behavior on color {

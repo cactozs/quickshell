@@ -58,6 +58,7 @@ Singleton {
             property bool barHidden
             property bool launcherFullscreen
             property string styleMode
+            property string barPosition
             property string panelStyle
             property string panelWidth
             property string colorScheme
@@ -126,6 +127,20 @@ Singleton {
 
     function setBlurSource(name: string): void {
         props.blurSource = name === "window" ? "window" : "wallpaper";
+    }
+
+    // Screen edge the bar is docked to: "top" (default), "bottom", "left" or
+    // "right". The horizontal edges keep the strip; a side edge turns it into a
+    // vertical rail. See modules/Bar.qml. Normalized like the other modes.
+    readonly property string barPosition: props.barPosition === "bottom"
+        || props.barPosition === "left" || props.barPosition === "right"
+        ? props.barPosition
+        : "top"
+
+    function setBarPosition(name: string): void {
+        props.barPosition = name === "bottom" || name === "left" || name === "right"
+            ? name
+            : "top";
     }
 
     // Bar layout: "islands" = the three floating islands (default), "island" =
@@ -440,6 +455,11 @@ Singleton {
         // Style pack, so scripts can flip it: `qs ipc call settings style new`.
         function style(name: string): void {
             root.setStyleMode(name);
+        }
+
+        // Docked edge, so scripts can move it: `qs ipc call settings barposition left`.
+        function barposition(name: string): void {
+            root.setBarPosition(name);
         }
 
         // Bar layout, so scripts can flip it: `qs ipc call settings panel island`.

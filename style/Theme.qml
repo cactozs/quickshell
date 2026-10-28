@@ -983,6 +983,9 @@ Singleton {
 
     // New packs the bar one notch tighter; so do Nothing and the 30 px Old strip.
     readonly property int barHeight: root.old ? 30 : (root.glass || root.nothing ? 36 : 40)
+    // The same strip seen from the side: width of the vertical rail, sized to
+    // the 12 px rail values (the compact clock is the widest at "14:07").
+    readonly property int barThickness: root.old ? 46 : 48
     readonly property int barMargin: root.old ? 0 : 4
     readonly property int barPadding: 4
     readonly property int chipHeight: root.old ? 26 : (root.glass || root.nothing ? 30 : 32)
@@ -991,6 +994,24 @@ Singleton {
     readonly property int iconSizeMedium: 24
     readonly property int iconSizeSmall: 16
     readonly property int iconSizeLarge: 30
+
+    // Cards that pop up from the bar open against its edge: below a top bar,
+    // above a bottom one, beside a rail. `popupBottom`/`popupLeft` pick the
+    // corner; only the docked edge's margin carries the bar's thickness.
+    readonly property bool popupBottom: ShellState.barPosition === "bottom"
+    readonly property bool popupLeft: ShellState.barPosition === "left"
+    readonly property int popupTopMargin: ShellState.barPosition === "top"
+        ? root.barHeight + 2 * root.barMargin
+        : root.barMargin
+    readonly property int popupBottomMargin: root.popupBottom
+        ? root.barHeight + 2 * root.barMargin
+        : root.barMargin
+    readonly property int popupLeftMargin: root.popupLeft
+        ? root.barThickness + 2 * root.barMargin
+        : root.barMargin
+    readonly property int popupRightMargin: ShellState.barPosition === "right"
+        ? root.barThickness + 2 * root.barMargin
+        : root.barMargin
 
     // ---- Material Symbols codepoints -------------------------------------------
     // Verified against the installed MaterialSymbolsRounded variable font.

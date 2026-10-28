@@ -18,14 +18,19 @@ PanelWindow {
 
     screen: modelData
 
+    // The stack grows out of the bar's corner, like the popup cards.
     anchors {
-        top: true
-        right: true
+        top: !Theme.popupBottom
+        bottom: Theme.popupBottom
+        left: Theme.popupLeft
+        right: !Theme.popupLeft
     }
 
     margins {
-        top: Theme.barHeight + 2 * Theme.barMargin
-        right: Theme.barMargin
+        top: Theme.popupTopMargin
+        bottom: Theme.popupBottomMargin
+        left: Theme.popupLeftMargin
+        right: Theme.popupRightMargin
     }
 
     exclusionMode: ExclusionMode.Ignore

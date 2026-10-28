@@ -34,9 +34,18 @@ PopupWindow {
     visible: shown || surface.opacity > 0.001
     color: "transparent"
 
+    // Opens away from the bar's docking edge, like the Tip: below a top bar,
+    // above a bottom one, sideways off a rail.
+    readonly property string edge: ShellState.barPosition
     anchor.item: target
-    anchor.edges: Edges.Bottom | Edges.Left
-    anchor.gravity: Edges.Bottom | Edges.Right
+    anchor.edges: root.edge === "bottom" ? Edges.Top | Edges.Left
+        : root.edge === "left" ? Edges.Right | Edges.Top
+        : root.edge === "right" ? Edges.Left | Edges.Top
+        : Edges.Bottom | Edges.Left
+    anchor.gravity: root.edge === "bottom" ? Edges.Top | Edges.Right
+        : root.edge === "left" ? Edges.Right | Edges.Bottom
+        : root.edge === "right" ? Edges.Left | Edges.Bottom
+        : Edges.Bottom | Edges.Right
 
     implicitWidth: column.implicitWidth + 2 * root.pad
     implicitHeight: column.implicitHeight + 2 * root.pad

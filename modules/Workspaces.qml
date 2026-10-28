@@ -22,16 +22,20 @@ Item {
     required property string screenName
     // Room for the chips alone; the bar reserves the island and row paddings.
     required property real maxWidth
+    // Side rail: chips stack, maxWidth is the cell width and maxHeight caps
+    // the column (the bar hands it the room above the clock).
+    property bool vertical: false
+    property real maxHeight: 1e9
 
     readonly property int spacing: 2
 
-    implicitWidth: Math.min(root.contentWidth, root.maxWidth)
-    implicitHeight: Theme.barHeight
+    implicitWidth: root.vertical ? root.maxWidth : Math.min(root.contentWidth, root.maxWidth)
+    implicitHeight: root.vertical ? Math.min(root.contentHeight, root.maxHeight) : Theme.barHeight
     width: implicitWidth
     height: implicitHeight
     // Clip only a dense row's overflow. Clipping at the content width would
     // cut the pill while it slides out of a chip that niri just closed.
-    clip: root.contentWidth > root.maxWidth
+    clip: root.vertical ? root.contentHeight > root.maxHeight : root.contentWidth > root.maxWidth
 
     readonly property var wsList: root.screenName !== "" ? Niri.workspacesFor(root.screenName) : []
     readonly property int activeIndex: {
@@ -44,7 +48,7 @@ Item {
     // floor is a readability limit, not a geometry one: below it the row is
     // allowed to overflow, and `offset` keeps the active chip in view.
     readonly property real fitCap: {
-        if (root.wsList.length === 0) return 1e9;
+        if (root.vertical || root.wsList.length === 0) return 1e9;
         const gaps = root.spacing * (root.wsList.length - 1);
         return Math.max(20, Math.floor((root.maxWidth - gaps) / root.wsList.length));
     }
@@ -56,6 +60,7 @@ Item {
         Math.floor((root.fitCap - (Theme.fontSizeLabelLarge + 4)) / 2)))
 
     readonly property real contentWidth: row.implicitWidth
+    readonly property real contentHeight: row.implicitHeight
 
     // Last resort for more chips than the bar can physically show: slide the
     // row until the active chip is fully inside the viewport. Keeping it
@@ -63,6 +68,11 @@ Item {
     // the one cut off.
     readonly property real offset: {
         const cell = root.activeCell;
+        if (root.vertical) {
+            if (root.contentHeight <= root.height || cell === null)
+                return 0;
+            return Math.max(-cell.y, Math.min(0, root.height - cell.y - cell.height));
+        }
         if (root.contentWidth <= root.width || cell === null)
             return 0;
         return Math.max(-cell.x, Math.min(0, root.width - cell.x - cell.width));
@@ -80,13 +90,19 @@ Item {
             Niri.consumeWorkspacePop(root.wsList[root.activeIndex].id);
     }
 
-    // Shared sliding pill: x glides, width overshoots = the rubber stretch.
+    // Shared sliding pill: it glides along the bar's axis, the overshoot of
+    // its length = the rubber stretch.
     Rectangle {
         id: slide
 
-        y: (parent.height - Theme.chipHeight) / 2
+        y: root.vertical
+            ? root.offset + (root.activeCell !== null
+                ? root.activeCell.y + (root.activeCell.height - height) / 2 : 0)
+            : (parent.height - height) / 2
         height: Theme.chipHeight
-        x: root.offset + (root.activeCell !== null ? root.activeCell.x : 0)
+        x: root.vertical
+            ? Math.round((root.width - width) / 2)
+            : root.offset + (root.activeCell !== null ? root.activeCell.x : 0)
         width: root.activeCell !== null ? root.activeCell.width : 0
         visible: root.activeCell !== null
 
@@ -94,6 +110,14 @@ Item {
         color: Theme.secondaryContainer
 
         Behavior on x {
+            NumberAnimation {
+                duration: Theme.dur(100)
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Theme.curveEmphasizedDecelerate
+            }
+        }
+
+        Behavior on y {
             NumberAnimation {
                 duration: Theme.dur(100)
                 easing.type: Easing.BezierSpline
@@ -118,14 +142,25 @@ Item {
         }
     }
 
-    Row {
+    // A Grid is the one positioner that turns from a row into a column: one
+    // row while horizontal, a single column down the rail.
+    Grid {
         id: row
 
-        x: root.offset
-        anchors.verticalCenter: parent.verticalCenter
+        columns: root.vertical ? 1 : 1000000
+        x: root.vertical ? Math.round((root.width - width) / 2) : root.offset
+        y: root.vertical ? root.offset : Math.round((root.height - height) / 2)
         spacing: root.spacing
 
         Behavior on x {
+            NumberAnimation {
+                duration: Theme.dur(100)
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Theme.curveEmphasizedDecelerate
+            }
+        }
+
+        Behavior on y {
             NumberAnimation {
                 duration: Theme.dur(100)
                 easing.type: Easing.BezierSpline
@@ -157,7 +192,9 @@ Item {
                 readonly property bool capped: cell.naturalWidth > root.fitCap
                 readonly property real labelPad: cell.capped ? Math.min(root.chipHPad, 2) : root.chipHPad
 
-                implicitWidth: Math.min(cell.naturalWidth, root.fitCap)
+                implicitWidth: root.vertical
+                    ? root.maxWidth
+                    : Math.min(cell.naturalWidth, root.fitCap)
                 implicitHeight: Theme.barHeight
                 width: implicitWidth
                 height: implicitHeight

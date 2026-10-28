@@ -12,8 +12,10 @@ Item {
     id: root
 
     property string screenName: ""
+    // Vertical rail: no glyph, numeric date, no side padding.
+    property bool compact: false
 
-    implicitWidth: content.implicitWidth + 16
+    implicitWidth: content.implicitWidth + (root.compact ? 0 : 16)
     implicitHeight: Theme.barHeight
 
     SystemClock {
@@ -29,6 +31,7 @@ Item {
 
         Text {
             Layout.alignment: Qt.AlignVCenter
+            visible: !root.compact
             text: Theme.iconCalendar
             color: Theme.surfaceVariantText
             font.family: Theme.iconFont
@@ -37,10 +40,10 @@ Item {
 
         Text {
             Layout.alignment: Qt.AlignVCenter
-            text: Qt.formatDateTime(clock.date, "ddd, dd MMM")
+            text: Qt.formatDateTime(clock.date, root.compact ? "dd.MM" : "ddd, dd MMM")
             color: Theme.surfaceText
             font.family: Theme.fontFamily
-            font.pixelSize: Theme.fontSizeLabelLarge
+            font.pixelSize: root.compact ? Theme.fontSizeLabelMedium : Theme.fontSizeLabelLarge
             font.weight: Font.Medium
         }
     }

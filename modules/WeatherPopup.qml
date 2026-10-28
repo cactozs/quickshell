@@ -114,9 +114,14 @@ PanelWindow {
     Rectangle {
         id: card
 
-        anchors.top: parent.top
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.topMargin: Theme.barHeight + 2 * Theme.barMargin
+        // Centered on a top/bottom bar's edge, beside a side rail.
+        x: ShellState.barPosition === "left" ? Theme.popupLeftMargin
+            : ShellState.barPosition === "right" ? parent.width - width - Theme.popupRightMargin
+            : Math.round((parent.width - width) / 2)
+        anchors.top: Theme.popupBottom ? undefined : parent.top
+        anchors.bottom: Theme.popupBottom ? parent.bottom : undefined
+        anchors.topMargin: Theme.popupTopMargin
+        anchors.bottomMargin: Theme.popupBottomMargin
 
         width: (content.visible ? content.implicitWidth : status.implicitWidth) + 2 * root.pad
         height: (content.visible ? content.implicitHeight : status.implicitHeight) + 2 * root.pad

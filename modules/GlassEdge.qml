@@ -22,6 +22,10 @@ Item {
     // falls back to the card's plain radius.
     readonly property real cardRadius: parent ? (parent.radius ?? 0) : 0
     readonly property real corner: Math.max(0, root.cardRadius - 1)
+    readonly property real cornerTopLeft: parent
+        ? Math.max(0, (parent.topLeftRadius ?? root.cardRadius) - 1) : 0
+    readonly property real cornerTopRight: parent
+        ? Math.max(0, (parent.topRightRadius ?? root.cardRadius) - 1) : 0
     readonly property real cornerBottomLeft: parent
         ? Math.max(0, (parent.bottomLeftRadius ?? root.cardRadius) - 1) : 0
     readonly property real cornerBottomRight: parent
@@ -31,6 +35,8 @@ Item {
         anchors.fill: parent
         anchors.margins: 1
         radius: root.corner
+        topLeftRadius: root.cornerTopLeft
+        topRightRadius: root.cornerTopRight
         bottomLeftRadius: root.cornerBottomLeft
         bottomRightRadius: root.cornerBottomRight
         color: "transparent"
