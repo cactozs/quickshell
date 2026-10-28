@@ -32,6 +32,16 @@ ShellRoot {
         model: Quickshell.screens
 
         LazyOverlay {
+            source: Component { AmbientWindowSnow {} }
+            active: ShellState.ambient === "xmas"
+                && Niri.windowSnowFor(modelData.name).length > 0
+        }
+    }
+
+    Variants {
+        model: Quickshell.screens
+
+        LazyOverlay {
             source: Component { QuickSettings {} }
             active: ShellState.quickSettingsScreen === modelData.name
         }

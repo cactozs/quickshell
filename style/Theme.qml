@@ -791,6 +791,7 @@ Singleton {
     // Snow for modules/Ambient.qml. Fixed rather than palette-derived; the
     // light tone keeps it visible on light wallpapers.
     readonly property color snow: root.light ? "#dbe8ff" : "#f2f6ff"
+    readonly property color candle: "#ffd79a"
 
 
     // ---- motion ----------------------------------------------------------------
