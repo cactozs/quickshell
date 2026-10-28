@@ -786,6 +786,12 @@ Singleton {
         "surface_container", "surface_container_high"
     ]
 
+    // ---- seasonal ambient ------------------------------------------------------
+
+    // Snow for modules/Ambient.qml. Fixed rather than palette-derived; the
+    // light tone keeps it visible on light wallpapers.
+    readonly property color snow: root.light ? "#dbe8ff" : "#f2f6ff"
+
 
     // ---- motion ----------------------------------------------------------------
     // Emphasized-family easing curves from the M3 motion spec, as cubic bezier

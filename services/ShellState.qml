@@ -62,6 +62,7 @@ Singleton {
             property string themeMode
             property string fontMode
             property string blurSource
+            property string ambient
             property string language
             property string themeAppsOff
             // Pet: stored negative so a missing key keeps the bar button on.
@@ -120,6 +121,14 @@ Singleton {
 
     function setBlurSource(name: string): void {
         props.blurSource = name === "window" ? "window" : "wallpaper";
+    }
+
+    // Seasonal desktop dressing: "off" (default) or "xmas" (falling snow and
+    // drifts on the wallpaper surface, see modules/Ambient.qml). Normalized.
+    readonly property string ambient: props.ambient === "xmas" ? "xmas" : "off"
+
+    function setAmbient(name: string): void {
+        props.ambient = name === "xmas" ? "xmas" : "off";
     }
 
     // Style pack for the whole shell: "m3" = M3 Expressive with the matugen
@@ -379,6 +388,11 @@ Singleton {
         // Blur source, so scripts can flip it: `qs ipc call settings blur window`.
         function blur(name: string): void {
             root.setBlurSource(name);
+        }
+
+        // Ambient dressing, so scripts can flip it: `qs ipc call settings ambient xmas`.
+        function ambient(name: string): void {
+            root.setAmbient(name);
         }
 
         // Font family, so scripts can flip it: `qs ipc call settings font mono`.

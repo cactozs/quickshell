@@ -379,7 +379,7 @@ Volume, brightness, media and lock binds do not go through the shell: use
 | `weather` | — |
 | `clock` (timer and stopwatch) | — |
 | `system` (monitoring) | — |
-| `settings` (quick settings) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono>`, `blur <wallpaper\|window>`, `language <ru\|en\|de>` |
+| `settings` (quick settings) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono>`, `blur <wallpaper\|window>`, `ambient <off\|xmas>`, `language <ru\|en\|de>` |
 | `wallpaper` (manager) | `random` |
 | `pet` (desktop pet) | — |
 | `bar` | `toggle` |

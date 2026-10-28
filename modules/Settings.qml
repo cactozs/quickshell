@@ -11,8 +11,8 @@ import "../style"
 // Settings menu: a centered card over a full-screen scrim, unlike the bar's
 // docked panels. Opened from the "Настройки" tile in the quick settings;
 // Esc or a click outside dismisses it. Four tabs — appearance (style pack,
-// blur source, theme, colors, font), interface (language, launcher view,
-// wallpaper shortcut), apps (which desktop color targets are written) and
+// blur source, theme, colors, font, ambient), interface (language, launcher
+// view, wallpaper shortcut), apps (which desktop color targets are written) and
 // system (muted apps, power profile). The card always opens on the first tab
 // and animates its height between pages.
 PanelWindow {
@@ -450,6 +450,23 @@ PanelWindow {
                         }
                     }
 
+                    // ---- ambient --------------------------------------------------------
+
+                    SettingRow {
+                        label: "Ambient"
+
+                        SettingSegment {
+                            label: I18n.t("Выключен")
+                            selected: ShellState.ambient === "off"
+                            onClicked: ShellState.setAmbient("off")
+                        }
+
+                        SettingSegment {
+                            label: "X-mas"
+                            selected: ShellState.ambient === "xmas"
+                            onClicked: ShellState.setAmbient("xmas")
+                        }
+                    }
 
                 }
 

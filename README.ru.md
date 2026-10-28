@@ -384,7 +384,7 @@ Mod+P       repeat=false { spawn "qs" "ipc" "call" "bar" "toggle"; }
 | `weather` | — |
 | `clock` (таймер и секундомер) | — |
 | `system` (мониторинг) | — |
-| `settings` (быстрые настройки) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono>`, `blur <wallpaper\|window>`, `language <ru\|en\|de>` |
+| `settings` (быстрые настройки) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono>`, `blur <wallpaper\|window>`, `ambient <off\|xmas>`, `language <ru\|en\|de>` |
 | `wallpaper` (менеджер) | `random` |
 | `pet` (питомец) | — |
 | `bar` | `toggle` |
