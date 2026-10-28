@@ -37,6 +37,9 @@ English (except for the Russian README).
   brightness, Wi-Fi, night light, do-not-disturb, MPRIS media, power profiles,
   UI language (RU/EN/DE), theme/style/colorscheme/font controls and the power
   menu.
+- **Lock screen** — current wallpaper, clock card and a PAM password field on
+  `ext-session-lock-v1`; locks after 5 idle minutes and powers the monitors off
+  after 7.5.
 - **Wallpaper manager** — recursive library, cached previews, favorites,
   random wallpaper, drag-and-drop from the desktop or the bar.
 - **Desktop pet** — a draggable Tux that chats through NVIDIA NIM, answers
@@ -103,7 +106,6 @@ The installer is deliberately conservative:
 | niri | adds the `quickshell.kdl` include, autostart entries and `QT_QPA_PLATFORMTHEME`, with backups | `--no-apply` |
 | ghostty | adds `theme = Quickshell` if there is no theme yet | `--no-apply` |
 | qt6ct | adds `color_scheme_path` if it is not set yet | `--no-apply` |
-| hyprlock | copies a minimal `~/.config/hypr/hyprlock.conf` only when one is missing | — |
 | keybinds | **prints** the binds; it never edits `keybinds.kdl` | always |
 
 Existing files are copied to `file.bak.YYYYmmdd-HHMMSS.PID` before an edit.
@@ -151,8 +153,8 @@ sudo pacman -S --needed \
   fd ripgrep jq curl cliphist wl-clipboard brightnessctl \
   pipewire wireplumber upower power-profiles-daemon networkmanager \
   ttf-material-symbols-variable ttf-nerd-fonts-symbols ttf-jetbrains-mono-nerd \
-  alacritty gtk3 gtk4 qt6ct ghostty hyprlock \
-  imagemagick wlsunset swayidle playerctl
+  alacritty gtk3 gtk4 qt6ct ghostty \
+  imagemagick wlsunset playerctl
 ```
 
 Optional:
@@ -269,6 +271,9 @@ spawn-at-startup "sh" "-c" "wl-paste --type text --watch cliphist store"
 spawn-at-startup "sh" "-c" "wl-paste --type image --watch cliphist store"
 ```
 
+Idle locking, monitor power-off and locking before suspend all live in the
+shell itself.
+
 If you already launch Quickshell with environment variables, keep that line
 instead of adding a second one. For example:
 
@@ -304,15 +309,18 @@ The shell writes the file that path points at on its first run. Qt applications
 read the palette at startup, so restart them after a theme change. The shell
 reloads ghostty with `SIGUSR2`.
 
-The power menu's **Lock** entry runs `hyprlock`. If you do not have a hyprlock
-config, copy the portable example:
+The power menu's **Lock** entry runs `qs ipc call lock lock`; bind the same
+command to a key. The built-in lock screen shows the current wallpaper behind a
+dim scrim, with a card holding the clock, date, user and a password field. It
+takes a real `ext-session-lock-v1` lock and checks the password against PAM's
+system `login` stack, so there is no extra locker package and no `/etc/pam.d`
+change.
 
-```sh
-mkdir -p ~/.config/hypr
-cp install/hyprlock.conf ~/.config/hypr/hyprlock.conf
-```
-
-The installer does this only when `~/.config/hypr/hyprlock.conf` is missing.
+The shell locks itself after 5 idle minutes, powers the monitors off after 7.5
+(any input wakes them) and locks before suspend through logind's
+`PrepareForSleep`, holding a delay inhibitor until the lock is up. No `swayidle`
+is involved. There is deliberately no IPC to unlock — only the password ends
+the lock.
 
 #### 8. Wallpapers, weather and terminal
 
@@ -357,13 +365,14 @@ Mod+N       repeat=false { spawn-sh "qs ipc call center toggleOn $(niri msg --js
 Mod+Ctrl+W  repeat=false { spawn-sh "qs ipc call wallpaper toggleOn $(niri msg --json focused-output | jq -r .name)"; }
 Mod+Shift+N repeat=false { spawn "qs" "ipc" "call" "notifs" "toggleDnd"; }
 Mod+P       repeat=false { spawn "qs" "ipc" "call" "bar" "toggle"; }
+Mod+Alt+L   repeat=false { spawn "qs" "ipc" "call" "lock" "lock"; }
 ```
 
 Without niri/jq, replace `toggleOn $(…)` with `toggle`; the panel then opens on
 the first screen. Esc and a click outside close an open panel.
 
-Volume, brightness, media and lock binds do not go through the shell: use
-`wpctl`, `brightnessctl`, `playerctl` and `hyprlock` directly.
+Volume, brightness and media binds do not go through the shell: use `wpctl`,
+`brightnessctl` and `playerctl` directly. Lock does: `qs ipc call lock lock`.
 
 ## IPC
 
@@ -382,6 +391,7 @@ Volume, brightness, media and lock binds do not go through the shell: use
 | `settings` (quick settings) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono>`, `blur <wallpaper\|window>`, `ambient <off\|xmas>`, `language <ru\|en\|de>` |
 | `wallpaper` (manager) | `random` |
 | `pet` (desktop pet) | — |
+| `lock` (lock screen) | `lock` |
 | `bar` | `toggle` |
 | `notifs` | `toggleDnd`, `dnd`, `clear`, `mute <app>`, `unmuteAll` |
 
@@ -395,6 +405,7 @@ qs ipc call settings colorscheme gruvbox
 qs ipc call settings style new
 qs ipc call wallpaper random
 qs ipc call notifs toggleDnd
+qs ipc call lock lock
 ```
 
 ## Theming
@@ -540,8 +551,7 @@ rm -f  ~/.config/qt6ct/colors/matugen.conf
 rm -f  ~/.config/gtk-3.0/gtk.css ~/.config/gtk-4.0/gtk.css
 ```
 
-Remove `include "quickshell.kdl"` and the four autostart lines from niri by
-hand. Backups made by the installer are next to the original files as
+Remove `include "quickshell.kdl"` and the autostart lines from niri by hand. Backups made by the installer are next to the original files as
 `*.bak.YYYYmmdd-HHMMSS.PID`. The wallpaper library and installed packages are
 left alone.
 

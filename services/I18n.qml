@@ -187,7 +187,13 @@ Singleton {
             "Usage: ": "Usage: ",
             "Memory": "Memory",
             "Used: ": "Used: ",
-            "Network": "Network"
+            "Network": "Network",
+
+            // lock screen
+            "Введите пароль": "Enter password",
+            "Неверный пароль": "Wrong password",
+            "Слишком много попыток": "Too many attempts",
+            "Ошибка аутентификации": "Authentication error"
         },
         "de": {
             // settings menu
@@ -363,7 +369,13 @@ Singleton {
             "Usage: ": "Nutzung: ",
             "Memory": "Arbeitsspeicher",
             "Used: ": "Belegt: ",
-            "Network": "Netzwerk"
+            "Network": "Netzwerk",
+
+            // lock screen
+            "Введите пароль": "Passwort eingeben",
+            "Неверный пароль": "Falsches Passwort",
+            "Слишком много попыток": "Zu viele Versuche",
+            "Ошибка аутентификации": "Authentifizierungsfehler"
         }
     })
 

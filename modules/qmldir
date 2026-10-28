@@ -14,6 +14,8 @@ KeyboardLayout 1.0 KeyboardLayout.qml
 Launcher 1.0 Launcher.qml
 LayoutBadge 1.0 LayoutBadge.qml
 LazyOverlay 1.0 LazyOverlay.qml
+LockScreen 1.0 LockScreen.qml
+LockSurface 1.0 LockSurface.qml
 MiniIconButton 1.0 MiniIconButton.qml
 NotificationBell 1.0 NotificationBell.qml
 NotificationCenter 1.0 NotificationCenter.qml

@@ -163,7 +163,7 @@ PanelWindow {
             icon: Theme.iconLock,
             label: I18n.t("Блокировка"),
             keys: ["l", "д"],
-            command: ["hyprlock"],
+            command: ["qs", "ipc", "call", "lock", "lock"],
             container: Theme.surfaceContainerHighest,
             content: Theme.surfaceText
         },

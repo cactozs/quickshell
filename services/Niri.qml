@@ -121,6 +121,12 @@ Singleton {
         Quickshell.execDetached(["niri", "msg", "action", "focus-workspace-up"]);
     }
 
+    // Used by the lock screen's long-idle timer: turns the panels off, any
+    // input turns them back on.
+    function powerOffMonitors(): void {
+        Quickshell.execDetached(["niri", "msg", "action", "power-off-monitors"]);
+    }
+
     function handleLine(line: string): void {
         if (line === "") return;
         let ev = null;

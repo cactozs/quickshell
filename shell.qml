@@ -12,6 +12,9 @@ ShellRoot {
         ClockTools.now = Date.now();
     }
 
+    // Session lock, idle timers and the `lock` IPC target.
+    LockScreen {}
+
     Variants {
         model: Quickshell.screens
 

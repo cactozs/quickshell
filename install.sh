@@ -32,8 +32,8 @@ REQUIRED_PACKAGES=(
     quickshell niri matugen awww fd ripgrep jq curl cliphist wl-clipboard
     brightnessctl pipewire wireplumber upower power-profiles-daemon
     networkmanager ttf-material-symbols-variable ttf-nerd-fonts-symbols
-    ttf-jetbrains-mono-nerd alacritty gtk3 gtk4 qt6ct ghostty hyprlock
-    imagemagick wlsunset swayidle playerctl libnotify libpulse sound-theme-freedesktop
+    ttf-jetbrains-mono-nerd alacritty gtk3 gtk4 qt6ct ghostty
+    imagemagick wlsunset playerctl libnotify libpulse sound-theme-freedesktop
 )
 OPTIONAL_PACKAGES=(papirus-icon-theme nvidia-utils)
 
@@ -265,23 +265,10 @@ install_dirs() {
     note "${C_BOLD}Directories${C_RESET}"
     mkdir -p -- "$HOME/Pictures/Wallpapers" \
         "$CONFIG_HOME/gtk-3.0" "$CONFIG_HOME/gtk-4.0" \
-        "$CONFIG_HOME/ghostty/themes" "$CONFIG_HOME/qt6ct/colors" \
-        "$CONFIG_HOME/hypr"
+        "$CONFIG_HOME/ghostty/themes" "$CONFIG_HOME/qt6ct/colors"
     mkdir -p -- "$NIRI_DIR"
     [[ -e "$NIRI_DIR/quickshell.kdl" ]] || touch -- "$NIRI_DIR/quickshell.kdl"
     ok "wallpaper and desktop config directories exist"
-}
-
-install_hyprlock() {
-    local file="$CONFIG_HOME/hypr/hyprlock.conf"
-    if [[ -f "$file" ]]; then
-        ok "hyprlock config already exists"
-    elif [[ -f "$REPO_DIR/install/hyprlock.conf" ]]; then
-        cp -- "$REPO_DIR/install/hyprlock.conf" "$file"
-        ok "installed a minimal hyprlock config"
-    else
-        warn "install/hyprlock.conf is missing; create ~/.config/hypr/hyprlock.conf by hand"
-    fi
 }
 
 maybe_link() {
@@ -466,6 +453,7 @@ print_keybinds() {
     Mod+Ctrl+W  repeat=false { spawn-sh "qs ipc call wallpaper toggleOn $(niri msg --json focused-output | jq -r .name)"; }
     Mod+Shift+N repeat=false { spawn "qs" "ipc" "call" "notifs" "toggleDnd"; }
     Mod+P       repeat=false { spawn "qs" "ipc" "call" "bar" "toggle"; }
+    Mod+Alt+L   repeat=false { spawn "qs" "ipc" "call" "lock" "lock"; }
 EOF
 }
 
@@ -606,11 +594,6 @@ check_desktop() {
         warn "$HOME/Pictures/Wallpapers does not exist"
     fi
     if [[ -f "$REPO_DIR/style/Colors.json" ]]; then ok "style/Colors.json exists"; else note "  style/Colors.json is absent; the built-in baseline palette is used"; fi
-    if have hyprlock; then
-        if [[ -f "$CONFIG_HOME/hypr/hyprlock.conf" ]]; then ok "hyprlock config exists"; else warn "hyprlock is installed but ~/.config/hypr/hyprlock.conf is missing"; fi
-    else
-        warn "hyprlock is not installed (the power menu lock entry will fail)"
-    fi
 }
 
 check_services() {
@@ -683,7 +666,6 @@ note ""
 install_matugen
 ((SHIM)) && install_shim
 install_dirs
-install_hyprlock
 maybe_link
 
 if ((APPLY)); then

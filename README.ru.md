@@ -37,6 +37,9 @@
 - **Быстрые настройки** — громкость, переключение аудиовыхода, мьют микрофона,
   яркость, Wi-Fi, ночной свет, «Не беспокоить», MPRIS-плеер, профили питания,
   язык интерфейса (RU/EN/DE), тема/стиль/цвета/шрифт и меню питания.
+- **Экран блокировки** — текущие обои, карточка с часами и поле пароля через
+  PAM на `ext-session-lock-v1`; блокируется после 5 минут простоя и выключает
+  мониторы через 7,5.
 - **Менеджер обоев** — рекурсивная библиотека, кеш превью, избранное, случайные
   обои, drag-and-drop на рабочий стол или панель.
 - **Питомец** — перетаскиваемый Тукс: общается через NVIDIA NIM, отвечает про
@@ -103,7 +106,6 @@ cd ~/.config/quickshell
 | niri | добавляет include `quickshell.kdl`, автозапуск и `QT_QPA_PLATFORMTHEME`, с бэкапами | `--no-apply` |
 | ghostty | добавляет `theme = Quickshell`, если темы ещё нет | `--no-apply` |
 | qt6ct | добавляет `color_scheme_path`, если он ещё не задан | `--no-apply` |
-| hyprlock | копирует минимальный `~/.config/hypr/hyprlock.conf`, только если конфига нет | — |
 | клавиши | **печатает** бинды; `keybinds.kdl` никогда не редактируется | всегда |
 
 Перед изменением существующий файл копируется в
@@ -153,8 +155,8 @@ sudo pacman -S --needed \
   fd ripgrep jq curl cliphist wl-clipboard brightnessctl \
   pipewire wireplumber upower power-profiles-daemon networkmanager \
   ttf-material-symbols-variable ttf-nerd-fonts-symbols ttf-jetbrains-mono-nerd \
-  alacritty gtk3 gtk4 qt6ct ghostty hyprlock \
-  imagemagick wlsunset swayidle playerctl
+  alacritty gtk3 gtk4 qt6ct ghostty \
+  imagemagick wlsunset playerctl
 ```
 
 Опционально:
@@ -272,6 +274,9 @@ spawn-at-startup "sh" "-c" "wl-paste --type text --watch cliphist store"
 spawn-at-startup "sh" "-c" "wl-paste --type image --watch cliphist store"
 ```
 
+Блокировка по простою, выключение мониторов и блокировка перед сном теперь
+внутри оболочки.
+
 Если Quickshell уже запускается с переменными окружения, оставьте эту строку
 вместо второй. Например:
 
@@ -307,15 +312,17 @@ custom_palette=true
 Qt-приложения читают палитру при старте, поэтому после смены темы их нужно
 перезапустить. ghostty оболочка перезагружает через `SIGUSR2`.
 
-Пункт **«Блокировка»** в меню питания запускает `hyprlock`. Если у вас нет
-конфига hyprlock, скопируйте переносимый пример:
+Пункт **«Блокировка»** в меню питания запускает `qs ipc call lock lock`; ту же
+команду можно повесить на клавишу. Встроенный экран блокировки показывает
+текущие обои под затемнением и карточку с часами, датой, пользователем и полем
+пароля. Это настоящий `ext-session-lock-v1`, пароль проверяется через системный
+стек PAM `login`, поэтому отдельный локер и правки `/etc/pam.d` не нужны.
 
-```sh
-mkdir -p ~/.config/hypr
-cp install/hyprlock.conf ~/.config/hypr/hyprlock.conf
-```
-
-Установщик делает это, только если `~/.config/hypr/hyprlock.conf` отсутствует.
+Оболочка блокируется сама после 5 минут простоя, выключает мониторы через 7,5
+(любой ввод их включает) и блокируется перед сном по сигналу logind
+`PrepareForSleep`, удерживая delay-ингибитор, пока лок не поднимется. `swayidle`
+не нужен. IPC для разблокировки намеренно нет — блокировку снимает только
+пароль.
 
 #### 8. Обои, погода и терминал
 
@@ -362,13 +369,15 @@ Mod+N       repeat=false { spawn-sh "qs ipc call center toggleOn $(niri msg --js
 Mod+Ctrl+W  repeat=false { spawn-sh "qs ipc call wallpaper toggleOn $(niri msg --json focused-output | jq -r .name)"; }
 Mod+Shift+N repeat=false { spawn "qs" "ipc" "call" "notifs" "toggleDnd"; }
 Mod+P       repeat=false { spawn "qs" "ipc" "call" "bar" "toggle"; }
+Mod+Alt+L   repeat=false { spawn "qs" "ipc" "call" "lock" "lock"; }
 ```
 
 Без niri/jq замените `toggleOn $(…)` на `toggle`; панель откроется на первом
 экране. Esc и клик снаружи закрывают открытую панель.
 
-Громкость, яркость, медиа и блокировка не идут через оболочку: используйте
-`wpctl`, `brightnessctl`, `playerctl` и `hyprlock` напрямую.
+Громкость, яркость и медиа не идут через оболочку: используйте `wpctl`,
+`brightnessctl` и `playerctl` напрямую. Блокировка идёт:
+`qs ipc call lock lock`.
 
 ## IPC
 
@@ -387,6 +396,7 @@ Mod+P       repeat=false { spawn "qs" "ipc" "call" "bar" "toggle"; }
 | `settings` (быстрые настройки) | `launcherView <bool>`, `style <m3\|blur\|new\|nothing\|newNothing>`, `colorscheme <matugen\|oled\|gruvbox>`, `theme <dark\|light>`, `font <material\|mono>`, `blur <wallpaper\|window>`, `ambient <off\|xmas>`, `language <ru\|en\|de>` |
 | `wallpaper` (менеджер) | `random` |
 | `pet` (питомец) | — |
+| `lock` (экран блокировки) | `lock` |
 | `bar` | `toggle` |
 | `notifs` | `toggleDnd`, `dnd`, `clear`, `mute <app>`, `unmuteAll` |
 
@@ -400,6 +410,7 @@ qs ipc call settings colorscheme gruvbox
 qs ipc call settings style new
 qs ipc call wallpaper random
 qs ipc call notifs toggleDnd
+qs ipc call lock lock
 ```
 
 ## Темы
@@ -547,7 +558,7 @@ rm -f  ~/.config/qt6ct/colors/matugen.conf
 rm -f  ~/.config/gtk-3.0/gtk.css ~/.config/gtk-4.0/gtk.css
 ```
 
-Уберите `include "quickshell.kdl"` и четыре строки автозапуска из niri вручную.
+Уберите `include "quickshell.kdl"` и строки автозапуска из niri вручную.
 Бэкапы установщика лежат рядом с исходными файлами как
 `*.bak.ГГГГММДД-ЧЧММСС.PID`. Библиотека обоев и установленные пакеты не
 трогаются.
