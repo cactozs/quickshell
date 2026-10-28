@@ -58,17 +58,18 @@ PanelWindow {
     // compositor blur region cannot fade, so it would hang under the card.
     BackgroundEffect.blurRegion: Theme.blur && root.shown ? blurRegion : null
 
-    // The region never reaches past the plate: it follows the animated height on
-    // the way up and takes the destination on the way down, so any mismatch a
-    // late region update leaves is under the acrylic instead of glowing outside
-    // it. At rest both heights are equal, so there is nothing to be stale. The
-    // scale is here because the M3E spring overshoots the card's own size on open.
+    // The region repeats the plate's own rect, entrance scale included: `scale`
+    // grows a Qt item from its top-left corner, so the card's x/y stay put while
+    // its size shrinks — centring the region here instead left the plate sticking
+    // out of it during the entrance. It never reaches past the plate either: the
+    // animated height on the way up, the destination on the way down, so a late
+    // region update can only leave a mismatch under the acrylic.
     Region {
         id: blurRegion
 
         Region {
-            x: Math.round((root.width - card.width * card.scale) / 2)
-            y: Math.round((root.height - card.blurHeight * card.scale) / 2)
+            x: card.x
+            y: card.y
             width: Math.round(card.width * card.scale)
             height: Math.round(card.blurHeight * card.scale)
             radius: Math.round(card.radius * card.scale)
