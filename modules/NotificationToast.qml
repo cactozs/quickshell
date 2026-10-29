@@ -64,6 +64,26 @@ PanelWindow {
         Region { item: blurAnchor; radius: Theme.shapeXL }
     }
 
+    // The region only lands on the commit after the frame that set it; kick
+    // repaints while the stack resizes so the blur can't trail behind it.
+    BlurKick {
+        id: blurKick
+
+        region: blurRegion
+    }
+
+    Connections {
+        target: blurAnchor
+
+        function onWidthChanged(): void {
+            blurKick.kick();
+        }
+
+        function onHeightChanged(): void {
+            blurKick.kick();
+        }
+    }
+
     implicitWidth: 360
     implicitHeight: column.implicitHeight
 

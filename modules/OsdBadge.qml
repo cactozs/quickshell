@@ -58,6 +58,26 @@ PanelWindow {
         Region { item: blurAnchor; radius: pill.radius }
     }
 
+    // The region only lands on the commit after the frame that set it; kick
+    // repaints while the pill resizes so the blur can't trail behind it.
+    BlurKick {
+        id: blurKick
+
+        region: blurRegion
+    }
+
+    Connections {
+        target: pill
+
+        function onWidthChanged(): void {
+            blurKick.kick();
+        }
+
+        function onHeightChanged(): void {
+            blurKick.kick();
+        }
+    }
+
     // Ambient shadow under the pill (New style only); follows the pill's
     // entrance fade/scale.
     RectangularShadow {

@@ -32,10 +32,6 @@ PanelWindow {
     // reports a value, so cancel needs no rollback.
     property string pickerRole: ""
 
-    // Toggled by nudgeBlur() to keep one full-surface repaint going through a
-    // morph; see the repaint rectangle at the end of the file.
-    property bool blurSettle: false
-
     // Wide enough for the style segments next to their label.
     readonly property int cardWidth: 620
     readonly property int cardPadding: 20
@@ -79,6 +75,14 @@ PanelWindow {
         }
     }
 
+    // The region only lands on the commit after the frame that set it; kick
+    // repaints while the card morphs so the blur can't trail behind it.
+    BlurKick {
+        id: blurKick
+
+        region: blurRegion
+    }
+
     // A lazily built window (LazyOverlay) is born already open, where
     // onShownChanged never fires, so the focus kick runs on creation as well.
     Component.onCompleted: {
@@ -102,25 +106,6 @@ PanelWindow {
         id: focusKick
         interval: 50
         onTriggered: keyCatcher.forceActiveFocus()
-    }
-
-    // niri takes the region from the commit that follows the frame that set it,
-    // so the last frame of a morph can leave the screen one step small, and it
-    // composites the blur only where the surface damaged it, so nothing repaints
-    // that strip. Re-applying the region and pumping full-surface frames through
-    // the morph picks it up; blurSettleTimer repeats it once the plate has stopped.
-    // shortcut: a repaint nudge, not a guarantee — drop it once Quickshell/niri
-    // repaint on a region change.
-    function nudgeBlur(): void {
-        root.blurSettle = !root.blurSettle;
-        blurRegion.changed();
-    }
-
-    Timer {
-        id: blurSettleTimer
-
-        interval: 80
-        onTriggered: root.nudgeBlur()
     }
 
     Rectangle {
@@ -227,11 +212,8 @@ PanelWindow {
 
         // Each tab has its own height; the card follows with the M3 container
         // timing while the pages clip their own overflow.
-        onHeightChanged: {
-            root.nudgeBlur();
-            blurSettleTimer.restart();
-        }
-        onScaleChanged: root.nudgeBlur()
+        onHeightChanged: blurKick.kick()
+        onScaleChanged: blurKick.kick()
 
         Behavior on height {
             NumberAnimation {
@@ -1393,23 +1375,6 @@ PanelWindow {
             }
 
             onCancelled: root.pickerRole = ""
-        }
-    }
-
-    // Invisible repaint driver, toggled by nudgeBlur() on every frame of a morph
-    // and then faded out: the trailing frames keep the whole surface damaged, so
-    // the compositor picks the settled region up while the plate is still moving.
-    // 0.002 alpha is under one 8-bit step.
-    Rectangle {
-        anchors.fill: parent
-        color: Theme.surface
-        opacity: root.blurSettle ? 0.002 : 0
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.Linear
-            }
         }
     }
 

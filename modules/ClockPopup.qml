@@ -58,6 +58,26 @@ PanelWindow {
         Region { item: blurAnchor; radius: card.radius }
     }
 
+    // The region only lands on the commit after the frame that set it; kick
+    // repaints while the card resizes so the blur can't trail behind it.
+    BlurKick {
+        id: blurKick
+
+        region: blurRegion
+    }
+
+    Connections {
+        target: card
+
+        function onWidthChanged(): void {
+            blurKick.kick();
+        }
+
+        function onHeightChanged(): void {
+            blurKick.kick();
+        }
+    }
+
     // Focus the duration field so digits can be typed right away; the layer
     // surface needs a moment to gain keyboard focus, hence the kick.
     function openInit(): void {

@@ -55,6 +55,26 @@ PanelWindow {
         Region { item: blurAnchor; radius: card.radius }
     }
 
+    // The region only lands on the commit after the frame that set it; kick
+    // repaints while the card resizes so the blur can't trail behind it.
+    BlurKick {
+        id: blurKick
+
+        region: blurRegion
+    }
+
+    Connections {
+        target: card
+
+        function onWidthChanged(): void {
+            blurKick.kick();
+        }
+
+        function onHeightChanged(): void {
+            blurKick.kick();
+        }
+    }
+
     // LazyOverlay builds the window already open, so onShownChanged alone
     // would miss the first open; both paths kick the focus.
     Timer {

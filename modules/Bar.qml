@@ -196,6 +196,94 @@ PanelWindow {
         }
     }
 
+    // The region only lands on the commit after the frame that set it; kick
+    // repaints while the islands resize so the blur can't trail behind them.
+    BlurKick {
+        id: blurKick
+
+        region: blurRegion
+    }
+
+    Connections {
+        target: leftAnchor
+
+        function onXChanged(): void {
+            blurKick.kick();
+        }
+
+        function onYChanged(): void {
+            blurKick.kick();
+        }
+
+        function onWidthChanged(): void {
+            blurKick.kick();
+        }
+
+        function onHeightChanged(): void {
+            blurKick.kick();
+        }
+    }
+
+    Connections {
+        target: centerAnchor
+
+        function onXChanged(): void {
+            blurKick.kick();
+        }
+
+        function onYChanged(): void {
+            blurKick.kick();
+        }
+
+        function onWidthChanged(): void {
+            blurKick.kick();
+        }
+
+        function onHeightChanged(): void {
+            blurKick.kick();
+        }
+    }
+
+    Connections {
+        target: rightAnchor
+
+        function onXChanged(): void {
+            blurKick.kick();
+        }
+
+        function onYChanged(): void {
+            blurKick.kick();
+        }
+
+        function onWidthChanged(): void {
+            blurKick.kick();
+        }
+
+        function onHeightChanged(): void {
+            blurKick.kick();
+        }
+    }
+
+    Connections {
+        target: plateAnchor
+
+        function onXChanged(): void {
+            blurKick.kick();
+        }
+
+        function onYChanged(): void {
+            blurKick.kick();
+        }
+
+        function onWidthChanged(): void {
+            blurKick.kick();
+        }
+
+        function onHeightChanged(): void {
+            blurKick.kick();
+        }
+    }
+
     readonly property bool shown: !ShellState.barHidden
 
     // Mod+P (niri bind) through the `bar` IPC target hides the bar; unmapping also

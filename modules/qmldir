@@ -2,6 +2,7 @@ Ambient 1.0 Ambient.qml
 Backlight 1.0 Backlight.qml
 Bar 1.0 Bar.qml
 Battery 1.0 Battery.qml
+BlurKick 1.0 BlurKick.qml
 CalcRow 1.0 CalcRow.qml
 CalendarPopup 1.0 CalendarPopup.qml
 ClipboardLauncher 1.0 ClipboardLauncher.qml
