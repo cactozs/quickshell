@@ -13,15 +13,20 @@ import "../style"
 // Esc or a click outside dismisses it. Five tabs — appearance (style pack,
 // blur source, theme, colors, font, ambient), interface (language, launcher
 // view, wallpaper shortcut), apps (which desktop color targets are written),
-// system (muted apps, power profile) and Custom (the hand-built pack's knobs and
-// palette). The card always opens on the first tab and animates its height
-// between pages.
+// system (muted apps, power profile, settings view) and Custom (the hand-built
+// pack's knobs and palette). The minimal view replaces the tabs with one screen
+// (style, theme, language, power profile, the switch back). The card always
+// opens on the first tab and animates its height between pages.
 PanelWindow {
     id: root
 
     required property ShellScreen modelData
 
     readonly property bool shown: ShellState.settingsScreen === root.modelData.name
+
+    // One compact screen instead of the five tabs; the setting lives in
+    // shell-state.json and the switch is the last row of both layouts.
+    readonly property bool minimal: ShellState.settingsMinimal
 
     // 0 = Оформление, 1 = Интерфейс, 2 = Приложения, 3 = Система,
     // 4 = Custom. Reset on every open so the menu is predictable; the window
@@ -142,7 +147,7 @@ PanelWindow {
                     root.pickerRole = "";
                 else
                     ShellState.closeSettings();
-            } else if ((event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab)
+            } else if (!root.minimal && (event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab)
                 && (event.modifiers & Qt.ControlModifier)) {
                 const back = event.key === Qt.Key_Backtab
                     || (event.modifiers & Qt.ShiftModifier);
@@ -256,6 +261,7 @@ PanelWindow {
 
                 width: parent.width
                 height: 44
+                visible: !root.minimal
 
                 readonly property real cellWidth: width / tabs.count
 
@@ -360,12 +366,14 @@ PanelWindow {
 
                 width: parent.width
                 clip: true
-                height: [pageLook, pageInterface, pageApps, pageSystem, pageCustom][root.tabIndex].implicitHeight
+                height: root.minimal
+                    ? pageMinimal.implicitHeight
+                    : [pageLook, pageInterface, pageApps, pageSystem, pageCustom][root.tabIndex].implicitHeight
 
                 SettingsPage {
                     id: pageLook
 
-                    active: root.tabIndex === 0
+                    active: !root.minimal && root.tabIndex === 0
                     pageIndex: 0
 
                     // ---- style pack -----------------------------------------------------
@@ -716,7 +724,7 @@ PanelWindow {
                 SettingsPage {
                     id: pageInterface
 
-                    active: root.tabIndex === 1
+                    active: !root.minimal && root.tabIndex === 1
                     pageIndex: 1
 
                     // ---- language -------------------------------------------------------
@@ -802,7 +810,7 @@ PanelWindow {
                 SettingsPage {
                     id: pageApps
 
-                    active: root.tabIndex === 2
+                    active: !root.minimal && root.tabIndex === 2
                     pageIndex: 2
 
                     // ---- desktop color targets ------------------------------------------
@@ -917,7 +925,7 @@ PanelWindow {
                 SettingsPage {
                     id: pageSystem
 
-                    active: root.tabIndex === 3
+                    active: !root.minimal && root.tabIndex === 3
                     pageIndex: 3
 
                     // ---- muted notification apps ---------------------------------------
@@ -971,6 +979,29 @@ PanelWindow {
                             onClicked: PowerProfiles.profile = PowerProfile.Performance
                         }
                     }
+
+                    // ---- settings view --------------------------------------------------
+
+                    // Full = the five tabs, minimal = the one compact screen.
+                    // «Полные» lands on this tab, where the switch lives.
+                    SettingRow {
+                        label: I18n.t("Вид настроек")
+
+                        SettingSegment {
+                            label: I18n.t("Полные")
+                            selected: !root.minimal
+                            onClicked: {
+                                ShellState.setSettingsMinimal(false);
+                                root.tabIndex = 3;
+                            }
+                        }
+
+                        SettingSegment {
+                            label: I18n.t("Минимал")
+                            selected: root.minimal
+                            onClicked: ShellState.setSettingsMinimal(true)
+                        }
+                    }
                 }
 
                 // ---- custom style page ----------------------------------------------
@@ -982,7 +1013,7 @@ PanelWindow {
                 SettingsPage {
                     id: pageCustom
 
-                    active: root.tabIndex === 4
+                    active: !root.minimal && root.tabIndex === 4
                     pageIndex: 4
 
                     SettingRow {
@@ -1411,6 +1442,123 @@ PanelWindow {
                                     onClicked: ShellState.resetCustom()
                                 }
                             }
+                        }
+                    }
+                }
+
+                // ---- minimal view ---------------------------------------------------
+
+                // No tabs: only the three default style packs, the theme, the
+                // language, the power profile and the switch back to the tabs.
+                SettingsPage {
+                    id: pageMinimal
+
+                    active: root.minimal
+                    // pageIndex is only the exit direction, so keep it at the
+                    // tab the card was on instead of sliding in from a corner.
+                    pageIndex: root.tabIndex
+
+                    SettingRow {
+                        label: I18n.t("Стиль")
+
+                        SettingSegment {
+                            label: "M3 Inspired"
+                            selected: ShellState.styleMode === "m3"
+                            onClicked: ShellState.setStyleMode("m3")
+                        }
+
+                        SettingSegment {
+                            label: "M3 Blur"
+                            selected: ShellState.styleMode === "blur"
+                            onClicked: ShellState.setStyleMode("blur")
+                        }
+
+                        SettingSegment {
+                            label: "New"
+                            selected: ShellState.styleMode === "new"
+                            onClicked: ShellState.setStyleMode("new")
+                        }
+                    }
+
+                    SettingRow {
+                        label: I18n.t("Тема")
+                        // Same as the full view: Custom owns both modes.
+                        visible: !Theme.custom
+
+                        SettingSegment {
+                            label: I18n.t("Тёмная")
+                            selected: !Theme.light
+                            onClicked: ShellState.setThemeMode("dark")
+                        }
+
+                        SettingSegment {
+                            label: I18n.t("Светлая")
+                            selected: Theme.light
+                            onClicked: ShellState.setThemeMode("light")
+                        }
+                    }
+
+                    SettingRow {
+                        label: I18n.t("Язык")
+
+                        SettingSegment {
+                            label: "Русский"
+                            selected: ShellState.language === "ru"
+                            onClicked: ShellState.setLanguage("ru")
+                        }
+
+                        SettingSegment {
+                            label: "English"
+                            selected: ShellState.language === "en"
+                            onClicked: ShellState.setLanguage("en")
+                        }
+
+                        SettingSegment {
+                            label: "Deutsch"
+                            selected: ShellState.language === "de"
+                            onClicked: ShellState.setLanguage("de")
+                        }
+                    }
+
+                    SettingRow {
+                        label: I18n.t("Профиль питания")
+
+                        SettingSegment {
+                            label: I18n.t("Экономия")
+                            selected: PowerProfiles.profile === PowerProfile.PowerSaver
+                            onClicked: PowerProfiles.profile = PowerProfile.PowerSaver
+                        }
+
+                        SettingSegment {
+                            label: I18n.t("Баланс")
+                            selected: PowerProfiles.profile === PowerProfile.Balanced
+                            onClicked: PowerProfiles.profile = PowerProfile.Balanced
+                        }
+
+                        SettingSegment {
+                            label: I18n.t("Производительность")
+                            visible: PowerProfiles.hasPerformanceProfile
+                            selected: PowerProfiles.profile === PowerProfile.Performance
+                            onClicked: PowerProfiles.profile = PowerProfile.Performance
+                        }
+                    }
+
+                    SettingRow {
+                        label: I18n.t("Вид настроек")
+
+                        SettingSegment {
+                            label: I18n.t("Полные")
+                            selected: !root.minimal
+                            onClicked: {
+                                ShellState.setSettingsMinimal(false);
+                                root.tabIndex = 3;
+                            }
+                        }
+
+                        SettingSegment {
+                            label: I18n.t("Минимал")
+                            selected: root.minimal
+                            onClicked: ShellState.setSettingsMinimal(true)
                         }
                     }
                 }

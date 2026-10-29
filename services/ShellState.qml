@@ -64,6 +64,7 @@ Singleton {
             property string panelWidth
             property string colorScheme
             property string themeMode
+            property bool settingsMinimal
             property string fontMode
             property string animationMode
             property string niriAnimation
@@ -346,6 +347,15 @@ Singleton {
         props.themeMode = name === "light" ? "light" : "dark";
     }
 
+    // Settings menu layout: false = the five tabs (default), true = one
+    // compact screen with only style, theme, language, power profile and the
+    // switch itself (see modules/Settings.qml).
+    readonly property bool settingsMinimal: props.settingsMinimal
+
+    function setSettingsMinimal(enabled: bool): void {
+        props.settingsMinimal = enabled;
+    }
+
     // UI font: "material" = Google Sans (default, the M3 look), "mono" =
     // JetBrainsMono Nerd Font Mono, "old" = Nimbus Mono PS (see style/Theme.qml).
     // Normalized like the other modes.
@@ -619,6 +629,11 @@ Singleton {
         // Theme mode, so scripts can flip it: `qs ipc call settings theme light`.
         function theme(name: string): void {
             root.setThemeMode(name);
+        }
+
+        // Settings menu layout: `qs ipc call settings view minimal`.
+        function view(name: string): void {
+            root.setSettingsMinimal(name === "minimal");
         }
 
         // Blur source, so scripts can flip it: `qs ipc call settings blur window`.
