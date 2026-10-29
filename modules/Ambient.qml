@@ -8,24 +8,6 @@ import "../style"
 // over the wallpaper. Lives in the existing full-screen wallpaper surface
 // and never takes input.
 Item {
-    // A few dim candle-like points add a warm holiday accent without another
-    // animated full-screen effect.
-    Repeater {
-        model: [0.14, 0.53, 0.88]
-
-        delegate: Rectangle {
-            required property real modelData
-
-            x: parent.width * modelData
-            y: parent.height - 12
-            width: 4
-            height: width
-            radius: width / 2
-            color: Theme.candle
-            opacity: 0.48
-        }
-    }
-
     // Opt-in: an animated full-screen layer repaints at the compositor rate,
     // so it costs more than the static shell while enabled.
     ParticleSystem {
