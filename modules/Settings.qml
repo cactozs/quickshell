@@ -10,11 +10,12 @@ import "../style"
 
 // Settings menu: a centered card over a full-screen scrim, unlike the bar's
 // docked panels. Opened from the "Настройки" tile in the quick settings;
-// Esc or a click outside dismisses it. Four tabs — appearance (style pack,
+// Esc or a click outside dismisses it. Five tabs — appearance (style pack,
 // blur source, theme, colors, font, ambient), interface (language, launcher
-// view, wallpaper shortcut), apps (which desktop color targets are written) and
-// system (muted apps, power profile). The card always opens on the first tab
-// and animates its height between pages.
+// view, wallpaper shortcut), apps (which desktop color targets are written),
+// system (muted apps, power profile) and Custom (the hand-built pack's knobs and
+// palette). The card always opens on the first tab and animates its height
+// between pages.
 PanelWindow {
     id: root
 
@@ -22,10 +23,14 @@ PanelWindow {
 
     readonly property bool shown: ShellState.settingsScreen === root.modelData.name
 
-    // 0 = Оформление, 1 = Интерфейс, 2 = Приложения, 3 = Система. Reset on
-    // every open so the menu is predictable; the window itself outlives a close
-    // by 20 s.
+    // 0 = Оформление, 1 = Интерфейс, 2 = Приложения, 3 = Система,
+    // 4 = Custom. Reset on every open so the menu is predictable; the window
+    // itself outlives a close by 20 s.
     property int tabIndex: 0
+
+    // Role being edited in the palette picker ("" = closed). The picker only
+    // reports a value, so cancel needs no rollback.
+    property string pickerRole: ""
 
     // Toggled by nudgeBlur() to keep one full-surface repaint going through a
     // morph; see the repaint rectangle at the end of the file.
@@ -82,11 +87,14 @@ PanelWindow {
     }
 
     onShownChanged: {
+        root.pickerRole = "";
         if (root.shown) {
             root.tabIndex = 0;
             focusKick.restart();
         }
     }
+
+    onTabIndexChanged: root.pickerRole = ""
 
     // Layer surfaces take a moment to gain keyboard focus; make sure the key
     // catcher ends up active either way.
@@ -145,7 +153,10 @@ PanelWindow {
 
         Keys.onPressed: event => {
             if (event.key === Qt.Key_Escape) {
-                ShellState.closeSettings();
+                if (root.pickerRole !== "")
+                    root.pickerRole = "";
+                else
+                    ShellState.closeSettings();
             } else if ((event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab)
                 && (event.modifiers & Qt.ControlModifier)) {
                 const back = event.key === Qt.Key_Backtab
@@ -270,7 +281,7 @@ PanelWindow {
                     id: tabs
 
                     model: [I18n.t("Оформление"), I18n.t("Интерфейс"), I18n.t("Приложения"),
-                        I18n.t("Система")]
+                        I18n.t("Система"), I18n.t("Custom")]
 
                     delegate: Item {
                         id: tabItem
@@ -367,7 +378,7 @@ PanelWindow {
 
                 width: parent.width
                 clip: true
-                height: [pageLook, pageInterface, pageApps, pageSystem][root.tabIndex].implicitHeight
+                height: [pageLook, pageInterface, pageApps, pageSystem, pageCustom][root.tabIndex].implicitHeight
 
                 SettingsPage {
                     id: pageLook
@@ -414,6 +425,12 @@ PanelWindow {
                             label: "Old"
                             selected: ShellState.styleMode === "old"
                             onClicked: ShellState.setStyleMode("old")
+                        }
+
+                        SettingSegment {
+                            label: "Custom"
+                            selected: ShellState.styleMode === "custom"
+                            onClicked: ShellState.setStyleMode("custom")
                         }
                     }
 
@@ -625,6 +642,10 @@ PanelWindow {
 
                     SettingRow {
                         label: I18n.t("Тема")
+                        // Custom has one palette for both modes: its surface
+                        // decides the light system derivations, so a mode picker
+                        // would lie.
+                        visible: !Theme.custom
 
                         SettingSegment {
                             label: I18n.t("Тёмная")
@@ -643,6 +664,9 @@ PanelWindow {
 
                     SettingRow {
                         label: I18n.t("Цвета")
+                        // The custom palette owns every role, so the scheme below
+                        // would have nothing left to color.
+                        visible: !Theme.custom
 
                         SettingSegment {
                             label: "Matugen"
@@ -891,7 +915,484 @@ PanelWindow {
                         }
                     }
                 }
+
+                // ---- custom style page ----------------------------------------------
+
+                // The pack itself is one mode in the style row above; this page
+                // owns its knobs and the one M3 palette. The controls stay usable
+                // on other packs (they edit stored values), but the hint says the
+                // shell only wears them as Custom.
+                SettingsPage {
+                    id: pageCustom
+
+                    active: root.tabIndex === 4
+                    pageIndex: 4
+
+                    SettingRow {
+                        label: I18n.t("Стиль")
+
+                        SettingSegment {
+                            label: "Custom"
+                            selected: Theme.custom
+                            onClicked: ShellState.setStyleMode("custom")
+                        }
+                    }
+
+                    Text {
+                        width: parent.width
+                        visible: !Theme.custom
+                        text: I18n.t("Настройки применяются в стиле Custom")
+                        color: Theme.surfaceVariantText
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.fontSizeBodySmall
+                        wrapMode: Text.WordWrap
+                    }
+
+                    // The palette and the knobs do not fit one screen with the
+                    // settings card, so this page scrolls inside a fixed viewport.
+                    Flickable {
+                        id: customScroll
+
+                        width: parent.width
+                        height: Math.min(customColumn.implicitHeight, Math.max(280, root.height - 300))
+                        contentWidth: width
+                        contentHeight: customColumn.implicitHeight
+                        clip: true
+                        boundsBehavior: Flickable.StopAtBounds
+
+                        Column {
+                            id: customColumn
+
+                            width: customScroll.width
+                            spacing: 16
+
+                            // ---- shape ------------------------------------------
+
+                            SettingRow {
+                                label: I18n.t("Скругление")
+
+                                IntSlider {
+                                    id: shapeSlider
+
+                                    minimum: 0
+                                    maximum: 32
+                                    current: ShellState.customRadius
+                                    onChangedValue: value => ShellState.setCustomRadius(value)
+                                }
+
+                                Item {
+                                    implicitWidth: 32
+                                    implicitHeight: 40
+
+                                    Text {
+                                        anchors.right: parent.right
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: shapeSlider.shown
+                                        color: Theme.surfaceText
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: Theme.fontSizeLabelLarge
+                                        font.weight: Font.Medium
+                                    }
+                                }
+                            }
+
+                            SettingRow {
+                                label: I18n.t("Радиус панели")
+
+                                IntSlider {
+                                    id: barSlider
+
+                                    minimum: 0
+                                    maximum: 24
+                                    current: ShellState.customBarRadius
+                                    onChangedValue: value => ShellState.setCustomBarRadius(value)
+                                }
+
+                                Item {
+                                    implicitWidth: 32
+                                    implicitHeight: 40
+
+                                    Text {
+                                        anchors.right: parent.right
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: barSlider.shown
+                                        color: Theme.surfaceText
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: Theme.fontSizeLabelLarge
+                                        font.weight: Font.Medium
+                                    }
+                                }
+                            }
+
+                            SettingRow {
+                                label: I18n.t("Радиус чипов")
+
+                                IntSlider {
+                                    id: chipSlider
+
+                                    minimum: 0
+                                    maximum: 24
+                                    current: ShellState.customChipRadius
+                                    onChangedValue: value => ShellState.setCustomChipRadius(value)
+                                }
+
+                                Item {
+                                    implicitWidth: 32
+                                    implicitHeight: 40
+
+                                    Text {
+                                        anchors.right: parent.right
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: chipSlider.shown
+                                        color: Theme.surfaceText
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: Theme.fontSizeLabelLarge
+                                        font.weight: Font.Medium
+                                    }
+                                }
+                            }
+
+                            // ---- dressing ---------------------------------------
+
+                            SettingRow {
+                                label: I18n.t("Акрил")
+
+                                SettingSegment {
+                                    label: I18n.t("Вкл")
+                                    selected: ShellState.customAcrylic
+                                    onClicked: ShellState.setCustomAcrylic(true)
+                                }
+
+                                SettingSegment {
+                                    label: I18n.t("Выкл")
+                                    selected: !ShellState.customAcrylic
+                                    onClicked: ShellState.setCustomAcrylic(false)
+                                }
+                            }
+
+                            SettingRow {
+                                label: I18n.t("Прозрачность")
+                                visible: ShellState.customAcrylic
+
+                                IntSlider {
+                                    id: opacitySlider
+
+                                    minimum: 40
+                                    maximum: 100
+                                    current: ShellState.customOpacity
+                                    onChangedValue: value => ShellState.setCustomOpacity(value)
+                                }
+
+                                Item {
+                                    implicitWidth: 32
+                                    implicitHeight: 40
+
+                                    Text {
+                                        anchors.right: parent.right
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: opacitySlider.shown
+                                        color: Theme.surfaceText
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: Theme.fontSizeLabelLarge
+                                        font.weight: Font.Medium
+                                    }
+                                }
+                            }
+
+                            SettingRow {
+                                label: I18n.t("Сила тени")
+
+                                IntSlider {
+                                    id: shadowSlider
+
+                                    minimum: 0
+                                    maximum: 100
+                                    current: ShellState.customShadow
+                                    onChangedValue: value => ShellState.setCustomShadow(value)
+                                }
+
+                                Item {
+                                    implicitWidth: 32
+                                    implicitHeight: 40
+
+                                    Text {
+                                        anchors.right: parent.right
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: shadowSlider.shown
+                                        color: Theme.surfaceText
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: Theme.fontSizeLabelLarge
+                                        font.weight: Font.Medium
+                                    }
+                                }
+                            }
+
+                            SettingRow {
+                                label: I18n.t("Размытие тени")
+
+                                IntSlider {
+                                    id: shadowBlurSlider
+
+                                    minimum: 0
+                                    maximum: 64
+                                    current: ShellState.customShadowBlur
+                                    onChangedValue: value => ShellState.setCustomShadowBlur(value)
+                                }
+
+                                Item {
+                                    implicitWidth: 32
+                                    implicitHeight: 40
+
+                                    Text {
+                                        anchors.right: parent.right
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: shadowBlurSlider.shown
+                                        color: Theme.surfaceText
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: Theme.fontSizeLabelLarge
+                                        font.weight: Font.Medium
+                                    }
+                                }
+                            }
+
+                            SettingRow {
+                                label: I18n.t("Смещение тени")
+
+                                IntSlider {
+                                    id: shadowOffsetSlider
+
+                                    minimum: -16
+                                    maximum: 16
+                                    current: ShellState.customShadowOffset
+                                    onChangedValue: value => ShellState.setCustomShadowOffset(value)
+                                }
+
+                                Item {
+                                    implicitWidth: 32
+                                    implicitHeight: 40
+
+                                    Text {
+                                        anchors.right: parent.right
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: shadowOffsetSlider.shown
+                                        color: Theme.surfaceText
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: Theme.fontSizeLabelLarge
+                                        font.weight: Font.Medium
+                                    }
+                                }
+                            }
+
+                            SettingRow {
+                                label: I18n.t("Контур")
+
+                                SettingSegment {
+                                    label: I18n.t("Вкл")
+                                    selected: ShellState.customBorder
+                                    onClicked: ShellState.setCustomBorder(true)
+                                }
+
+                                SettingSegment {
+                                    label: I18n.t("Выкл")
+                                    selected: !ShellState.customBorder
+                                    onClicked: ShellState.setCustomBorder(false)
+                                }
+                            }
+
+                            SettingRow {
+                                label: I18n.t("Бевелы")
+
+                                SettingSegment {
+                                    label: I18n.t("Вкл")
+                                    selected: ShellState.customBevel
+                                    onClicked: ShellState.setCustomBevel(true)
+                                }
+
+                                SettingSegment {
+                                    label: I18n.t("Выкл")
+                                    selected: !ShellState.customBevel
+                                    onClicked: ShellState.setCustomBevel(false)
+                                }
+                            }
+
+                            // ---- palette ----------------------------------------
+
+                            Text {
+                                width: parent.width
+                                text: I18n.t("Палитра")
+                                color: Theme.surfaceText
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Theme.fontSizeBodyLarge
+                                font.weight: Font.Medium
+                            }
+
+                            Repeater {
+                                model: [
+                                    {
+                                        "title": I18n.t("Акценты"),
+                                        "roles": [
+                                            "primary", "on_primary", "primary_container", "on_primary_container",
+                                            "secondary", "on_secondary", "secondary_container", "on_secondary_container",
+                                            "tertiary", "on_tertiary", "tertiary_container", "on_tertiary_container",
+                                            "error", "on_error", "error_container", "on_error_container"
+                                        ]
+                                    },
+                                    {
+                                        "title": I18n.t("Поверхности"),
+                                        "roles": [
+                                            "surface", "on_surface", "surface_variant", "on_surface_variant",
+                                            "surface_dim", "surface_bright", "surface_container_lowest",
+                                            "surface_container_low", "surface_container", "surface_container_high",
+                                            "surface_container_highest"
+                                        ]
+                                    },
+                                    {
+                                        "title": I18n.t("Контур и инверсия"),
+                                        "roles": [
+                                            "outline", "outline_variant", "inverse_surface", "inverse_on_surface",
+                                            "inverse_primary", "scrim", "shadow", "surface_tint"
+                                        ]
+                                    },
+                                    {
+                                        "title": I18n.t("Фиксированные акценты"),
+                                        "roles": [
+                                            "primary_fixed", "primary_fixed_dim", "on_primary_fixed",
+                                            "on_primary_fixed_variant", "secondary_fixed", "secondary_fixed_dim",
+                                            "on_secondary_fixed", "on_secondary_fixed_variant", "tertiary_fixed",
+                                            "tertiary_fixed_dim", "on_tertiary_fixed", "on_tertiary_fixed_variant"
+                                        ]
+                                    }
+                                ]
+
+                                delegate: Column {
+                                    id: paletteGroup
+
+                                    required property var modelData
+
+                                    width: customColumn.width
+                                    spacing: 8
+
+                                    Text {
+                                        text: paletteGroup.modelData.title
+                                        color: Theme.surfaceVariantText
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: Theme.fontSizeLabelMedium
+                                    }
+
+                                    Grid {
+                                        id: paletteGrid
+
+                                        width: parent.width
+                                        columns: 2
+                                        columnSpacing: 8
+                                        rowSpacing: 6
+
+                                        Repeater {
+                                            model: paletteGroup.modelData.roles
+
+                                            delegate: Rectangle {
+                                                id: roleRow
+
+                                                required property string modelData
+
+                                                width: (paletteGrid.width - paletteGrid.columnSpacing) / paletteGrid.columns
+                                                height: 32
+                                                radius: Theme.shapeSM
+                                                color: roleHover.hovered ? Theme.surfaceContainerHighest : "transparent"
+                                                border.width: Theme.hairlineWidth
+                                                border.color: Theme.hairline
+
+                                                Text {
+                                                    anchors.left: parent.left
+                                                    anchors.leftMargin: 8
+                                                    anchors.verticalCenter: parent.verticalCenter
+                                                    width: Math.max(0, parent.width - 56)
+                                                    text: roleRow.modelData.replace(/_/g, " ")
+                                                    color: Theme.surfaceText
+                                                    font.family: Theme.fontFamily
+                                                    font.pixelSize: Theme.fontSizeBodySmall
+                                                    elide: Text.ElideRight
+                                                }
+
+                                                Rectangle {
+                                                    anchors.right: parent.right
+                                                    anchors.rightMargin: 6
+                                                    anchors.verticalCenter: parent.verticalCenter
+                                                    width: 32
+                                                    height: 20
+                                                    radius: Theme.shapeXS
+                                                    color: Theme.customPalette[roleRow.modelData]
+                                                    border.width: 1
+                                                    border.color: Theme.outlineVariant
+                                                }
+
+                                                MouseArea {
+                                                    anchors.fill: parent
+                                                    cursorShape: Qt.PointingHandCursor
+                                                    onClicked: root.pickerRole = roleRow.modelData
+                                                }
+
+                                                HoverHandler {
+                                                    id: roleHover
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            SettingRow {
+                                label: I18n.t("Сброс")
+
+                                SettingSegment {
+                                    label: I18n.t("Палитру")
+                                    onClicked: ShellState.resetCustomPalette()
+                                }
+
+                                SettingSegment {
+                                    label: I18n.t("Всё")
+                                    onClicked: ShellState.resetCustom()
+                                }
+                            }
+                        }
+                    }
+                }
             }
+        }
+
+        // Palette picker, dimmed card behind it. It only reports on "Готово",
+        // so Cancel and a click on the scrim need no rollback.
+        Rectangle {
+            anchors.fill: parent
+            z: 10
+            color: Theme.scrim
+            opacity: 0.35
+            visible: root.pickerRole !== ""
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: root.pickerRole = ""
+            }
+        }
+
+        ColorPicker {
+            anchors.centerIn: parent
+            z: 11
+            visible: root.pickerRole !== ""
+            role: root.pickerRole
+            initialColor: root.pickerRole !== "" ? Theme.customPalette[root.pickerRole] : "transparent"
+
+            onAccepted: value => {
+                ShellState.setCustomColor(root.pickerRole, value);
+                root.pickerRole = "";
+            }
+
+            onResetRequested: {
+                ShellState.resetCustomColor(root.pickerRole);
+                root.pickerRole = "";
+            }
+
+            onCancelled: root.pickerRole = ""
         }
     }
 

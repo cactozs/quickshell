@@ -4,10 +4,11 @@ import QtQuick
 import "../style"
 
 // The dressing of a card: under "new" the 1px inner rim and a 1px specular line
-// along the top edge; under "old" a black outline and the raised/sunken bevel.
-// Fills its parent (a Rectangle) and stays under the content, so nothing is
-// drawn over the text or the chips inside. Every token is transparent or zero
-// under m3, so it can be added unconditionally.
+// along the top edge; under "old" (or Custom with its bevel knob) a black
+// outline and the raised/sunken bevel. Fills its parent (a Rectangle) and stays
+// under the content, so nothing is drawn over the text or the chips inside.
+// Every token is transparent or zero under m3, so it can be added
+// unconditionally.
 Item {
     id: root
 
@@ -65,48 +66,49 @@ Item {
     }
 
     // Old's black outline, then the bevel one pixel inside it. White top/left
-    // and gray bottom/right read as raised; swapped, as pressed.
+    // and gray bottom/right read as raised; swapped, as pressed. The lines stop
+    // at the corner arc, so Custom's rounded cards do not sprout square corners.
     Rectangle {
         anchors.fill: parent
         color: "transparent"
         border.width: 1
         border.color: Theme.hairline
-        visible: Theme.old
+        visible: Theme.bevel
     }
 
     Rectangle {
-        visible: Theme.old
-        x: 1
+        visible: Theme.bevel
+        x: 1 + root.corner
         y: 1
-        width: Math.max(0, parent.width - 2)
+        width: Math.max(0, parent.width - 2 - 2 * root.corner)
         height: 1
         color: root.sunken ? Theme.bevelDark : Theme.bevelLight
     }
 
     Rectangle {
-        visible: Theme.old
+        visible: Theme.bevel
         x: 1
-        y: 1
+        y: 1 + root.corner
         width: 1
-        height: Math.max(0, parent.height - 2)
+        height: Math.max(0, parent.height - 2 - 2 * root.corner)
         color: root.sunken ? Theme.bevelDark : Theme.bevelLight
     }
 
     Rectangle {
-        visible: Theme.old
-        x: 1
+        visible: Theme.bevel
+        x: 1 + root.corner
         y: Math.max(1, parent.height - 2)
-        width: Math.max(0, parent.width - 2)
+        width: Math.max(0, parent.width - 2 - 2 * root.corner)
         height: 1
         color: root.sunken ? Theme.bevelLight : Theme.bevelDark
     }
 
     Rectangle {
-        visible: Theme.old
+        visible: Theme.bevel
         x: Math.max(1, parent.width - 2)
-        y: 1
+        y: 1 + root.corner
         width: 1
-        height: Math.max(0, parent.height - 2)
+        height: Math.max(0, parent.height - 2 - 2 * root.corner)
         color: root.sunken ? Theme.bevelLight : Theme.bevelDark
     }
 }

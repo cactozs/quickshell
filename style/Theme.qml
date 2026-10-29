@@ -21,7 +21,7 @@ import "../services"
 // the bar in either mode; switching ShellState.themeMode just swaps which file
 // feeds the tokens.
 //
-// Six style packs share these tokens (ShellState.styleMode, switched in the
+// Seven style packs share these tokens (ShellState.styleMode, switched in the
 // settings menu): "m3" is the wallpaper palette above; "blur" keeps that
 // palette and the M3 shape scale but turns the backdrops acrylic and asks the
 // compositor to blur behind them; "new" swaps in fixed graphite surfaces with
@@ -33,7 +33,10 @@ import "../services"
 // alpha, rim, specular and shadow, with the compositor blur behind them;
 // "old" is the retro chrome: fixed gray plates (charcoal in the dark twin),
 // square corners, a black hairline and raised/sunken bevels, no blur, shadow or
-// motion. Tokens only the dressing needs hang off `glass`, the acrylic ones off
+// motion. "custom" is hand-built: one M3 palette for both modes plus knobs for
+// the corner ladder, bar/chip radii, acrylic alpha, hairline, bevels and the
+// drop shadow, all stored in shell-state.json (see ShellState.custom*).
+// Tokens only the dressing needs hang off `glass`, the acrylic ones off
 // `blur`, the hard-edge ones off `nothing`, the retro ones off `old`, New's own
 // palette and opaque popups off `newLook`, so the M3 look is untouched.
 //
@@ -59,12 +62,17 @@ Singleton {
         return "'" + value.replace(/'/g, "'\\''") + "'";
     }
 
+    // Fully hand-built pack: the traits below are read from ShellState's custom
+    // knobs and from the single custom palette, not from a fixed recipe.
+    readonly property bool custom: ShellState.styleMode === "custom"
+
     // New's own palette, radii and opaque popup tone. The acrylic dressing
     // (rim, specular, shadow, veil) is `glass` below, which "newNothing" shares.
     readonly property bool newLook: ShellState.styleMode === "new"
 
-    // Acrylic card dressing: "new" and "newNothing".
-    readonly property bool glass: ShellState.styleMode === "new" || ShellState.styleMode === "newNothing"
+    // Acrylic card dressing: "new", "newNothing" and Custom.
+    readonly property bool glass: ShellState.styleMode === "new"
+        || ShellState.styleMode === "newNothing" || root.custom
 
     // Opaque graphite, hard corners, one-pixel edges, one signal-red accent.
     // "newNothing" keeps the palette and the corners and only adds the dressing.
@@ -73,13 +81,21 @@ Singleton {
     // Retro chrome: fixed palettes, square corners, black hairlines, bevels.
     readonly property bool old: ShellState.styleMode === "old"
 
-    // Translucent backdrops plus the compositor blur behind them ("New" carries
-    // it with the graphite palette, "blur" with the wallpaper one).
-    readonly property bool blur: ShellState.styleMode === "new" || ShellState.styleMode === "blur"
-        || ShellState.styleMode === "newNothing"
+    // Bevel dressing: the retro pack, or Custom's own bevel knob.
+    readonly property bool bevel: root.old || (root.custom && ShellState.customBevel)
 
-    // ShellState.themeMode, resolved: "dark" unless the user picked light.
-    readonly property bool light: ShellState.themeMode === "light"
+    // Translucent backdrops plus the compositor blur behind them ("New" carries
+    // it with the graphite palette, "blur" with the wallpaper one, Custom when
+    // its acrylic knob is on).
+    readonly property bool blur: ShellState.styleMode === "new" || ShellState.styleMode === "blur"
+        || ShellState.styleMode === "newNothing" || (root.custom && ShellState.customAcrylic)
+
+    // ShellState.themeMode for the fixed packs. Custom has one palette for both
+    // modes, so its own surface decides which side of the light derivations
+    // (terminal, GTK/Qt/ghostty, snow) applies.
+    readonly property bool light: root.custom
+        ? root.isLightColor(root.customPalette.surface)
+        : ShellState.themeMode === "light"
 
     // ---- dynamic color scheme ------------------------------------------------
 
@@ -233,6 +249,22 @@ Singleton {
         "scrim": "#ff000000",
         "shadow": "#ff000000"
     })
+
+    // Custom's default palette: the New graphite ladder made opaque (its
+    // containers ship with acrylic alpha) over the baseline accents. Sparse
+    // overrides from the settings menu sit on top, and a reset drops them.
+    readonly property var customDefaults: {
+        const base = Object.assign({}, root.baselineScheme);
+        for (const key in root.newScheme)
+            base[key] = root.withAlpha(root.newScheme[key], 1);
+        return base;
+    }
+
+    // One palette for both theme modes, as chosen in the settings menu. Its
+    // surface luminance drives `light` above, so a light custom palette gets
+    // the light terminal/system derivations without a second palette.
+    readonly property var customPalette: Object.assign({}, root.customDefaults,
+        ShellState.customPaletteOverrides)
 
     // "Nothing" pack: near-black graphite plates, white type, neutral grays and
     // one signal-red accent (primary) reserved for small highlights. Selection
@@ -539,7 +571,9 @@ Singleton {
     // the baseline of the current mode, so roles they do not list keep sane
     // defaults (inverse surfaces, fixed accents) instead of the other mode's.
     // The style packs own the matugen slots: a picked color scheme still wins.
-    readonly property var activeScheme: ShellState.colorScheme === "oled"
+    readonly property var activeScheme: root.custom
+        ? root.customPalette
+        : ShellState.colorScheme === "oled"
         ? Object.assign({}, root.activeBaseline, root.light ? root.oledLightScheme : root.oledScheme)
         : ShellState.colorScheme === "gruvbox"
         ? Object.assign({}, root.activeBaseline, root.light ? root.gruvboxLightScheme : root.gruvboxScheme)
@@ -562,6 +596,14 @@ Singleton {
     // alpha is applied here (and they take no accent tint: Nothing's palette is
     // fixed).
     readonly property var scheme: {
+        if (root.custom) {
+            const base = Object.assign({}, root.customPalette);
+            if (!root.blur)
+                return base;
+            for (const key of root.acrylicSurfaceKeys)
+                base[key] = root.withAlpha(base[key], ShellState.customOpacity / 100);
+            return base;
+        }
         const matugenOld = root.old && ShellState.colorScheme === "matugen";
         const matugenGlass = root.newLook && ShellState.colorScheme === "matugen";
         const base = matugenGlass
@@ -674,6 +716,19 @@ Singleton {
         if (value.length === 9 && value.charAt(0) === "#")
             return "#" + value.slice(7, 9) + value.slice(1, 7);
         return value;
+    }
+
+    // Relative luminance of an opaque hex, used by Custom's one-palette mode to
+    // decide whether the light derivations apply. Garbage reads as dark.
+    function isLightColor(value: string): bool {
+        const c = root.parseHex(value);
+        if (isNaN(c[1]) || isNaN(c[2]) || isNaN(c[3]))
+            return false;
+        const channel = (v) => {
+            const s = v / 255;
+            return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+        };
+        return 0.2126 * channel(c[1]) + 0.7152 * channel(c[2]) + 0.0722 * channel(c[3]) > 0.5;
     }
 
     // Mixes `over` into `base` by `amount` (0..1), keeping base's alpha. Both
@@ -805,52 +860,82 @@ Singleton {
     readonly property real scrimOpacity: root.nothing ? 0.60 : (root.glass || root.old ? 0.45 : 0.32)
 
     // ---- shape scale (M3 Expressive: 4/8/12/16/20/28/32/48/full; Nothing: 2..12; Old: square) ----
+    // Custom scales the M3 ladder from one knob: 16 reproduces the values
+    // below, 0 squares everything, 32 doubles it.
 
-    readonly property int shapeXS: root.old ? 0 : (root.nothing ? 2 : 4)
-    readonly property int shapeSM: root.old ? 0 : (root.nothing ? 3 : 8)
-    readonly property int shapeMD: root.old ? 0 : (root.nothing ? 4 : 12)
-    readonly property int shapeLG: root.old ? 0 : (root.nothing ? 6 : 16)
-    readonly property int shapeLGI: root.old ? 0 : (root.nothing ? 6 : (root.glass ? 14 : 20)) // large increased
-    readonly property int shapeXL: root.old ? 0 : (root.nothing ? 8 : (root.glass ? 16 : 28))
-    readonly property int shapeXLI: root.old ? 0 : (root.nothing ? 10 : (root.glass ? 18 : 32)) // extra large increased
-    readonly property int shapeXXL: root.old ? 0 : (root.nothing ? 12 : (root.glass ? 22 : 48)) // extra extra large (hero surfaces)
+    readonly property int shapeXS: root.custom ? Math.round(ShellState.customRadius * 0.25)
+        : root.old ? 0 : (root.nothing ? 2 : 4)
+    readonly property int shapeSM: root.custom ? Math.round(ShellState.customRadius * 0.5)
+        : root.old ? 0 : (root.nothing ? 3 : 8)
+    readonly property int shapeMD: root.custom ? Math.round(ShellState.customRadius * 0.75)
+        : root.old ? 0 : (root.nothing ? 4 : 12)
+    readonly property int shapeLG: root.custom ? ShellState.customRadius
+        : root.old ? 0 : (root.nothing ? 6 : 16)
+    readonly property int shapeLGI: root.custom ? Math.round(ShellState.customRadius * 1.25)
+        : root.old ? 0 : (root.nothing ? 6 : (root.glass ? 14 : 20)) // large increased
+    readonly property int shapeXL: root.custom ? Math.round(ShellState.customRadius * 1.75)
+        : root.old ? 0 : (root.nothing ? 8 : (root.glass ? 16 : 28))
+    readonly property int shapeXLI: root.custom ? Math.round(ShellState.customRadius * 2)
+        : root.old ? 0 : (root.nothing ? 10 : (root.glass ? 18 : 32)) // extra large increased
+    readonly property int shapeXXL: root.custom ? Math.round(ShellState.customRadius * 3)
+        : root.old ? 0 : (root.nothing ? 12 : (root.glass ? 22 : 48)) // extra extra large (hero surfaces)
     readonly property int shapeFull: root.old ? 0 : 9999
 
     // ---- style extras (New, Nothing and Old; no-ops under m3) -----------------
 
-    // Bar islands stop being pills under "new", "nothing" and "old".
-    readonly property int barRadius: root.old ? 0 : (root.nothing ? 4 : (root.glass ? 12 : shapeFull))
+    // Bar islands stop being pills under "new", "nothing" and "old". Custom
+    // owns the value, so it can stay a pill (24) or go square (0).
+    readonly property int barRadius: root.custom ? ShellState.customBarRadius
+        : root.old ? 0 : (root.nothing ? 4 : (root.glass ? 12 : shapeFull))
 
     // Chips and icon buttons stop being pills too: 10/30 is the same
     // proportion as the islands' 12/36, so the two read as one family. The
     // pressed value is what the M3E corner morph springs to. Under m3 these
     // are the pill/medium pair the morph always used.
-    readonly property int chipRadius: root.old ? 0 : (root.nothing ? 4 : (root.glass ? 10 : shapeFull))
-    readonly property int chipRadiusPressed: root.old ? 0 : (root.nothing ? 2 : (root.glass ? 8 : shapeMD))
+    readonly property int chipRadius: root.custom ? ShellState.customChipRadius
+        : root.old ? 0 : (root.nothing ? 4 : (root.glass ? 10 : shapeFull))
+    readonly property int chipRadiusPressed: root.custom ? Math.max(0, ShellState.customChipRadius - 2)
+        : root.old ? 0 : (root.nothing ? 2 : (root.glass ? 8 : shapeMD))
 
     // Hairline edges: 0 width under m3, so borders can be added unconditionally.
-    readonly property int hairlineWidth: root.glass || root.nothing || root.old ? 1 : 0
+    // Custom's knob turns the whole edge (hairline, rim, specular) off.
+    readonly property int hairlineWidth: root.custom ? (ShellState.customBorder ? 1 : 0)
+        : root.glass || root.nothing || root.old ? 1 : 0
     // Outer edge stays faint; the bright edge is cardRim, one pixel inside it.
     // Both modes are lit from above, so the bevel is white in both: over
     // graphite it is the visible edge, over paper a faint lift. The opaque
     // Nothing pack has no rim, so there its hairline carries the edge alone and
-    // stays brighter. Old replaces the rim with its bevel below.
-    readonly property color hairline: root.glass
+    // stays brighter. Old replaces the rim with its bevel below. Custom takes
+    // its edge tones from the palette, so the user owns the contrast.
+    readonly property color hairline: root.custom
+        ? (ShellState.customBorder ? root.withAlpha(root.customPalette.outline, 0.55) : "transparent")
+        : root.glass
         ? (root.light ? "#14000000" : "#14ffffff")
         : root.nothing ? (root.light ? "#22000000" : "#26ffffff")
         : root.old ? "#ff000000" : "transparent"
-    readonly property color cardRim: root.glass ? (root.light ? "#33ffffff" : "#26ffffff") : "transparent"
+    readonly property color cardRim: root.custom
+        ? (ShellState.customBorder ? root.withAlpha(root.customPalette.outline_variant, 0.7) : "transparent")
+        : root.glass ? (root.light ? "#33ffffff" : "#26ffffff") : "transparent"
 
     // The "old" bevel: white top/left and gray bottom/right on the gray chrome;
     // the dark twin lights it with #606060 against black. Drawn by GlassEdge.
-    readonly property color bevelLight: root.old ? (root.light ? "#ffffffff" : "#ff606060") : "transparent"
-    readonly property color bevelDark: root.old ? (root.light ? "#ff808080" : "#ff000000") : "transparent"
+    // Custom derives the two tones from its palette instead of hardcoding them.
+    readonly property color bevelLight: root.custom
+        ? (ShellState.customBevel ? root.mixColor(root.customPalette.surface, root.customPalette.on_surface, 0.35) : "transparent")
+        : root.old ? (root.light ? "#ffffffff" : "#ff606060") : "transparent"
+    readonly property color bevelDark: root.custom
+        ? (ShellState.customBevel ? root.mixColor(root.customPalette.surface, root.customPalette.scrim, 0.55) : "transparent")
+        : root.old ? (root.light ? "#ff808080" : "#ff000000") : "transparent"
 
     // Neutral drop shadow under cards, as RectangularShadow args. Invisible
     // over dark wallpaper, which is why every surface also draws cardRim.
-    readonly property color cardShadow: root.glass ? "#59000000" : "transparent"
-    readonly property int cardShadowBlur: 28
-    readonly property int cardShadowOffset: 6
+    // Custom takes the hue from the palette's `shadow` role and the strength,
+    // blur and offset from its three knobs.
+    readonly property color cardShadow: root.custom
+        ? root.withAlpha(root.customPalette.shadow, 0.6 * ShellState.customShadow / 100)
+        : root.glass ? "#59000000" : "transparent"
+    readonly property int cardShadowBlur: root.custom ? ShellState.customShadowBlur : 28
+    readonly property int cardShadowOffset: root.custom ? ShellState.customShadowOffset : 6
 
     // Slider fill and thumb: the palette accent, except under Nothing, where a
     // full-width red bar is no longer an accent.
@@ -859,11 +944,14 @@ Singleton {
     // Glass dressing, drawn by modules/GlassEdge.qml inside every card: a 1px
     // specular line along the top edge, next to the rim above. Transparent
     // under m3, so it can be added unconditionally like the hairline.
-    readonly property color glassSpecular: root.glass ? (root.light ? "#a6ffffff" : "#33ffffff") : "transparent"
+    readonly property color glassSpecular: root.custom
+        ? (ShellState.customBorder ? root.withAlpha(root.customPalette.on_surface, 0.22) : "transparent")
+        : root.glass ? (root.light ? "#a6ffffff" : "#33ffffff") : "transparent"
 
     // Chips, fields and slider tracks: a veil over the surface instead of an
     // opaque tone, so the blurred backdrop reads through them too. Replaces
-    // surface_container_highest in `scheme`; unused under m3.
+    // surface_container_highest in `scheme`; unused under m3. Custom keeps the
+    // palette's own container instead, since its palette is hand-picked.
     readonly property color chipVeil: root.light ? "#1f000000" : "#1fffffff"
 
     // The "blur" pack's acrylic ladder: the roles the windows are built from
@@ -876,7 +964,9 @@ Singleton {
     // through them, unblurred. New keeps its graphite tone; every other pack
     // takes the palette's raised container, which under "newNothing" is
     // Nothing's opaque gray (not the veil `scheme` hands out).
-    readonly property color popupSurface: root.newLook
+    readonly property color popupSurface: root.custom
+        ? root.customPalette.surface_container_highest
+        : root.newLook
         ? (root.light ? "#fff0f2f6" : "#ff1c1f25")
         : root.activeScheme.surface_container_highest
 

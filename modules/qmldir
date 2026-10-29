@@ -7,9 +7,11 @@ CalcRow 1.0 CalcRow.qml
 CalendarPopup 1.0 CalendarPopup.qml
 ClipboardLauncher 1.0 ClipboardLauncher.qml
 ClockPopup 1.0 ClockPopup.qml
+ColorPicker 1.0 ColorPicker.qml
 DateClock 1.0 DateClock.qml
 GlassEdge 1.0 GlassEdge.qml
 IconButton 1.0 IconButton.qml
+IntSlider 1.0 IntSlider.qml
 KeyboardLayout 1.0 KeyboardLayout.qml
 Launcher 1.0 Launcher.qml
 LayoutBadge 1.0 LayoutBadge.qml

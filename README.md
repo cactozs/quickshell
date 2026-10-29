@@ -49,10 +49,11 @@ English (except for the Russian README).
 - **OSD and system popup** — volume/brightness overlay (also for changes made
   with `wpctl`/`brightnessctl`), CPU, RAM, temperature and GPU rows (AMD via
   sysfs, `nvidia-smi` fallback).
-- **Six style packs** — `M3 Inspired`, `M3 Blur`, `New` (graphite acrylic),
+- **Seven style packs** — `M3 Inspired`, `M3 Blur`, `New` (graphite acrylic),
   `Nothing` (opaque graphite, hard corners), `New Nothing` (the same graphite
-  with the acrylic dressing and blur) and `Old` (retro gray/charcoal chrome with
-  square corners and bevels).
+  with the acrylic dressing and blur), `Old` (retro gray/charcoal chrome with
+  square corners and bevels) and `Custom` (your own palette and knobs: corner
+  ladder, bar/chip radii, acrylic, shadow, outline and bevels).
 - **Light and dark** — a second matugen pass writes the light palette; the
   shell switches both its own colors and the desktop.
 
@@ -471,6 +472,16 @@ current matugen palette and the plates take a faint tint of its primary, so a
 wallpaper change recolors the selection and buttons while the chrome stays gray.
 It keeps the current font; pick **Old** for the Courier look.
 
+`Custom` is the hand-built pack: the **Custom** settings tab edits one M3
+palette for both light and dark (click a role to open an HSV picker; **Готово**
+commits, **Сброс** restores that role) and the knobs for the corner ladder
+(`Скругление`), bar and chip radii, acrylic and its opacity, shadow strength,
+blur and offset, the outline and the bevels. The palette's `surface` luminance
+decides whether the light terminal/desktop derivations apply. Everything is
+stored sparsely in `shell-state.json` under `custom`; `Сброс → Всё` clears it.
+The `Тема` and `Цвета` rows are hidden while Custom is active because the pack
+owns both.
+
 ## Configuration
 
 | what | file / key |
@@ -482,6 +493,7 @@ It keeps the current font; pick **Old** for the Courier look.
 | fonts | `style/Theme.qml` → `fontFamily`, `iconFont`, `nerdFont` |
 | UI translations | `services/I18n.qml` |
 | style, palette, bar layout (islands/island/panel), bar position (top/left/bottom/right), light/dark, font mode, animations (shell and niri), language | settings menu, or `qs ipc call settings …` |
+| Custom style palette and knobs | Custom tab in the settings menu; stored under `custom` in `shell-state.json` |
 | matugen dark/light configs | `~/.config/matugen/config.toml`, `light.toml` |
 | generated niri colors | `~/.config/niri/quickshell.kdl` |
 | desktop theme writer | `services/SystemTheme.qml` |

@@ -58,6 +58,7 @@ Singleton {
             property bool barHidden
             property bool launcherFullscreen
             property string styleMode
+            property string custom
             property string barPosition
             property string panelStyle
             property string panelWidth
@@ -175,18 +176,154 @@ Singleton {
     // compositor blur behind them, "new" = graphite acrylic, "nothing" =
     // opaque graphite with hairline edges and one red accent, "newNothing" =
     // that graphite with the New acrylic dressing, "old" = retro gray/charcoal
-    // chrome with square corners and bevels (see style/Theme.qml).
+    // chrome with square corners and bevels, "custom" = the hand-built pack
+    // below (see style/Theme.qml).
     // Normalized, so a fresh install or a stale value reads as "m3".
     readonly property string styleMode: props.styleMode === "new" || props.styleMode === "blur"
         || props.styleMode === "nothing" || props.styleMode === "newNothing" || props.styleMode === "old"
+        || props.styleMode === "custom"
         ? props.styleMode
         : "m3"
 
     function setStyleMode(name: string): void {
         props.styleMode = name === "new" || name === "blur" || name === "nothing"
-            || name === "newNothing" || name === "old"
+            || name === "newNothing" || name === "old" || name === "custom"
             ? name
             : "m3";
+    }
+
+    // ---- Custom style pack ---------------------------------------------------
+    // The whole pack is one JSON string in shell-state.json, so the knobs and
+    // the sparse palette overrides stay together. Missing keys fall back to the
+    // defaults below; Theme.qml owns the palette defaults and turns these into
+    // tokens. Writes happen once per gesture (slider release, picker "Готово"),
+    // never per mouse move: the palette feeds SystemTheme, which rewrites GTK,
+    // Qt, ghostty and niri files on every change.
+    readonly property var customData: {
+        if (props.custom.trim() === "")
+            return ({});
+        try {
+            const data = JSON.parse(props.custom);
+            return data && typeof data === "object" ? data : ({});
+        } catch (e) {
+            console.warn("ShellState: cannot parse custom style:", e);
+            return ({});
+        }
+    }
+
+    // Only 6-digit #rrggbb: the picker writes that shape, and parseHex in
+    // Theme.qml reads an 8-digit value as AARRGGBB. Anything else is ignored
+    // instead of poisoning the palette.
+    readonly property var customPaletteOverrides: {
+        const stored = root.customData.palette;
+        const clean = {};
+        if (!stored || typeof stored !== "object")
+            return clean;
+        for (const role in stored) {
+            if (/^#[0-9a-fA-F]{6}$/.test(stored[role]))
+                clean[role] = stored[role];
+        }
+        return clean;
+    }
+
+    readonly property int customRadius: root.customNumber("radius", 16, 0, 32)
+    readonly property int customBarRadius: root.customNumber("barRadius", 12, 0, 24)
+    readonly property int customChipRadius: root.customNumber("chipRadius", 10, 0, 24)
+    readonly property bool customAcrylic: root.customFlag("acrylic", true)
+    readonly property int customOpacity: root.customNumber("opacity", 78, 40, 100)
+    readonly property int customShadow: root.customNumber("shadow", 60, 0, 100)
+    readonly property int customShadowBlur: root.customNumber("shadowBlur", 28, 0, 64)
+    readonly property int customShadowOffset: root.customNumber("shadowOffset", 6, -16, 16)
+    readonly property bool customBorder: root.customFlag("border", true)
+    readonly property bool customBevel: root.customFlag("bevel", false)
+
+    function customNumber(key: string, fallback: int, minimum: int, maximum: int): int {
+        const value = root.customData[key];
+        if (typeof value !== "number" || !isFinite(value))
+            return fallback;
+        return Math.max(minimum, Math.min(maximum, Math.round(value)));
+    }
+
+    function customFlag(key: string, fallback: bool): bool {
+        const value = root.customData[key];
+        return typeof value === "boolean" ? value : fallback;
+    }
+
+    function patchCustom(key: string, value: var): void {
+        const data = Object.assign({}, root.customData);
+        data[key] = value;
+        props.custom = JSON.stringify(data);
+    }
+
+    function setCustomRadius(value: int): void {
+        root.patchCustom("radius", value);
+    }
+
+    function setCustomBarRadius(value: int): void {
+        root.patchCustom("barRadius", value);
+    }
+
+    function setCustomChipRadius(value: int): void {
+        root.patchCustom("chipRadius", value);
+    }
+
+    function setCustomAcrylic(enabled: bool): void {
+        root.patchCustom("acrylic", enabled);
+    }
+
+    function setCustomOpacity(value: int): void {
+        root.patchCustom("opacity", value);
+    }
+
+    function setCustomShadow(value: int): void {
+        root.patchCustom("shadow", value);
+    }
+
+    function setCustomShadowBlur(value: int): void {
+        root.patchCustom("shadowBlur", value);
+    }
+
+    function setCustomShadowOffset(value: int): void {
+        root.patchCustom("shadowOffset", value);
+    }
+
+    function setCustomBorder(enabled: bool): void {
+        root.patchCustom("border", enabled);
+    }
+
+    function setCustomBevel(enabled: bool): void {
+        root.patchCustom("bevel", enabled);
+    }
+
+    function setCustomColor(role: string, hex: string): void {
+        if (!/^#[0-9a-fA-F]{6}$/.test(hex))
+            return;
+        const data = Object.assign({}, root.customData);
+        const palette = Object.assign({}, root.customPaletteOverrides);
+        palette[role] = hex;
+        data.palette = palette;
+        props.custom = JSON.stringify(data);
+    }
+
+    function resetCustomColor(role: string): void {
+        const data = Object.assign({}, root.customData);
+        const palette = Object.assign({}, root.customPaletteOverrides);
+        delete palette[role];
+        if (Object.keys(palette).length === 0)
+            delete data.palette;
+        else
+            data.palette = palette;
+        props.custom = JSON.stringify(data);
+    }
+
+    function resetCustomPalette(): void {
+        const data = Object.assign({}, root.customData);
+        delete data.palette;
+        props.custom = JSON.stringify(data);
+    }
+
+    function resetCustom(): void {
+        props.custom = "";
     }
 
     // Palette source for the whole shell: "matugen" = generated from the
