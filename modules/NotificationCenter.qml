@@ -131,14 +131,10 @@ PanelWindow {
 
         // Opens against the bar's edge: under a top bar, above a bottom one,
         // beside a rail.
-        anchors.top: Theme.popupBottom ? undefined : parent.top
-        anchors.bottom: Theme.popupBottom ? parent.bottom : undefined
-        anchors.left: Theme.popupLeft ? parent.left : undefined
-        anchors.right: Theme.popupLeft ? undefined : parent.right
-        anchors.topMargin: Theme.popupTopMargin
-        anchors.bottomMargin: Theme.popupBottomMargin
-        anchors.leftMargin: Theme.popupLeftMargin
-        anchors.rightMargin: Theme.popupRightMargin
+        x: Theme.popupLeft ? Theme.popupLeftMargin
+            : parent.width - width - Theme.popupRightMargin
+        y: Theme.popupBottom ? parent.height - height - Theme.popupBottomMargin
+            : Theme.popupTopMargin
 
         width: root.cardWidth
         height: column.implicitHeight + 2 * root.cardPadding

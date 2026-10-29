@@ -145,10 +145,8 @@ PanelWindow {
         x: ShellState.barPosition === "left" ? Theme.popupLeftMargin
             : ShellState.barPosition === "right" ? parent.width - width - Theme.popupRightMargin
             : Math.round((parent.width - width) / 2)
-        anchors.top: Theme.popupBottom ? undefined : parent.top
-        anchors.bottom: Theme.popupBottom ? parent.bottom : undefined
-        anchors.topMargin: Theme.popupTopMargin
-        anchors.bottomMargin: Theme.popupBottomMargin
+        y: Theme.popupBottom ? parent.height - height - Theme.popupBottomMargin
+            : Theme.popupTopMargin
 
         width: root.innerWidth + 2 * root.pad
         height: body.implicitHeight + 2 * root.pad
