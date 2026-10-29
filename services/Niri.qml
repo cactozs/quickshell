@@ -67,37 +67,6 @@ Singleton {
             .sort((a, b) => a.idx - b.idx);
     }
 
-    // Only return window tiles with explicit positions on this output's
-    // active workspace. Missing geometry is common for scrolling tiled windows.
-    function windowSnowFor(output: string): var {
-        const workspace = root.workspaces.find(w => w.output === output && w.is_active === true);
-        if (!workspace) return [];
-
-        const snow = [];
-        const seenTiles = new Set();
-        for (const win of root.windows) {
-            // Floating windows expose viewport-relative positions; tiled
-            // windows often omit them, so don't infer their positions.
-            if (win.workspace_id !== workspace.id || win.is_floating !== true) continue;
-            const layout = win.layout;
-            const pos = layout?.tile_pos_in_workspace_view;
-            const size = layout?.tile_size;
-            if (!Array.isArray(pos) || !Array.isArray(size)
-                || pos.length < 2 || size.length < 2
-                || !Number.isFinite(pos[0]) || !Number.isFinite(pos[1])
-                || !Number.isFinite(size[0]) || !Number.isFinite(size[1])
-                || size[0] <= 0 || size[1] <= 0)
-                continue;
-
-            // Tabbed windows can report the same tile; draw one cap there.
-            const key = pos[0] + ":" + pos[1] + ":" + size[0];
-            if (seenTiles.has(key)) continue;
-            seenTiles.add(key);
-            snow.push({ x: pos[0], y: pos[1], width: size[0] });
-        }
-        return snow;
-    }
-
     // waybar niri/language: format-en "us", format-ru "ru".
     function layoutShortName(name: string): string {
         if (name === "") return "";
