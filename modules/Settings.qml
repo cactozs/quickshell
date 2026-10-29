@@ -826,15 +826,90 @@ PanelWindow {
                         }
 
                         SettingSegment {
+                            label: "Niri"
+                            selected: ShellState.themeAppEnabled("niri")
+                            onClicked: ShellState.setThemeApp("niri", !selected)
+                        }
+                    }
+
+                    SettingRow {
+                        label: I18n.t("Терминалы")
+
+                        SettingSegment {
                             label: "Ghostty"
                             selected: ShellState.themeAppEnabled("ghostty")
                             onClicked: ShellState.setThemeApp("ghostty", !selected)
                         }
 
                         SettingSegment {
-                            label: "Niri"
-                            selected: ShellState.themeAppEnabled("niri")
-                            onClicked: ShellState.setThemeApp("niri", !selected)
+                            label: "Foot"
+                            selected: ShellState.themeAppEnabled("foot")
+                            onClicked: ShellState.setThemeApp("foot", !selected)
+                        }
+
+                        SettingSegment {
+                            label: "Alacritty"
+                            selected: ShellState.themeAppEnabled("alacritty")
+                            onClicked: ShellState.setThemeApp("alacritty", !selected)
+                        }
+
+                        SettingSegment {
+                            label: "Kitty"
+                            selected: ShellState.themeAppEnabled("kitty")
+                            onClicked: ShellState.setThemeApp("kitty", !selected)
+                        }
+                    }
+
+                    SettingRow {
+                        label: I18n.t("Редакторы")
+
+                        SettingSegment {
+                            label: "Neovim"
+                            selected: ShellState.themeAppEnabled("nvim")
+                            onClicked: ShellState.setThemeApp("nvim", !selected)
+                        }
+
+                        SettingSegment {
+                            label: "Helix"
+                            selected: ShellState.themeAppEnabled("helix")
+                            onClicked: ShellState.setThemeApp("helix", !selected)
+                        }
+
+                        SettingSegment {
+                            label: "Zed"
+                            selected: ShellState.themeAppEnabled("zed")
+                            onClicked: ShellState.setThemeApp("zed", !selected)
+                        }
+                    }
+
+                    SettingRow {
+                        label: I18n.t("Оболочки")
+
+                        SettingSegment {
+                            label: "Bash"
+                            selected: ShellState.themeAppEnabled("bash")
+                            onClicked: ShellState.setThemeApp("bash", !selected)
+                        }
+
+                        SettingSegment {
+                            label: "Fish"
+                            selected: ShellState.themeAppEnabled("fish")
+                            onClicked: ShellState.setThemeApp("fish", !selected)
+                        }
+
+                        SettingSegment {
+                            label: "Bat"
+                            selected: ShellState.themeAppEnabled("bat")
+                            onClicked: ShellState.setThemeApp("bat", !selected)
+                        }
+                    }
+
+                    // Rewrites every enabled file: for one edited by hand, or a
+                    // target switched on before its include line existed.
+                    SettingRow {
+                        SettingSegment {
+                            label: I18n.t("Применить сейчас")
+                            onClicked: SystemTheme.applyAll()
                         }
                     }
                 }

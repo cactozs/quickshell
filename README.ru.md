@@ -303,7 +303,7 @@ environment {
 }
 ```
 
-#### 7. ghostty и Qt
+#### 7. ghostty, Qt и остальные цели
 
 `~/.config/ghostty/config`:
 
@@ -322,6 +322,25 @@ custom_palette=true
 Файл, на который указывает этот путь, оболочка создаст при первом запуске.
 Qt-приложения читают палитру при старте, поэтому после смены темы их нужно
 перезапустить. ghostty оболочка перезагружает через `SIGUSR2`.
+
+Остальные сгенерированные файлы не работают, пока приложение один раз на них не
+укажет:
+
+| файл | строка один раз |
+| --- | --- |
+| `~/.config/foot/quickshell.ini` | `include=~/.config/foot/quickshell.ini` в `foot.ini` |
+| `~/.config/alacritty/quickshell.toml` | `import = ["~/.config/alacritty/quickshell.toml"]` в `alacritty.toml` |
+| `~/.config/kitty/quickshell.conf` | `include ~/.config/kitty/quickshell.conf` в `kitty.conf` |
+| `~/.config/nvim/colors/quickshell.lua` | `colorscheme quickshell` |
+| `~/.config/helix/themes/quickshell.toml` | `theme = "quickshell"` в `config.toml` |
+| `~/.config/zed/themes/quickshell.json` | выбрать «Quickshell» в списке тем Zed |
+| `~/.config/bash/quickshell.sh` | `source ~/.config/bash/quickshell.sh` в `~/.bashrc` |
+| `~/.config/fish/conf.d/quickshell.fish` | ничего: `conf.d` читается сам |
+| `~/.config/bat/themes/quickshell.tmTheme` | `--theme="quickshell"` в `~/.config/bat/config` или `BAT_THEME=quickshell` |
+
+foot и kitty перезагружают конфиг по `SIGUSR1`, Alacritty — при сохранении.
+Neovim подхватывает тему по `:colorscheme quickshell`, остальные — при
+следующем запуске.
 
 Пункт **«Блокировка»** в меню питания запускает `qs ipc call lock lock`; ту же
 команду можно повесить на клавишу. Встроенный экран блокировки показывает
@@ -432,6 +451,14 @@ qs ipc call lock lock
 - `~/.config/gtk-3.0/gtk.css` и `~/.config/gtk-4.0/gtk.css`
 - `~/.config/ghostty/themes/Quickshell` (перезагрузка через `pkill -USR2 -x ghostty`)
 - `~/.config/qt6ct/colors/matugen.conf`
+- `~/.config/foot/quickshell.ini`, `~/.config/alacritty/quickshell.toml` и
+  `~/.config/kitty/quickshell.conf` (foot и kitty перезагружаются по `SIGUSR1`)
+- `~/.config/nvim/colors/quickshell.lua`,
+  `~/.config/helix/themes/quickshell.toml` и
+  `~/.config/zed/themes/quickshell.json`
+- `~/.config/bash/quickshell.sh` и `~/.config/fish/conf.d/quickshell.fish`
+- `~/.config/bat/themes/quickshell.tmTheme` (оболочка ещё запускает
+  `bat cache --build`)
 - `~/.config/niri/quickshell.kdl` — цвета границ и focus-ring niri плюс
   `layer-rule`, который выбирает источник блюра, и переключатель `animations`
 - `gsettings set org.gnome.desktop.interface color-scheme …`
@@ -595,6 +622,10 @@ rm -rf ~/.config/matugen                # конфиги matugen
 rm -f  ~/.config/niri/quickshell.kdl
 rm -f  ~/.config/ghostty/themes/Quickshell
 rm -f  ~/.config/qt6ct/colors/matugen.conf
+rm -f  ~/.config/foot/quickshell.ini ~/.config/alacritty/quickshell.toml ~/.config/kitty/quickshell.conf
+rm -f  ~/.config/nvim/colors/quickshell.lua ~/.config/helix/themes/quickshell.toml ~/.config/zed/themes/quickshell.json
+rm -f  ~/.config/bash/quickshell.sh ~/.config/fish/conf.d/quickshell.fish
+rm -f  ~/.config/bat/themes/quickshell.tmTheme
 rm -f  ~/.config/gtk-3.0/gtk.css ~/.config/gtk-4.0/gtk.css
 ```
 

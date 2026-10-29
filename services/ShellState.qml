@@ -407,9 +407,11 @@ Singleton {
     }
 
     // Desktop targets whose colors services/SystemTheme.qml rewrites: "gtk"
-    // (GTK3/GTK4 + the gsettings color-scheme), "qt" (qt6ct), "ghostty" and
-    // "niri" (borders and focus ring). Stored as the ids that are off, so a
-    // missing key keeps every target on — the behavior before the setting.
+    // (GTK3/GTK4 + the gsettings color-scheme), "qt" (qt6ct), "ghostty",
+    // "niri" (borders and focus ring), the terminals "foot"/"alacritty"/"kitty",
+    // the editors "nvim"/"helix"/"zed", the shells "bash"/"fish" and the pager
+    // "bat". Stored as the ids that are off, so a missing key keeps every target
+    // on — the behavior before the setting.
     // A disabled target is simply not written: its file keeps the last colors.
     readonly property string themeAppsOff: props.themeAppsOff
 
