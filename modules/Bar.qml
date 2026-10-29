@@ -95,9 +95,15 @@ PanelWindow {
 
     // A full-length flush plate reaches the screen ends and stays square; a
     // docked edge is square too, and only the inner corners round.
-    readonly property int dockedRadius: root.flushPanel ? 0 : Theme.barRadius
+    // Rectangle caps a corner at half of the plate's shorter side, while the
+    // blur Region normalizes a lone pill corner against the whole edge. Cap it
+    // once here, or the blur rounds to the full bar height and the plate to half.
+    readonly property real plateRadiusLimit: Math.min(barPlate.width, barPlate.height) / 2
+    readonly property int dockedRadius: root.flushPanel ? 0
+        : Math.min(Theme.barRadius, root.plateRadiusLimit)
     readonly property int innerRadius: root.flushPanel
-        && ShellState.panelWidth === "full" ? 0 : Theme.barRadius
+        && ShellState.panelWidth === "full" ? 0
+        : Math.min(Theme.barRadius, root.plateRadiusLimit)
 
     margins {
         top: root.edge === "top" ? root.edgeMargin : root.crossMargin
