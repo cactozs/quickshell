@@ -877,7 +877,7 @@ PanelWindow {
                             SliderRow {
                                 label: I18n.t("Прозрачность")
                                 visible: ShellState.customAcrylic
-                                minimum: 40
+                                minimum: 0
                                 maximum: 100
                                 current: ShellState.customOpacity
                                 onCommitted: value => ShellState.setCustomOpacity(value)

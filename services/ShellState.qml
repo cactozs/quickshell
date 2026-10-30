@@ -215,7 +215,7 @@ Singleton {
     readonly property int customBarRadius: root.customNumber("barRadius", 12, 0, 24)
     readonly property int customChipRadius: root.customNumber("chipRadius", 10, 0, 24)
     readonly property bool customAcrylic: root.customFlag("acrylic", true)
-    readonly property int customOpacity: root.customNumber("opacity", 78, 40, 100)
+    readonly property int customOpacity: root.customNumber("opacity", 78, 0, 100)
     readonly property int customShadow: root.customNumber("shadow", 60, 0, 100)
     readonly property int customShadowBlur: root.customNumber("shadowBlur", 28, 0, 64)
     readonly property int customShadowOffset: root.customNumber("shadowOffset", 6, -16, 16)
