@@ -907,6 +907,15 @@ PanelWindow {
                                 onCommitted: value => ShellState.setCustomShadowOffset(value)
                             }
 
+                            SliderRow {
+                                label: I18n.t("Сила блюра")
+                                visible: ShellState.customAcrylic
+                                minimum: 0
+                                maximum: 10
+                                current: ShellState.customBlur
+                                onCommitted: value => ShellState.setCustomBlur(value)
+                            }
+
                             SettingRow {
                                 label: I18n.t("Контур")
 

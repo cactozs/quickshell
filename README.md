@@ -469,8 +469,10 @@ same source-color settings; `light.toml` intentionally has no wallpaper command.
 
 **Blur** is niri policy. «Обои» (the default) is niri's xray blur: the wallpaper
 alone. «Окна» writes `xray false` into the generated `layer-rule`, so windows
-under the acrylic plates blur too. The choice is read back from
-`~/.config/niri/quickshell.kdl` at shell start, so it survives a reboot.
+under the acrylic plates blur too. In the Custom style, «Сила блюра» (0–10)
+writes a top-level `blur { passes N }` section — 0 leaves niri's default. The
+choice is read back from `~/.config/niri/quickshell.kdl` at shell start, so it
+survives a reboot.
 
 **Animations** are two settings. «Анимации» is the shell's own motion
 (`qs ipc call settings animations <normal|slow|off>`): `Slow` stretches every

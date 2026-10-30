@@ -221,6 +221,7 @@ Singleton {
     readonly property int customShadowOffset: root.customNumber("shadowOffset", 6, -16, 16)
     readonly property bool customBorder: root.customFlag("border", true)
     readonly property bool customBevel: root.customFlag("bevel", false)
+    readonly property int customBlur: root.customNumber("blur", 0, 0, 10)
 
     function customNumber(key: string, fallback: int, minimum: int, maximum: int): int {
         const value = root.customData[key];
@@ -278,6 +279,10 @@ Singleton {
 
     function setCustomBevel(enabled: bool): void {
         root.patchCustom("bevel", enabled);
+    }
+
+    function setCustomBlur(value: int): void {
+        root.patchCustom("blur", value);
     }
 
     function setCustomColor(role: string, hex: string): void {

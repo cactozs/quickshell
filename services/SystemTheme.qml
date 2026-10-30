@@ -367,6 +367,13 @@ Singleton {
                 ? "\n\n    background-effect {\n        xray false\n    }"
                 : ""),
         "}",
+        // Global blur strength ("Сила блюра" in Custom style). niri takes `passes`
+        // in the top-level `blur {}` section — not inside background-effect — and it
+        // applies to all background blur. 0 means niri's default, so nothing is
+        // written while the knob is untouched.
+        (ShellState.customBlur > 0
+            ? "\nblur {\n    passes " + ShellState.customBlur + "\n}"
+            : ""),
         // The optional niri blocks ("Скругление окон", "Анимации niri"), built as
         // one element so an unset choice leaves no stray blank line. A radius of
         // -1 (untouched) leaves the user's own window rules alone; otherwise a
