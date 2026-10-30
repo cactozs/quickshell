@@ -800,23 +800,7 @@ Singleton {
     readonly property color errorContainerText: scheme.on_error_container
     readonly property color surface: scheme.surface
     readonly property color surfaceText: scheme.on_surface
-    readonly property color surfaceVariant: scheme.surface_variant
     readonly property color surfaceVariantText: scheme.on_surface_variant
-    readonly property color surfaceDim: scheme.surface_dim
-    readonly property color surfaceBright: scheme.surface_bright
-    readonly property color surfaceTint: scheme.surface_tint
-    readonly property color primaryFixed: scheme.primary_fixed
-    readonly property color primaryFixedDim: scheme.primary_fixed_dim
-    readonly property color primaryFixedText: scheme.on_primary_fixed
-    readonly property color primaryFixedVariantText: scheme.on_primary_fixed_variant
-    readonly property color secondaryFixed: scheme.secondary_fixed
-    readonly property color secondaryFixedDim: scheme.secondary_fixed_dim
-    readonly property color secondaryFixedText: scheme.on_secondary_fixed
-    readonly property color secondaryFixedVariantText: scheme.on_secondary_fixed_variant
-    readonly property color tertiaryFixed: scheme.tertiary_fixed
-    readonly property color tertiaryFixedDim: scheme.tertiary_fixed_dim
-    readonly property color tertiaryFixedText: scheme.on_tertiary_fixed
-    readonly property color tertiaryFixedVariantText: scheme.on_tertiary_fixed_variant
     readonly property color surfaceContainerLowest: scheme.surface_container_lowest
     readonly property color surfaceContainerLow: scheme.surface_container_low
     readonly property color surfaceContainer: scheme.surface_container
@@ -826,7 +810,6 @@ Singleton {
     readonly property color outlineVariant: scheme.outline_variant
     readonly property color inverseSurface: scheme.inverse_surface
     readonly property color inverseOnSurface: scheme.inverse_on_surface
-    readonly property color inversePrimary: scheme.inverse_primary
     readonly property color scrim: scheme.scrim
     readonly property color shadow: scheme.shadow
 
@@ -856,7 +839,6 @@ Singleton {
     readonly property real statePressed: root.glass ? 0.10 : 0.12
     readonly property real stateDragged: root.glass ? 0.12 : 0.16
     readonly property real disabledContent: 0.38
-    readonly property real disabledContainer: 0.12
     readonly property real scrimOpacity: root.nothing ? 0.60 : (root.glass || root.old ? 0.45 : 0.32)
 
     // ---- shape scale (M3 Expressive: 4/8/12/16/20/28/32/48/full; Nothing: 2..12; Old: square) ----
@@ -875,8 +857,6 @@ Singleton {
         : root.old ? 0 : (root.nothing ? 6 : (root.glass ? 14 : 20)) // large increased
     readonly property int shapeXL: root.custom ? Math.round(ShellState.customRadius * 1.75)
         : root.old ? 0 : (root.nothing ? 8 : (root.glass ? 16 : 28))
-    readonly property int shapeXLI: root.custom ? Math.round(ShellState.customRadius * 2)
-        : root.old ? 0 : (root.nothing ? 10 : (root.glass ? 18 : 32)) // extra large increased
     readonly property int shapeXXL: root.custom ? Math.round(ShellState.customRadius * 3)
         : root.old ? 0 : (root.nothing ? 12 : (root.glass ? 22 : 48)) // extra extra large (hero surfaces)
     readonly property int shapeFull: root.old ? 0 : 9999
@@ -994,7 +974,6 @@ Singleton {
     // Snow for modules/Ambient.qml. Fixed rather than palette-derived; the
     // light tone keeps it visible on light wallpapers.
     readonly property color snow: root.light ? "#dbe8ff" : "#f2f6ff"
-    readonly property color candle: "#ffd79a"
 
 
     // ---- motion ----------------------------------------------------------------
@@ -1016,19 +995,7 @@ Singleton {
     readonly property int durSettle: root.old ? 0 : root.dur(220) // spring-back
     readonly property int durMorph: root.old ? 0 : root.dur(240) // shape morphs (press)
     readonly property int durMedium: root.old ? 0 : root.dur(250)
-    readonly property int durMedium3: root.old ? 0 : root.dur(350) // M3E container morph
     readonly property int durLong: root.old ? 0 : root.dur(400)
-    readonly property int durLong2: root.old ? 0 : root.dur(500) // M3E shared-axis
-    readonly property int durExtraLong: root.old ? 0 : root.dur(700) // M3E container transform
-
-    // ---- elevation (M3 levels; surfaces carry depth via container tones) -------
-
-    readonly property int elevation0: 0
-    readonly property int elevation1: 1
-    readonly property int elevation2: 2
-    readonly property int elevation3: 3
-    readonly property int elevation4: 4
-    readonly property int elevation5: 5
 
     // Overshoot for the spatial springs; QML has no real spring easing, so
     // Easing.OutBack with this factor stands in for the M3E spring curves.
@@ -1055,10 +1022,7 @@ Singleton {
     readonly property string nerdFont: "Symbols Nerd Font"
     readonly property int fontSizeDisplayLarge: 57
     readonly property int fontSizeDisplayMedium: 45
-    readonly property int fontSizeDisplaySmall: 36
-    readonly property int fontSizeHeadlineLarge: 32
     readonly property int fontSizeHeadlineMedium: 28
-    readonly property int fontSizeHeadlineSmall: 24
     readonly property int fontSizeTitleLarge: 22
     readonly property int fontSizeTitleMedium: 16
     readonly property int fontSizeTitleSmall: 14
@@ -1107,13 +1071,11 @@ Singleton {
     // Verified against the installed MaterialSymbolsRounded variable font.
 
     readonly property string iconVolumeDown: "\uE04D" // volume_down
-    readonly property string iconVolumeMute: "\uE04E" // volume_mute
     readonly property string iconVolumeOff: "\uE04F" // volume_off
     readonly property string iconVolumeUp: "\uE050" // volume_up
     readonly property string iconMic: "\uE029" // mic
     readonly property string iconMicOff: "\uE02B" // mic_off
     readonly property string iconSpeaker: "\uE32D" // speaker
-    readonly property string iconHeadphones: "\uF01F" // headphones
     readonly property string iconPin: "\uF10D" // push_pin
     readonly property string iconTray: "\uE156" // inbox
     readonly property string iconBack: "\uE5C4" // arrow_back
@@ -1134,7 +1096,6 @@ Singleton {
     readonly property string iconNotificationsOff: "\uE7F6" // notifications_off
     readonly property string iconClock: "\uE8B5" // schedule
     readonly property string iconMonitoring: "\uF190" // monitoring
-    readonly property string iconApps: "\uE5C3" // apps
     readonly property string iconCalculate: "\uEA5F" // calculate
     readonly property string iconSearch: "\uE8B6" // search
     readonly property string iconClose: "\uE5CD" // close
@@ -1174,6 +1135,5 @@ Singleton {
     readonly property string iconRain: "\uE798" // water_drop
     readonly property string iconSnow: "\uEB3B" // ac_unit
     readonly property string iconStorm: "\uE3E7" // flash_on
-    readonly property string iconWind: "\uEFD8" // air
     readonly property string iconFog: "\uE3C7" // dehaze
 }

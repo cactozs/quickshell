@@ -3,7 +3,6 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import Quickshell.Services.Notifications
 import Quickshell.Wayland
-import Quickshell.Widgets
 import QtQuick
 import "../services"
 import "../style"
@@ -72,17 +71,7 @@ PanelWindow {
         region: blurRegion
     }
 
-    Connections {
-        target: blurAnchor
-
-        function onWidthChanged(): void {
-            blurKick.kick();
-        }
-
-        function onHeightChanged(): void {
-            blurKick.kick();
-        }
-    }
+    BlurTarget { item: blurAnchor; kicker: blurKick }
 
     implicitWidth: 360
     implicitHeight: column.implicitHeight
@@ -306,33 +295,11 @@ PanelWindow {
                 width: parent.width
                 spacing: 12
 
-                Rectangle {
+                NotificationIcon {
                     id: iconBox
 
-                    width: 40
-                    height: 40
-                    radius: Theme.shapeFull
-                    color: Theme.surfaceContainerHighest
-
-                    IconImage {
-                        id: iconImage
-
-                        anchors.fill: parent
-                        anchors.margins: 6
-                        source: toast.iconSource
-                        // Only a loaded image draws; a failed source would
-                        // otherwise paint a broken frame over the glyph.
-                        visible: toast.iconSource !== "" && status === Image.Ready
-                    }
-
-                    Text {
-                        anchors.centerIn: parent
-                        visible: !iconImage.visible
-                        text: Theme.iconNotifications
-                        color: toast.critical ? Theme.error : Theme.primary
-                        font.family: Theme.iconFont
-                        font.pixelSize: Theme.iconSizeMedium
-                    }
+                    source: toast.iconSource
+                    glyphColor: toast.critical ? Theme.error : Theme.primary
                 }
 
                 Column {
@@ -384,8 +351,6 @@ PanelWindow {
             }
 
             Row {
-                id: actionsRow
-
                 visible: toast.buttons.length > 0
                 height: visible ? implicitHeight : 0
                 spacing: 4
@@ -404,8 +369,6 @@ PanelWindow {
         }
 
         HoverHandler {
-            id: cardHover
-
             onHoveredChanged: Notifications.setPopupHover(toast.notification, hovered)
         }
     }

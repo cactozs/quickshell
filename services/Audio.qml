@@ -16,7 +16,6 @@ Singleton {
     readonly property PwNode source: Pipewire.defaultAudioSource
 
     readonly property var sinks: Pipewire.nodes.values.filter(n => !n.isStream && n.isSink)
-    readonly property var sources: Pipewire.nodes.values.filter(n => !n.isStream && !n.isSink)
 
     readonly property bool muted: root.sink?.audio?.muted ?? false
     readonly property real volume: root.sink?.audio?.volume ?? 0
@@ -25,7 +24,6 @@ Singleton {
     readonly property bool micMuted: root.source?.audio?.muted ?? false
 
     readonly property string sinkName: root.sink?.description ?? ""
-    readonly property string sourceName: root.source?.description ?? ""
 
     readonly property string icon: root.effectiveMuted
         ? Theme.iconVolumeOff
@@ -80,14 +78,6 @@ Singleton {
             return;
         const at = list.indexOf(root.sink);
         Pipewire.preferredDefaultAudioSink = list[(at + 1 + list.length) % list.length];
-    }
-
-    function cycleSource(): void {
-        const list = root.sources;
-        if (list.length < 2)
-            return;
-        const at = list.indexOf(root.source);
-        Pipewire.preferredDefaultAudioSource = list[(at + 1 + list.length) % list.length];
     }
 
     function showSinkOsd(): void {

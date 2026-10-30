@@ -1,6 +1,5 @@
 pragma ComponentBehavior: Bound
 
-import Quickshell
 import QtQuick
 import "../services"
 import "../style"
@@ -41,13 +40,7 @@ IconButton {
         radius: Theme.shapeFull
         color: Theme.error
 
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasized
-            }
-        }
+        Behavior on opacity { AnimEmph {} }
 
         // Springy bump on every unread-count change, like the workspace pill.
         SequentialAnimation {

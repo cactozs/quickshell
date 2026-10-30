@@ -52,16 +52,7 @@ PopupWindow {
 
     // Ambient shadow under the surface (New style only); follows its
     // entrance fade/scale. No acrylic: blur needs a panel window, not a popup.
-    RectangularShadow {
-        anchors.fill: surface
-        radius: surface.radius
-        blur: Theme.cardShadowBlur
-        offset.y: Theme.cardShadowOffset
-        color: Theme.cardShadow
-        visible: Theme.glass
-        opacity: surface.opacity
-        scale: surface.scale
-    }
+    CardShadow { target: surface }
 
     function build(): void {
         const now = new Date();
@@ -96,34 +87,16 @@ PopupWindow {
         opacity: root.shown ? 1 : 0
         scale: root.shown ? 1 : 0.92
 
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasized
-            }
-        }
+        Behavior on opacity { AnimEmph {} }
 
-        Behavior on scale {
-            NumberAnimation {
-                duration: Theme.durMedium
-                easing.type: Easing.OutBack
-                easing.overshoot: Theme.springOvershoot
-            }
-        }
+        Behavior on scale { SpringAnim {} }
 
         transform: Translate {
             id: drift
 
             y: root.shown ? 0 : 6
 
-            Behavior on y {
-                NumberAnimation {
-                    duration: Theme.durShort
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curveEmphasizedDecelerate
-                }
-            }
+            Behavior on y { Anim {} }
         }
 
         Column {

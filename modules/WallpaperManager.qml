@@ -238,17 +238,7 @@ PanelWindow {
         region: blurRegion
     }
 
-    Connections {
-        target: card
-
-        function onWidthChanged(): void {
-            blurKick.kick();
-        }
-
-        function onHeightChanged(): void {
-            blurKick.kick();
-        }
-    }
+    BlurTarget { item: card; kicker: blurKick }
 
     // What opening the manager does. A lazily built window (LazyOverlay) is
     // born already open, so its onShownChanged never fires; both paths call this.
@@ -289,13 +279,7 @@ PanelWindow {
         color: Theme.scrim
         opacity: root.shown ? Theme.scrimOpacity : 0
 
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasizedDecelerate
-            }
-        }
+        Behavior on opacity { Anim {} }
     }
 
     // click outside the card dismisses the manager
@@ -307,16 +291,7 @@ PanelWindow {
 
     // Ambient shadow under the card (New style only); follows the card's
     // entrance fade/scale.
-    RectangularShadow {
-        anchors.fill: card
-        radius: card.radius
-        blur: Theme.cardShadowBlur
-        offset.y: Theme.cardShadowOffset
-        color: Theme.cardShadow
-        visible: Theme.glass
-        opacity: card.opacity
-        scale: card.scale
-    }
+    CardShadow { target: card }
 
     Rectangle {
         id: card
@@ -335,21 +310,9 @@ PanelWindow {
         opacity: root.shown ? 1 : 0
 
         // M3E card entrance: springy scale under a faster fade.
-        Behavior on scale {
-            NumberAnimation {
-                duration: Theme.durMedium
-                easing.type: Easing.OutBack
-                easing.overshoot: Theme.springOvershoot
-            }
-        }
+        Behavior on scale { SpringAnim {} }
 
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasizedDecelerate
-            }
-        }
+        Behavior on opacity { Anim {} }
 
         // Swallow clicks on the card background so they don't reach the
         // dismiss area underneath.
@@ -444,13 +407,7 @@ PanelWindow {
                     font.family: Theme.iconFont
                     font.pixelSize: Theme.iconSizeMedium
 
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: Theme.durShort
-                            easing.type: Easing.BezierSpline
-                            easing.bezierCurve: Theme.curveEmphasized
-                        }
-                    }
+                    Behavior on color { ColorAnim {} }
                 }
 
                 Text {
@@ -540,8 +497,6 @@ PanelWindow {
             // ---- preview grid ---------------------------------------------------
 
             Item {
-                id: gridArea
-
                 width: parent.width
                 height: root.cardHeight - 2 * root.cardPadding
                     - titleRow.height - chipsRow.height - searchBar.implicitHeight - footer.implicitHeight
@@ -661,8 +616,6 @@ PanelWindow {
         // Backdrop keeps the star readable on any image; unfavorited stars
         // only appear while the tile is hovered.
         Rectangle {
-            id: starBadge
-
             anchors.right: plate.right
             anchors.top: plate.top
             anchors.margins: 10
@@ -699,13 +652,7 @@ PanelWindow {
             radius: Theme.shapeFull
             color: tile.selected ? Theme.secondaryContainer : "transparent"
 
-            Behavior on color {
-                ColorAnimation {
-                    duration: Theme.durShort
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curveEmphasized
-                }
-            }
+            Behavior on color { ColorAnim {} }
 
             Text {
                 id: labelText
@@ -750,13 +697,7 @@ PanelWindow {
         border.width: chip.selected ? 0 : 1
         border.color: Theme.outline
 
-        Behavior on color {
-            ColorAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasized
-            }
-        }
+        Behavior on color { ColorAnim {} }
 
         StateLayer {
             hovered: chipHover.hovered
@@ -774,13 +715,7 @@ PanelWindow {
             font.pixelSize: Theme.fontSizeLabelMedium
             font.weight: chip.selected ? Font.Medium : Font.Normal
 
-            Behavior on color {
-                ColorAnimation {
-                    duration: Theme.durShort
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curveEmphasized
-                }
-            }
+            Behavior on color { ColorAnim {} }
         }
 
         HoverHandler {

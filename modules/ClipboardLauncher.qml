@@ -290,13 +290,7 @@ PanelWindow {
         color: Theme.scrim
         opacity: root.shown ? Theme.scrimOpacity : 0
 
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasizedDecelerate
-            }
-        }
+        Behavior on opacity { Anim {} }
     }
 
     // click outside the card dismisses the launcher
@@ -308,16 +302,7 @@ PanelWindow {
 
     // Ambient shadow under the card (New style only); follows the card's
     // entrance fade/scale.
-    RectangularShadow {
-        anchors.fill: card
-        radius: card.radius
-        blur: Theme.cardShadowBlur
-        offset.y: Theme.cardShadowOffset
-        color: Theme.cardShadow
-        visible: Theme.glass
-        opacity: card.opacity
-        scale: card.scale
-    }
+    CardShadow { target: card }
 
     Rectangle {
         id: card
@@ -336,21 +321,9 @@ PanelWindow {
         opacity: root.shown ? 1 : 0
 
         // M3E card entrance: springy scale under a faster fade.
-        Behavior on scale {
-            NumberAnimation {
-                duration: Theme.durMedium
-                easing.type: Easing.OutBack
-                easing.overshoot: Theme.springOvershoot
-            }
-        }
+        Behavior on scale { SpringAnim {} }
 
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasizedDecelerate
-            }
-        }
+        Behavior on opacity { Anim {} }
 
         // Swallow clicks on the card background so they don't reach the
         // dismiss area underneath.
@@ -393,13 +366,7 @@ PanelWindow {
                     font.family: Theme.iconFont
                     font.pixelSize: Theme.iconSizeMedium
 
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: Theme.durShort
-                            easing.type: Easing.BezierSpline
-                            easing.bezierCurve: Theme.curveEmphasized
-                        }
-                    }
+                    Behavior on color { ColorAnim {} }
                 }
 
                 Text {
@@ -505,13 +472,7 @@ PanelWindow {
 
                 // Re-scoring on each keystroke changes the entry count;
                 // animate the height so the card flows instead of jumping.
-                Behavior on height {
-                    NumberAnimation {
-                        duration: Theme.durMedium
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: Theme.curveEmphasizedDecelerate
-                    }
-                }
+                Behavior on height { Anim { duration: Theme.durMedium } }
 
                 ListView {
                     id: list
@@ -578,21 +539,9 @@ PanelWindow {
                     opacity: root.menuOpen ? 1 : 0
                     scale: root.menuOpen ? 1 : 0.9
 
-                    Behavior on opacity {
-                        NumberAnimation {
-                            duration: Theme.durShort
-                            easing.type: Easing.BezierSpline
-                            easing.bezierCurve: Theme.curveEmphasizedDecelerate
-                        }
-                    }
+                    Behavior on opacity { Anim {} }
 
-                    Behavior on scale {
-                        NumberAnimation {
-                            duration: Theme.durMedium
-                            easing.type: Easing.OutBack
-                            easing.overshoot: Theme.springOvershoot
-                        }
-                    }
+                    Behavior on scale { SpringAnim {} }
 
                     Column {
                         id: menuColumn
@@ -668,13 +617,7 @@ PanelWindow {
         radius: Theme.shapeLG
         color: item.selected ? Theme.secondaryContainer : "transparent"
 
-        Behavior on color {
-            ColorAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasized
-            }
-        }
+        Behavior on color { ColorAnim {} }
 
         StateLayer {
             hovered: item.hovered && !item.selected
@@ -774,13 +717,7 @@ PanelWindow {
             : "transparent"
         opacity: menuItem.modelData.enabled ? 1 : Theme.disabledContent
 
-        Behavior on color {
-            ColorAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasized
-            }
-        }
+        Behavior on color { ColorAnim {} }
 
         StateLayer {
             hovered: menuHover.hovered && menuItem.modelData.enabled && !menuItem.highlighted

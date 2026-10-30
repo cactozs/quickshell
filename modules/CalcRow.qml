@@ -20,13 +20,7 @@ Rectangle {
     color: calcItem.selected ? Theme.secondaryContainer : "transparent"
     radius: Theme.shapeLG
 
-    Behavior on color {
-        ColorAnimation {
-            duration: Theme.durShort
-            easing.type: Easing.BezierSpline
-            easing.bezierCurve: Theme.curveEmphasized
-        }
-    }
+    Behavior on color { ColorAnim {} }
 
     StateLayer {
         hovered: hoverHandler.hovered && !calcItem.selected

@@ -15,9 +15,9 @@ Item {
     required property int maxWidth
 
     property var win: Niri.focusedWindow
+    property int winId: win?.id ?? -1
     property string appId: win?.app_id ?? ""
     property string title: win?.title ?? ""
-    property int winId: win?.id ?? -1
 
     readonly property string iconName: {
         if (appId === "") return "";
@@ -45,13 +45,7 @@ Item {
     implicitWidth: !visible ? 0 : 8 + (icon.visible ? icon.width + 6 : 0) + measurer.implicitWidth + 4
     width: Math.min(implicitWidth, maxWidth)
 
-    Behavior on width {
-        NumberAnimation {
-            duration: Theme.dur(100)
-            easing.type: Easing.BezierSpline
-            easing.bezierCurve: Theme.curveEmphasizedDecelerate
-        }
-    }
+    Behavior on width { Anim { duration: Theme.dur(100) } }
 
     // Quick fade on window switch only (title edits scroll, they don't fade).
     SequentialAnimation {
@@ -176,13 +170,7 @@ Item {
             font.pixelSize: Theme.fontSizeLabelLarge
             font.weight: Font.Medium
 
-            Behavior on color {
-                ColorAnimation {
-                    duration: Theme.durShort
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curveEmphasized
-                }
-            }
+            Behavior on color { ColorAnim {} }
         }
     }
 

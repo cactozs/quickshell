@@ -152,7 +152,6 @@ Singleton {
     }
 
     FileView {
-        id: favFile
         Component.onCompleted: text()
 
         path: Qt.resolvedUrl("../wallpaper-favorites.json")

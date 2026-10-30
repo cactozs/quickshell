@@ -66,17 +66,7 @@ PanelWindow {
         region: blurRegion
     }
 
-    Connections {
-        target: card
-
-        function onWidthChanged(): void {
-            blurKick.kick();
-        }
-
-        function onHeightChanged(): void {
-            blurKick.kick();
-        }
-    }
+    BlurTarget { item: card; kicker: blurKick }
 
     // Focus the duration field so digits can be typed right away; the layer
     // surface needs a moment to gain keyboard focus, hence the kick.
@@ -147,16 +137,7 @@ PanelWindow {
 
     // Ambient shadow under the card (New style only); follows the card's
     // entrance fade/scale.
-    RectangularShadow {
-        anchors.fill: card
-        radius: card.radius
-        blur: Theme.cardShadowBlur
-        offset.y: Theme.cardShadowOffset
-        color: Theme.cardShadow
-        visible: Theme.glass
-        opacity: card.opacity
-        scale: card.scale
-    }
+    CardShadow { target: card }
 
     Rectangle {
         id: card
@@ -180,34 +161,16 @@ PanelWindow {
         opacity: root.shown ? 1 : 0
         scale: root.shown ? 1 : 0.92
 
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasized
-            }
-        }
+        Behavior on opacity { AnimEmph {} }
 
-        Behavior on scale {
-            NumberAnimation {
-                duration: Theme.durMedium
-                easing.type: Easing.OutBack
-                easing.overshoot: Theme.springOvershoot
-            }
-        }
+        Behavior on scale { SpringAnim {} }
 
         transform: Translate {
             id: drift
 
             y: root.shown ? 0 : 6
 
-            Behavior on y {
-                NumberAnimation {
-                    duration: Theme.durShort
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curveEmphasizedDecelerate
-                }
-            }
+            Behavior on y { Anim {} }
         }
 
         // Swallow clicks on the card so they don't reach the dismiss area.
@@ -403,8 +366,6 @@ PanelWindow {
                 }
 
                 Flickable {
-                    id: lapList
-
                     width: parent.width
                     height: Math.min(lapColumn.height, 140)
                     contentHeight: lapColumn.height

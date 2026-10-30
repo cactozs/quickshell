@@ -36,13 +36,7 @@ Item {
 
     scale: clickArea.pressed ? 0.97 : 1
 
-    Behavior on scale {
-        NumberAnimation {
-            duration: Theme.durShort
-            easing.type: Easing.OutBack
-            easing.overshoot: Theme.springOvershoot
-        }
-    }
+    Behavior on scale { SpringAnim { duration: Theme.durShort } }
 
     Rectangle {
         id: chip
@@ -63,21 +57,9 @@ Item {
             : (root.round ? Theme.shapeFull : Theme.chipRadius)
         color: root.containerColor
 
-        Behavior on radius {
-            NumberAnimation {
-                duration: Theme.durMorph
-                easing.type: Easing.OutBack
-                easing.overshoot: Theme.springOvershoot
-            }
-        }
+        Behavior on radius { SpringAnim { duration: Theme.durMorph } }
 
-        Behavior on color {
-            ColorAnimation {
-                duration: Theme.durMedium
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasized
-            }
-        }
+        Behavior on color { ColorAnim { duration: Theme.durMedium } }
 
         StateLayer {
             hovered: hover.hovered
@@ -104,13 +86,7 @@ Item {
                 font.family: root.iconFamily
                 font.pixelSize: Theme.iconSize
 
-                Behavior on color {
-                    ColorAnimation {
-                        duration: Theme.durShort
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: Theme.curveEmphasized
-                    }
-                }
+                Behavior on color { ColorAnim {} }
             }
 
             Text {
@@ -124,13 +100,7 @@ Item {
                 font.pixelSize: root.labelOnly ? Theme.fontSizeLabelMedium : Theme.fontSizeLabelLarge
                 font.weight: Font.Medium
 
-                Behavior on color {
-                    ColorAnimation {
-                        duration: Theme.durShort
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: Theme.curveEmphasized
-                    }
-                }
+                Behavior on color { ColorAnim {} }
             }
         }
     }

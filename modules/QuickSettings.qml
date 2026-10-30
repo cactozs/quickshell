@@ -248,17 +248,7 @@ PanelWindow {
         region: blurRegion
     }
 
-    Connections {
-        target: card
-
-        function onWidthChanged(): void {
-            blurKick.kick();
-        }
-
-        function onHeightChanged(): void {
-            blurKick.kick();
-        }
-    }
+    BlurTarget { item: card; kicker: blurKick }
 
     // What opening the panel does. A lazily built window (LazyOverlay) is born
     // already open, so its onShownChanged never fires; both paths call this.
@@ -368,16 +358,7 @@ PanelWindow {
 
     // Ambient shadow under the panel (New style only); follows the card's
     // entrance fade/scale.
-    RectangularShadow {
-        anchors.fill: card
-        radius: card.radius
-        blur: Theme.cardShadowBlur
-        offset.y: Theme.cardShadowOffset
-        color: Theme.cardShadow
-        visible: Theme.glass
-        opacity: card.opacity
-        scale: card.scale
-    }
+    CardShadow { target: card }
 
     Rectangle {
         id: card
@@ -402,21 +383,9 @@ PanelWindow {
         opacity: root.shown ? 1 : 0
 
         // M3E panel entrance: springy scale under a faster fade.
-        Behavior on scale {
-            NumberAnimation {
-                duration: Theme.durMedium
-                easing.type: Easing.OutBack
-                easing.overshoot: Theme.springOvershoot
-            }
-        }
+        Behavior on scale { SpringAnim {} }
 
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasizedDecelerate
-            }
-        }
+        Behavior on opacity { Anim {} }
 
         // Swallow clicks on the card so they don't reach the dismiss area.
         MouseArea {
@@ -634,13 +603,7 @@ PanelWindow {
                 color: Theme.surfaceContainerLow
                 clip: true
 
-                Behavior on height {
-                    NumberAnimation {
-                        duration: Theme.durMedium
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: Theme.curveEmphasizedDecelerate
-                    }
-                }
+                Behavior on height { Anim { duration: Theme.durMedium } }
 
                 Column {
                     id: wifiColumn
@@ -673,8 +636,6 @@ PanelWindow {
                     }
 
                     ListView {
-                        id: netList
-
                         reuseItems: true
 
                         width: parent.width
@@ -696,25 +657,11 @@ PanelWindow {
                         opacity: root.pskTarget !== null ? 1 : 0
                         clip: true
 
-                        Behavior on implicitHeight {
-                            NumberAnimation {
-                                duration: Theme.durMedium
-                                easing.type: Easing.BezierSpline
-                                easing.bezierCurve: Theme.curveEmphasizedDecelerate
-                            }
-                        }
+                        Behavior on implicitHeight { Anim { duration: Theme.durMedium } }
 
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: Theme.durShort
-                                easing.type: Easing.BezierSpline
-                                easing.bezierCurve: Theme.curveEmphasizedDecelerate
-                            }
-                        }
+                        Behavior on opacity { Anim {} }
 
                         Rectangle {
-                            id: pskField
-
                             anchors.left: parent.left
                             anchors.leftMargin: 4
                             anchors.right: pskConnect.left
@@ -789,21 +736,9 @@ PanelWindow {
                         opacity: root.wifiError !== "" ? 1 : 0
                         clip: true
 
-                        Behavior on implicitHeight {
-                            NumberAnimation {
-                                duration: Theme.durMedium
-                                easing.type: Easing.BezierSpline
-                                easing.bezierCurve: Theme.curveEmphasizedDecelerate
-                            }
-                        }
+                        Behavior on implicitHeight { Anim { duration: Theme.durMedium } }
 
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: Theme.durShort
-                                easing.type: Easing.BezierSpline
-                                easing.bezierCurve: Theme.curveEmphasizedDecelerate
-                            }
-                        }
+                        Behavior on opacity { Anim {} }
 
                         Text {
                             id: errorText
@@ -822,8 +757,6 @@ PanelWindow {
             // ---- media player -------------------------------------------------------
 
             Rectangle {
-                id: mediaRow
-
                 width: parent.width
                 // Collapses smoothly when the player goes away; stays mapped
                 // while the height animates (same pattern as wifiListBox).
@@ -833,21 +766,9 @@ PanelWindow {
                 radius: Theme.shapeLG
                 color: Theme.surfaceContainerHighest
 
-                Behavior on height {
-                    NumberAnimation {
-                        duration: Theme.durMedium
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: Theme.curveEmphasizedDecelerate
-                    }
-                }
+                Behavior on height { Anim { duration: Theme.durMedium } }
 
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: Theme.durShort
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: Theme.curveEmphasizedDecelerate
-                    }
-                }
+                Behavior on opacity { Anim {} }
 
                 Item {
                     anchors.fill: parent
@@ -951,8 +872,6 @@ PanelWindow {
             // ---- power section (collapsed by default) --------------------------------
 
             Rectangle {
-                id: powerHeader
-
                 width: parent.width
                 height: 48
                 radius: Theme.shapeMD
@@ -985,13 +904,7 @@ PanelWindow {
                     font.pixelSize: Theme.iconSize
                     rotation: root.powerExpanded ? 180 : 0
 
-                    Behavior on rotation {
-                        NumberAnimation {
-                            duration: Theme.durMedium
-                            easing.type: Easing.BezierSpline
-                            easing.bezierCurve: Theme.curveEmphasized
-                        }
-                    }
+                    Behavior on rotation { AnimEmph { duration: Theme.durMedium } }
                 }
 
                 MouseArea {
@@ -1012,20 +925,12 @@ PanelWindow {
             }
 
             Column {
-                id: powerList
-
                 width: parent.width
                 spacing: 4
                 height: root.powerExpanded ? implicitHeight : 0
                 clip: true
 
-                Behavior on height {
-                    NumberAnimation {
-                        duration: Theme.durMedium
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: Theme.curveEmphasizedDecelerate
-                    }
-                }
+                Behavior on height { Anim { duration: Theme.durMedium } }
 
                 Repeater {
                     model: root.powerActions
@@ -1066,29 +971,11 @@ PanelWindow {
         color: tile.active ? Theme.primaryContainer : Theme.surfaceContainerHighest
         scale: tileTap.pressed ? 0.98 : 1
 
-        Behavior on radius {
-            NumberAnimation {
-                duration: Theme.durMorph
-                easing.type: Easing.OutBack
-                easing.overshoot: Theme.springOvershoot
-            }
-        }
+        Behavior on radius { SpringAnim { duration: Theme.durMorph } }
 
-        Behavior on scale {
-            NumberAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.OutBack
-                easing.overshoot: Theme.springOvershoot
-            }
-        }
+        Behavior on scale { SpringAnim { duration: Theme.durShort } }
 
-        Behavior on color {
-            ColorAnimation {
-                duration: Theme.durMedium
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasized
-            }
-        }
+        Behavior on color { ColorAnim { duration: Theme.durMedium } }
 
         StateLayer {
             hovered: tileHover.hovered
@@ -1115,13 +1002,7 @@ PanelWindow {
                 font.family: Theme.iconFont
                 font.pixelSize: Theme.iconSizeMedium
 
-                Behavior on color {
-                    ColorAnimation {
-                        duration: Theme.durShort
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: Theme.curveEmphasized
-                    }
-                }
+                Behavior on color { ColorAnim {} }
             }
 
             Column {
@@ -1163,8 +1044,6 @@ PanelWindow {
         }
 
         MouseArea {
-            id: detailsTap
-
             visible: tile.hasDetails
             anchors.right: parent.right
             anchors.top: parent.top
@@ -1248,8 +1127,6 @@ PanelWindow {
         }
 
         Text {
-            id: rowName
-
             anchors.left: rowIcon.right
             anchors.leftMargin: 8
             anchors.right: rowLock.visible ? rowLock.left : rowStatus.left
@@ -1333,13 +1210,7 @@ PanelWindow {
         color: row.modelData.container
         scale: row.pressed ? 0.98 : 1
 
-        Behavior on scale {
-            NumberAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.OutBack
-                easing.overshoot: Theme.springOvershoot
-            }
-        }
+        Behavior on scale { SpringAnim { duration: Theme.durShort } }
 
         StateLayer {
             hovered: row.hovered

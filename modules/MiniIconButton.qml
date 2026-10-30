@@ -29,21 +29,9 @@ Item {
         color: "transparent"
         scale: tap.pressed ? 0.94 : 1
 
-        Behavior on radius {
-            NumberAnimation {
-                duration: Theme.durMorph
-                easing.type: Easing.OutBack
-                easing.overshoot: Theme.springOvershoot
-            }
-        }
+        Behavior on radius { SpringAnim { duration: Theme.durMorph } }
 
-        Behavior on scale {
-            NumberAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.OutBack
-                easing.overshoot: Theme.springOvershoot
-            }
-        }
+        Behavior on scale { SpringAnim { duration: Theme.durShort } }
 
         StateLayer {
             hovered: hover.hovered

@@ -40,15 +40,7 @@ PopupWindow {
 
     // Ambient shadow under the tooltip (New style only); follows its fade.
     // No acrylic: blur is only available on panel windows, not popups.
-    RectangularShadow {
-        anchors.fill: surface
-        radius: surface.radius
-        blur: Theme.cardShadowBlur
-        offset.y: Theme.cardShadowOffset
-        color: Theme.cardShadow
-        visible: Theme.glass
-        opacity: surface.opacity
-    }
+    CardShadow { target: surface; followScale: false }
 
     Rectangle {
         id: surface
@@ -65,26 +57,14 @@ PopupWindow {
 
         opacity: root.shown ? 1 : 0
 
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasized
-            }
-        }
+        Behavior on opacity { AnimEmph {} }
 
         transform: Translate {
             id: drift
 
             y: root.shown ? 0 : 6
 
-            Behavior on y {
-                NumberAnimation {
-                    duration: Theme.durShort
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curveEmphasizedDecelerate
-                }
-            }
+            Behavior on y { Anim {} }
         }
 
         Text {

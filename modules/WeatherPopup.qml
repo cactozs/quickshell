@@ -62,17 +62,7 @@ PanelWindow {
         region: blurRegion
     }
 
-    Connections {
-        target: card
-
-        function onWidthChanged(): void {
-            blurKick.kick();
-        }
-
-        function onHeightChanged(): void {
-            blurKick.kick();
-        }
-    }
+    BlurTarget { item: card; kicker: blurKick }
 
     // What opening the popup does. A lazily built window (LazyOverlay) is born
     // already open, so its onShownChanged never fires; both paths call this.
@@ -120,16 +110,7 @@ PanelWindow {
 
     // Ambient shadow under the card (New style only); follows the card's
     // entrance fade/scale.
-    RectangularShadow {
-        anchors.fill: card
-        radius: card.radius
-        blur: Theme.cardShadowBlur
-        offset.y: Theme.cardShadowOffset
-        color: Theme.cardShadow
-        visible: Theme.glass
-        opacity: card.opacity
-        scale: card.scale
-    }
+    CardShadow { target: card }
 
     Rectangle {
         id: card
@@ -153,34 +134,16 @@ PanelWindow {
         opacity: root.shown ? 1 : 0
         scale: root.shown ? 1 : 0.92
 
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasized
-            }
-        }
+        Behavior on opacity { AnimEmph {} }
 
-        Behavior on scale {
-            NumberAnimation {
-                duration: Theme.durMedium
-                easing.type: Easing.OutBack
-                easing.overshoot: Theme.springOvershoot
-            }
-        }
+        Behavior on scale { SpringAnim {} }
 
         transform: Translate {
             id: drift
 
             y: root.shown ? 0 : 6
 
-            Behavior on y {
-                NumberAnimation {
-                    duration: Theme.durShort
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curveEmphasizedDecelerate
-                }
-            }
+            Behavior on y { Anim {} }
         }
 
         // Swallow clicks on the card so they don't reach the dismiss area.

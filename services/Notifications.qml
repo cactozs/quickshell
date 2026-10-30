@@ -47,8 +47,6 @@ Singleton {
     // notification's object is gone after a restart, so only the plain record
     // fields are written and the restored rows come back with `live: null`.
     FileView {
-        id: storeFile
-
         path: Qt.resolvedUrl("../notifications.json")
         preload: false
         blockAllReads: true

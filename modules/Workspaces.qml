@@ -109,37 +109,13 @@ Item {
         radius: root.activePressed ? Theme.chipRadiusPressed : Theme.chipRadius
         color: Theme.secondaryContainer
 
-        Behavior on x {
-            NumberAnimation {
-                duration: Theme.dur(100)
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasizedDecelerate
-            }
-        }
+        Behavior on x { Anim { duration: Theme.dur(100) } }
 
-        Behavior on y {
-            NumberAnimation {
-                duration: Theme.dur(100)
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasizedDecelerate
-            }
-        }
+        Behavior on y { Anim { duration: Theme.dur(100) } }
 
-        Behavior on width {
-            NumberAnimation {
-                duration: Theme.dur(100)
-                easing.type: Easing.OutBack
-                easing.overshoot: Theme.springOvershoot
-            }
-        }
+        Behavior on width { SpringAnim { duration: Theme.dur(100) } }
 
-        Behavior on radius {
-            NumberAnimation {
-                duration: Theme.durMorph
-                easing.type: Easing.OutBack
-                easing.overshoot: Theme.springOvershoot
-            }
-        }
+        Behavior on radius { SpringAnim { duration: Theme.durMorph } }
     }
 
     // A Grid is the one positioner that turns from a row into a column: one
@@ -152,21 +128,9 @@ Item {
         y: root.vertical ? root.offset : Math.round((root.height - height) / 2)
         spacing: root.spacing
 
-        Behavior on x {
-            NumberAnimation {
-                duration: Theme.dur(100)
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasizedDecelerate
-            }
-        }
+        Behavior on x { Anim { duration: Theme.dur(100) } }
 
-        Behavior on y {
-            NumberAnimation {
-                duration: Theme.dur(100)
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasizedDecelerate
-            }
-        }
+        Behavior on y { Anim { duration: Theme.dur(100) } }
 
         Repeater {
             id: repeater
@@ -256,13 +220,7 @@ Item {
                         font.pixelSize: Theme.fontSizeLabelLarge
                         font.weight: Font.Medium
 
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: Theme.durShort
-                                easing.type: Easing.BezierSpline
-                                easing.bezierCurve: Theme.curveEmphasized
-                            }
-                        }
+                        Behavior on color { ColorAnim {} }
                     }
                 }
 

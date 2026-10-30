@@ -54,13 +54,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             color: slider.handleColor
 
-            Behavior on width {
-                NumberAnimation {
-                    duration: Theme.durShort
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curveEmphasized
-                }
-            }
+            Behavior on width { AnimEmph {} }
 
         }
     }

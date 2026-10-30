@@ -1,12 +1,17 @@
 Ambient 1.0 Ambient.qml
+Anim 1.0 Anim.qml
+AnimEmph 1.0 AnimEmph.qml
 Backlight 1.0 Backlight.qml
 Bar 1.0 Bar.qml
 Battery 1.0 Battery.qml
 BlurKick 1.0 BlurKick.qml
+BlurTarget 1.0 BlurTarget.qml
 CalcRow 1.0 CalcRow.qml
 CalendarPopup 1.0 CalendarPopup.qml
+CardShadow 1.0 CardShadow.qml
 ClipboardLauncher 1.0 ClipboardLauncher.qml
 ClockPopup 1.0 ClockPopup.qml
+ColorAnim 1.0 ColorAnim.qml
 ColorPicker 1.0 ColorPicker.qml
 DateClock 1.0 DateClock.qml
 GlassEdge 1.0 GlassEdge.qml
@@ -21,6 +26,7 @@ LockSurface 1.0 LockSurface.qml
 MiniIconButton 1.0 MiniIconButton.qml
 NotificationBell 1.0 NotificationBell.qml
 NotificationCenter 1.0 NotificationCenter.qml
+NotificationIcon 1.0 NotificationIcon.qml
 NotificationToast 1.0 NotificationToast.qml
 OsdBadge 1.0 OsdBadge.qml
 Pet 1.0 Pet.qml
@@ -29,6 +35,7 @@ PowerButton 1.0 PowerButton.qml
 QsSlider 1.0 QsSlider.qml
 QuickSettings 1.0 QuickSettings.qml
 Settings 1.0 Settings.qml
+SpringAnim 1.0 SpringAnim.qml
 StateLayer 1.0 StateLayer.qml
 SystemPopup 1.0 SystemPopup.qml
 SystemStats 1.0 SystemStats.qml

@@ -238,14 +238,7 @@ PanelWindow {
         height: bubble.visible ? bubble.height : 0
     }
 
-    RectangularShadow {
-        anchors.fill: bubble
-        radius: bubble.radius
-        blur: Theme.cardShadowBlur
-        offset.y: Theme.cardShadowOffset
-        color: Theme.cardShadow
-        visible: Theme.glass && bubble.visible
-    }
+    CardShadow { target: bubble; shown: Theme.glass && bubble.visible; followOpacity: false; followScale: false }
 
     Rectangle {
         id: bubble
@@ -406,7 +399,6 @@ PanelWindow {
     }
 
     Timer {
-        id: sleepTimer
         interval: 60 * 1000
         repeat: true
         running: root.shown && !root.hiddenByFullscreen

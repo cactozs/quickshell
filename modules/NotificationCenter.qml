@@ -1,11 +1,8 @@
 pragma ComponentBehavior: Bound
 
 import Quickshell
-import Quickshell.Services.Notifications
 import Quickshell.Wayland
-import Quickshell.Widgets
 import QtQuick
-import QtQuick.Effects
 import "../services"
 import "../style"
 
@@ -67,17 +64,7 @@ PanelWindow {
         region: blurRegion
     }
 
-    Connections {
-        target: card
-
-        function onWidthChanged(): void {
-            blurKick.kick();
-        }
-
-        function onHeightChanged(): void {
-            blurKick.kick();
-        }
-    }
+    BlurTarget { item: card; kicker: blurKick }
 
     // What opening the center does. A lazily built window (LazyOverlay) is born
     // already open, so its onShownChanged never fires; both paths call this.
@@ -135,16 +122,7 @@ PanelWindow {
 
     // Ambient shadow under the card (New style only); follows the card's
     // entrance fade/scale.
-    RectangularShadow {
-        anchors.fill: card
-        radius: card.radius
-        blur: Theme.cardShadowBlur
-        offset.y: Theme.cardShadowOffset
-        color: Theme.cardShadow
-        visible: Theme.glass
-        opacity: card.opacity
-        scale: card.scale
-    }
+    CardShadow { target: card }
 
     Rectangle {
         id: card
@@ -169,21 +147,9 @@ PanelWindow {
         opacity: root.shown ? 1 : 0
 
         // M3E card entrance: springy scale under a faster fade.
-        Behavior on scale {
-            NumberAnimation {
-                duration: Theme.durMedium
-                easing.type: Easing.OutBack
-                easing.overshoot: Theme.springOvershoot
-            }
-        }
+        Behavior on scale { SpringAnim {} }
 
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasizedDecelerate
-            }
-        }
+        Behavior on opacity { Anim {} }
 
         // Swallow clicks on the card so they don't reach the dismiss area.
         MouseArea {
@@ -269,13 +235,7 @@ PanelWindow {
 
                 // Arrivals and dismissals resize the list; animate the height
                 // so the card grows and shrinks smoothly.
-                Behavior on height {
-                    NumberAnimation {
-                        duration: Theme.durMedium
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: Theme.curveEmphasizedDecelerate
-                    }
-                }
+                Behavior on height { Anim { duration: Theme.durMedium } }
 
                 ListView {
                     id: list
@@ -328,37 +288,13 @@ PanelWindow {
             color: Theme.surfaceText
         }
 
-        Rectangle {
+        NotificationIcon {
             id: iconBox
 
             anchors.left: parent.left
             anchors.leftMargin: 8
             anchors.verticalCenter: parent.verticalCenter
-            width: 40
-            height: 40
-            radius: Theme.shapeFull
-            color: Theme.surfaceContainerHighest
-
-            IconImage {
-                id: iconImage
-
-                anchors.fill: parent
-                anchors.margins: 6
-                source: row.iconSource
-                // A source that failed to load (dead temp image, border case
-                // the resolver let through) must not paint a broken frame; the
-                // glyph below stands in for it.
-                visible: row.iconSource !== "" && status === Image.Ready
-            }
-
-            Text {
-                anchors.centerIn: parent
-                visible: !iconImage.visible
-                text: Theme.iconNotifications
-                color: Theme.surfaceVariantText
-                font.family: Theme.iconFont
-                font.pixelSize: Theme.iconSizeMedium
-            }
+            source: row.iconSource
         }
 
         Column {

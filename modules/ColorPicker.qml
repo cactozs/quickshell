@@ -254,8 +254,6 @@ Item {
                     spacing: 8
 
                     Rectangle {
-                        id: resetButton
-
                         implicitWidth: resetLabel.implicitWidth + 28
                         implicitHeight: 36
                         radius: Theme.glass ? Theme.shapeMD : Theme.shapeFull
@@ -293,8 +291,6 @@ Item {
                     }
 
                     Rectangle {
-                        id: doneButton
-
                         implicitWidth: doneLabel.implicitWidth + 28
                         implicitHeight: 36
                         radius: Theme.glass ? Theme.shapeMD : Theme.shapeFull

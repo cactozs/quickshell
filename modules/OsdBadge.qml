@@ -66,30 +66,11 @@ PanelWindow {
         region: blurRegion
     }
 
-    Connections {
-        target: pill
-
-        function onWidthChanged(): void {
-            blurKick.kick();
-        }
-
-        function onHeightChanged(): void {
-            blurKick.kick();
-        }
-    }
+    BlurTarget { item: pill; kicker: blurKick }
 
     // Ambient shadow under the pill (New style only); follows the pill's
     // entrance fade/scale.
-    RectangularShadow {
-        anchors.fill: pill
-        radius: pill.radius
-        blur: Theme.cardShadowBlur
-        offset.y: Theme.cardShadowOffset
-        color: Theme.cardShadow
-        visible: Theme.glass
-        opacity: pill.opacity
-        scale: pill.scale
-    }
+    CardShadow { target: pill }
 
     Rectangle {
         id: pill
@@ -113,22 +94,10 @@ PanelWindow {
         opacity: Osd.shown ? 1 : 0
         scale: Osd.shown ? 1 : 0.85
 
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasizedDecelerate
-            }
-        }
+        Behavior on opacity { Anim {} }
 
         // Expressive pop-in; on hide the same spring reads as a light shrink.
-        Behavior on scale {
-            NumberAnimation {
-                duration: Theme.durMedium
-                easing.type: Easing.OutBack
-                easing.overshoot: Theme.springOvershoot
-            }
-        }
+        Behavior on scale { SpringAnim {} }
 
         RowLayout {
             id: row
@@ -143,13 +112,7 @@ PanelWindow {
                 font.family: Theme.iconFont
                 font.pixelSize: Theme.iconSizeLarge
 
-                Behavior on color {
-                    ColorAnimation {
-                        duration: Theme.durShort
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: Theme.curveEmphasized
-                    }
-                }
+                Behavior on color { ColorAnim {} }
             }
 
             Rectangle {
@@ -167,13 +130,7 @@ PanelWindow {
                     radius: parent.radius
                     color: Theme.sliderColor
 
-                    Behavior on width {
-                        NumberAnimation {
-                            duration: Theme.durShort
-                            easing.type: Easing.BezierSpline
-                            easing.bezierCurve: Theme.curveEmphasized
-                        }
-                    }
+                    Behavior on width { AnimEmph {} }
                 }
             }
 
@@ -187,13 +144,7 @@ PanelWindow {
                 font.weight: Font.Medium
                 horizontalAlignment: Text.AlignRight
 
-                Behavior on color {
-                    ColorAnimation {
-                        duration: Theme.durShort
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: Theme.curveEmphasized
-                    }
-                }
+                Behavior on color { ColorAnim {} }
             }
         }
     }

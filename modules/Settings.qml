@@ -4,7 +4,6 @@ import Quickshell
 import Quickshell.Services.UPower
 import Quickshell.Wayland
 import QtQuick
-import QtQuick.Effects
 import "../services"
 import "../style"
 
@@ -120,13 +119,7 @@ PanelWindow {
         color: Theme.scrim
         opacity: root.shown ? Theme.scrimOpacity : 0
 
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasizedDecelerate
-            }
-        }
+        Behavior on opacity { Anim {} }
     }
 
     // click outside the card dismisses the menu
@@ -159,17 +152,7 @@ PanelWindow {
 
     // Ambient shadow under the card (New style only). Follows the card's
     // entrance fade/scale, since it is a sibling and not a child.
-    RectangularShadow {
-        anchors.fill: card
-        radius: card.radius
-        blur: Theme.cardShadowBlur
-        offset.y: Theme.cardShadowOffset
-        color: Theme.cardShadow
-        visible: Theme.glass
-        opacity: card.opacity
-        scale: card.scale
-        transformOrigin: Item.Center
-    }
+    CardShadow { target: card; transformOrigin: Item.Center }
 
     Rectangle {
         id: card
@@ -199,34 +182,16 @@ PanelWindow {
         opacity: root.shown ? 1 : 0
 
         // M3E card entrance: springy scale under a faster fade.
-        Behavior on scale {
-            NumberAnimation {
-                duration: Theme.durMedium
-                easing.type: Easing.OutBack
-                easing.overshoot: Theme.springOvershoot
-            }
-        }
+        Behavior on scale { SpringAnim {} }
 
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasizedDecelerate
-            }
-        }
+        Behavior on opacity { Anim {} }
 
         // Each tab has its own height; the card follows with the M3 container
         // timing while the pages clip their own overflow.
         onHeightChanged: blurKick.kick()
         onScaleChanged: blurKick.kick()
 
-        Behavior on height {
-            NumberAnimation {
-                duration: Theme.durPop
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasized
-            }
-        }
+        Behavior on height { AnimEmph { duration: Theme.durPop } }
 
         // Swallow clicks on the card so they don't reach the dismiss area.
         MouseArea {
@@ -306,13 +271,7 @@ PanelWindow {
                                 font.pixelSize: Theme.fontSizeLabelLarge
                                 font.weight: tabItem.selected ? Font.Medium : Font.Normal
 
-                                Behavior on color {
-                                    ColorAnimation {
-                                        duration: Theme.durShort
-                                        easing.type: Easing.BezierSpline
-                                        easing.bezierCurve: Theme.curveEmphasized
-                                    }
-                                }
+                                Behavior on color { ColorAnim {} }
                             }
                         }
 
@@ -346,13 +305,7 @@ PanelWindow {
                     radius: Theme.shapeXS
                     color: Theme.primary
 
-                    Behavior on x {
-                        NumberAnimation {
-                            duration: Theme.durPop
-                            easing.type: Easing.BezierSpline
-                            easing.bezierCurve: Theme.curveEmphasized
-                        }
-                    }
+                    Behavior on x { AnimEmph { duration: Theme.durPop } }
                 }
             }
 
@@ -378,51 +331,7 @@ PanelWindow {
 
                     // ---- style pack -----------------------------------------------------
 
-                    SettingRow {
-                        label: I18n.t("Стиль")
-
-                        SettingSegment {
-                            label: "M3 Inspired"
-                            selected: ShellState.styleMode === "m3"
-                            onClicked: ShellState.setStyleMode("m3")
-                        }
-
-                        SettingSegment {
-                            label: "M3 Blur"
-                            selected: ShellState.styleMode === "blur"
-                            onClicked: ShellState.setStyleMode("blur")
-                        }
-
-                        SettingSegment {
-                            label: "New"
-                            selected: ShellState.styleMode === "new"
-                            onClicked: ShellState.setStyleMode("new")
-                        }
-
-                        SettingSegment {
-                            label: "Nothing"
-                            selected: ShellState.styleMode === "nothing"
-                            onClicked: ShellState.setStyleMode("nothing")
-                        }
-
-                        SettingSegment {
-                            label: "New Nothing"
-                            selected: ShellState.styleMode === "newNothing"
-                            onClicked: ShellState.setStyleMode("newNothing")
-                        }
-
-                        SettingSegment {
-                            label: "Old"
-                            selected: ShellState.styleMode === "old"
-                            onClicked: ShellState.setStyleMode("old")
-                        }
-
-                        SettingSegment {
-                            label: "Custom"
-                            selected: ShellState.styleMode === "custom"
-                            onClicked: ShellState.setStyleMode("custom")
-                        }
-                    }
+                    StyleRow {}
 
                     // ---- bar position ---------------------------------------------------
 
@@ -630,25 +539,7 @@ PanelWindow {
 
                     // ---- theme mode -----------------------------------------------------
 
-                    SettingRow {
-                        label: I18n.t("Тема")
-                        // Custom has one palette for both modes: its surface
-                        // decides the light system derivations, so a mode picker
-                        // would lie.
-                        visible: !Theme.custom
-
-                        SettingSegment {
-                            label: I18n.t("Тёмная")
-                            selected: !Theme.light
-                            onClicked: ShellState.setThemeMode("dark")
-                        }
-
-                        SettingSegment {
-                            label: I18n.t("Светлая")
-                            selected: Theme.light
-                            onClicked: ShellState.setThemeMode("light")
-                        }
-                    }
+                    ThemeRow {}
 
                     // ---- color scheme ---------------------------------------------------
 
@@ -731,27 +622,7 @@ PanelWindow {
 
                     // Native names on purpose: they need no translation and stay
                     // readable whichever language is picked.
-                    SettingRow {
-                        label: I18n.t("Язык")
-
-                        SettingSegment {
-                            label: "Русский"
-                            selected: ShellState.language === "ru"
-                            onClicked: ShellState.setLanguage("ru")
-                        }
-
-                        SettingSegment {
-                            label: "English"
-                            selected: ShellState.language === "en"
-                            onClicked: ShellState.setLanguage("en")
-                        }
-
-                        SettingSegment {
-                            label: "Deutsch"
-                            selected: ShellState.language === "de"
-                            onClicked: ShellState.setLanguage("de")
-                        }
-                    }
+                    LanguageRow {}
 
                     // ---- launcher view --------------------------------------------------
 
@@ -818,98 +689,41 @@ PanelWindow {
                     // One group: which files services/SystemTheme.qml writes at all.
                     // A chip that is off leaves its file untouched, so the app keeps
                     // the colors it last got until it is switched back on.
-                    SettingRow {
+                    AppRow {
                         label: I18n.t("Цвета в приложениях")
-
-                        SettingSegment {
-                            label: "GTK"
-                            selected: ShellState.themeAppEnabled("gtk")
-                            onClicked: ShellState.setThemeApp("gtk", !selected)
-                        }
-
-                        SettingSegment {
-                            label: "Qt"
-                            selected: ShellState.themeAppEnabled("qt")
-                            onClicked: ShellState.setThemeApp("qt", !selected)
-                        }
-
-                        SettingSegment {
-                            label: "Niri"
-                            selected: ShellState.themeAppEnabled("niri")
-                            onClicked: ShellState.setThemeApp("niri", !selected)
-                        }
+                        apps: [
+                            { label: "GTK", key: "gtk" },
+                            { label: "Qt", key: "qt" },
+                            { label: "Niri", key: "niri" }
+                        ]
                     }
 
-                    SettingRow {
+                    AppRow {
                         label: I18n.t("Терминалы")
-
-                        SettingSegment {
-                            label: "Ghostty"
-                            selected: ShellState.themeAppEnabled("ghostty")
-                            onClicked: ShellState.setThemeApp("ghostty", !selected)
-                        }
-
-                        SettingSegment {
-                            label: "Foot"
-                            selected: ShellState.themeAppEnabled("foot")
-                            onClicked: ShellState.setThemeApp("foot", !selected)
-                        }
-
-                        SettingSegment {
-                            label: "Alacritty"
-                            selected: ShellState.themeAppEnabled("alacritty")
-                            onClicked: ShellState.setThemeApp("alacritty", !selected)
-                        }
-
-                        SettingSegment {
-                            label: "Kitty"
-                            selected: ShellState.themeAppEnabled("kitty")
-                            onClicked: ShellState.setThemeApp("kitty", !selected)
-                        }
+                        apps: [
+                            { label: "Ghostty", key: "ghostty" },
+                            { label: "Foot", key: "foot" },
+                            { label: "Alacritty", key: "alacritty" },
+                            { label: "Kitty", key: "kitty" }
+                        ]
                     }
 
-                    SettingRow {
+                    AppRow {
                         label: I18n.t("Редакторы")
-
-                        SettingSegment {
-                            label: "Neovim"
-                            selected: ShellState.themeAppEnabled("nvim")
-                            onClicked: ShellState.setThemeApp("nvim", !selected)
-                        }
-
-                        SettingSegment {
-                            label: "Helix"
-                            selected: ShellState.themeAppEnabled("helix")
-                            onClicked: ShellState.setThemeApp("helix", !selected)
-                        }
-
-                        SettingSegment {
-                            label: "Zed"
-                            selected: ShellState.themeAppEnabled("zed")
-                            onClicked: ShellState.setThemeApp("zed", !selected)
-                        }
+                        apps: [
+                            { label: "Neovim", key: "nvim" },
+                            { label: "Helix", key: "helix" },
+                            { label: "Zed", key: "zed" }
+                        ]
                     }
 
-                    SettingRow {
+                    AppRow {
                         label: I18n.t("Оболочки")
-
-                        SettingSegment {
-                            label: "Bash"
-                            selected: ShellState.themeAppEnabled("bash")
-                            onClicked: ShellState.setThemeApp("bash", !selected)
-                        }
-
-                        SettingSegment {
-                            label: "Fish"
-                            selected: ShellState.themeAppEnabled("fish")
-                            onClicked: ShellState.setThemeApp("fish", !selected)
-                        }
-
-                        SettingSegment {
-                            label: "Bat"
-                            selected: ShellState.themeAppEnabled("bat")
-                            onClicked: ShellState.setThemeApp("bat", !selected)
-                        }
+                        apps: [
+                            { label: "Bash", key: "bash" },
+                            { label: "Fish", key: "fish" },
+                            { label: "Bat", key: "bat" }
+                        ]
                     }
 
                     // Rewrites every enabled file: for one edited by hand, or a
@@ -957,51 +771,13 @@ PanelWindow {
                     // Straight from power-profiles-daemon: it is the source of truth,
                     // so there is no shell-side copy to persist. The performance
                     // segment is hidden when the daemon reports no such profile.
-                    SettingRow {
-                        label: I18n.t("Профиль питания")
-
-                        SettingSegment {
-                            label: I18n.t("Экономия")
-                            selected: PowerProfiles.profile === PowerProfile.PowerSaver
-                            onClicked: PowerProfiles.profile = PowerProfile.PowerSaver
-                        }
-
-                        SettingSegment {
-                            label: I18n.t("Баланс")
-                            selected: PowerProfiles.profile === PowerProfile.Balanced
-                            onClicked: PowerProfiles.profile = PowerProfile.Balanced
-                        }
-
-                        SettingSegment {
-                            label: I18n.t("Производительность")
-                            visible: PowerProfiles.hasPerformanceProfile
-                            selected: PowerProfiles.profile === PowerProfile.Performance
-                            onClicked: PowerProfiles.profile = PowerProfile.Performance
-                        }
-                    }
+                    PowerProfileRow {}
 
                     // ---- settings view --------------------------------------------------
 
                     // Full = the five tabs, minimal = the one compact screen.
                     // «Полные» lands on this tab, where the switch lives.
-                    SettingRow {
-                        label: I18n.t("Вид настроек")
-
-                        SettingSegment {
-                            label: I18n.t("Полные")
-                            selected: !root.minimal
-                            onClicked: {
-                                ShellState.setSettingsMinimal(false);
-                                root.tabIndex = 3;
-                            }
-                        }
-
-                        SettingSegment {
-                            label: I18n.t("Минимал")
-                            selected: root.minimal
-                            onClicked: ShellState.setSettingsMinimal(true)
-                        }
-                    }
+                    SettingsViewRow {}
                 }
 
                 // ---- custom style page ----------------------------------------------
@@ -1056,88 +832,28 @@ PanelWindow {
 
                             // ---- shape ------------------------------------------
 
-                            SettingRow {
+                            SliderRow {
                                 label: I18n.t("Скругление")
-
-                                IntSlider {
-                                    id: shapeSlider
-
-                                    minimum: 0
-                                    maximum: 32
-                                    current: ShellState.customRadius
-                                    onChangedValue: value => ShellState.setCustomRadius(value)
-                                }
-
-                                Item {
-                                    implicitWidth: 32
-                                    implicitHeight: 40
-
-                                    Text {
-                                        anchors.right: parent.right
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: shapeSlider.shown
-                                        color: Theme.surfaceText
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: Theme.fontSizeLabelLarge
-                                        font.weight: Font.Medium
-                                    }
-                                }
+                                minimum: 0
+                                maximum: 32
+                                current: ShellState.customRadius
+                                onCommitted: value => ShellState.setCustomRadius(value)
                             }
 
-                            SettingRow {
+                            SliderRow {
                                 label: I18n.t("Радиус панели")
-
-                                IntSlider {
-                                    id: barSlider
-
-                                    minimum: 0
-                                    maximum: 24
-                                    current: ShellState.customBarRadius
-                                    onChangedValue: value => ShellState.setCustomBarRadius(value)
-                                }
-
-                                Item {
-                                    implicitWidth: 32
-                                    implicitHeight: 40
-
-                                    Text {
-                                        anchors.right: parent.right
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: barSlider.shown
-                                        color: Theme.surfaceText
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: Theme.fontSizeLabelLarge
-                                        font.weight: Font.Medium
-                                    }
-                                }
+                                minimum: 0
+                                maximum: 24
+                                current: ShellState.customBarRadius
+                                onCommitted: value => ShellState.setCustomBarRadius(value)
                             }
 
-                            SettingRow {
+                            SliderRow {
                                 label: I18n.t("Радиус чипов")
-
-                                IntSlider {
-                                    id: chipSlider
-
-                                    minimum: 0
-                                    maximum: 24
-                                    current: ShellState.customChipRadius
-                                    onChangedValue: value => ShellState.setCustomChipRadius(value)
-                                }
-
-                                Item {
-                                    implicitWidth: 32
-                                    implicitHeight: 40
-
-                                    Text {
-                                        anchors.right: parent.right
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: chipSlider.shown
-                                        color: Theme.surfaceText
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: Theme.fontSizeLabelLarge
-                                        font.weight: Font.Medium
-                                    }
-                                }
+                                minimum: 0
+                                maximum: 24
+                                current: ShellState.customChipRadius
+                                onCommitted: value => ShellState.setCustomChipRadius(value)
                             }
 
                             // ---- dressing ---------------------------------------
@@ -1158,117 +874,37 @@ PanelWindow {
                                 }
                             }
 
-                            SettingRow {
+                            SliderRow {
                                 label: I18n.t("Прозрачность")
                                 visible: ShellState.customAcrylic
-
-                                IntSlider {
-                                    id: opacitySlider
-
-                                    minimum: 40
-                                    maximum: 100
-                                    current: ShellState.customOpacity
-                                    onChangedValue: value => ShellState.setCustomOpacity(value)
-                                }
-
-                                Item {
-                                    implicitWidth: 32
-                                    implicitHeight: 40
-
-                                    Text {
-                                        anchors.right: parent.right
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: opacitySlider.shown
-                                        color: Theme.surfaceText
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: Theme.fontSizeLabelLarge
-                                        font.weight: Font.Medium
-                                    }
-                                }
+                                minimum: 40
+                                maximum: 100
+                                current: ShellState.customOpacity
+                                onCommitted: value => ShellState.setCustomOpacity(value)
                             }
 
-                            SettingRow {
+                            SliderRow {
                                 label: I18n.t("Сила тени")
-
-                                IntSlider {
-                                    id: shadowSlider
-
-                                    minimum: 0
-                                    maximum: 100
-                                    current: ShellState.customShadow
-                                    onChangedValue: value => ShellState.setCustomShadow(value)
-                                }
-
-                                Item {
-                                    implicitWidth: 32
-                                    implicitHeight: 40
-
-                                    Text {
-                                        anchors.right: parent.right
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: shadowSlider.shown
-                                        color: Theme.surfaceText
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: Theme.fontSizeLabelLarge
-                                        font.weight: Font.Medium
-                                    }
-                                }
+                                minimum: 0
+                                maximum: 100
+                                current: ShellState.customShadow
+                                onCommitted: value => ShellState.setCustomShadow(value)
                             }
 
-                            SettingRow {
+                            SliderRow {
                                 label: I18n.t("Размытие тени")
-
-                                IntSlider {
-                                    id: shadowBlurSlider
-
-                                    minimum: 0
-                                    maximum: 64
-                                    current: ShellState.customShadowBlur
-                                    onChangedValue: value => ShellState.setCustomShadowBlur(value)
-                                }
-
-                                Item {
-                                    implicitWidth: 32
-                                    implicitHeight: 40
-
-                                    Text {
-                                        anchors.right: parent.right
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: shadowBlurSlider.shown
-                                        color: Theme.surfaceText
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: Theme.fontSizeLabelLarge
-                                        font.weight: Font.Medium
-                                    }
-                                }
+                                minimum: 0
+                                maximum: 64
+                                current: ShellState.customShadowBlur
+                                onCommitted: value => ShellState.setCustomShadowBlur(value)
                             }
 
-                            SettingRow {
+                            SliderRow {
                                 label: I18n.t("Смещение тени")
-
-                                IntSlider {
-                                    id: shadowOffsetSlider
-
-                                    minimum: -16
-                                    maximum: 16
-                                    current: ShellState.customShadowOffset
-                                    onChangedValue: value => ShellState.setCustomShadowOffset(value)
-                                }
-
-                                Item {
-                                    implicitWidth: 32
-                                    implicitHeight: 40
-
-                                    Text {
-                                        anchors.right: parent.right
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: shadowOffsetSlider.shown
-                                        color: Theme.surfaceText
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: Theme.fontSizeLabelLarge
-                                        font.weight: Font.Medium
-                                    }
-                                }
+                                minimum: -16
+                                maximum: 16
+                                current: ShellState.customShadowOffset
+                                onCommitted: value => ShellState.setCustomShadowOffset(value)
                             }
 
                             SettingRow {
@@ -1458,109 +1094,15 @@ PanelWindow {
                     // tab the card was on instead of sliding in from a corner.
                     pageIndex: root.tabIndex
 
-                    SettingRow {
-                        label: I18n.t("Стиль")
+                    StyleRow { compact: true }
 
-                        SettingSegment {
-                            label: "M3 Inspired"
-                            selected: ShellState.styleMode === "m3"
-                            onClicked: ShellState.setStyleMode("m3")
-                        }
+                    ThemeRow {}
 
-                        SettingSegment {
-                            label: "M3 Blur"
-                            selected: ShellState.styleMode === "blur"
-                            onClicked: ShellState.setStyleMode("blur")
-                        }
+                    LanguageRow {}
 
-                        SettingSegment {
-                            label: "New"
-                            selected: ShellState.styleMode === "new"
-                            onClicked: ShellState.setStyleMode("new")
-                        }
-                    }
+                    PowerProfileRow {}
 
-                    SettingRow {
-                        label: I18n.t("Тема")
-                        // Same as the full view: Custom owns both modes.
-                        visible: !Theme.custom
-
-                        SettingSegment {
-                            label: I18n.t("Тёмная")
-                            selected: !Theme.light
-                            onClicked: ShellState.setThemeMode("dark")
-                        }
-
-                        SettingSegment {
-                            label: I18n.t("Светлая")
-                            selected: Theme.light
-                            onClicked: ShellState.setThemeMode("light")
-                        }
-                    }
-
-                    SettingRow {
-                        label: I18n.t("Язык")
-
-                        SettingSegment {
-                            label: "Русский"
-                            selected: ShellState.language === "ru"
-                            onClicked: ShellState.setLanguage("ru")
-                        }
-
-                        SettingSegment {
-                            label: "English"
-                            selected: ShellState.language === "en"
-                            onClicked: ShellState.setLanguage("en")
-                        }
-
-                        SettingSegment {
-                            label: "Deutsch"
-                            selected: ShellState.language === "de"
-                            onClicked: ShellState.setLanguage("de")
-                        }
-                    }
-
-                    SettingRow {
-                        label: I18n.t("Профиль питания")
-
-                        SettingSegment {
-                            label: I18n.t("Экономия")
-                            selected: PowerProfiles.profile === PowerProfile.PowerSaver
-                            onClicked: PowerProfiles.profile = PowerProfile.PowerSaver
-                        }
-
-                        SettingSegment {
-                            label: I18n.t("Баланс")
-                            selected: PowerProfiles.profile === PowerProfile.Balanced
-                            onClicked: PowerProfiles.profile = PowerProfile.Balanced
-                        }
-
-                        SettingSegment {
-                            label: I18n.t("Производительность")
-                            visible: PowerProfiles.hasPerformanceProfile
-                            selected: PowerProfiles.profile === PowerProfile.Performance
-                            onClicked: PowerProfiles.profile = PowerProfile.Performance
-                        }
-                    }
-
-                    SettingRow {
-                        label: I18n.t("Вид настроек")
-
-                        SettingSegment {
-                            label: I18n.t("Полные")
-                            selected: !root.minimal
-                            onClicked: {
-                                ShellState.setSettingsMinimal(false);
-                                root.tabIndex = 3;
-                            }
-                        }
-
-                        SettingSegment {
-                            label: I18n.t("Минимал")
-                            selected: root.minimal
-                            onClicked: ShellState.setSettingsMinimal(true)
-                        }
-                    }
+                    SettingsViewRow {}
                 }
             }
         }
@@ -1615,21 +1157,9 @@ PanelWindow {
         opacity: page.active ? 1 : 0
         visible: page.opacity > 0.001
 
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.durPop
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasized
-            }
-        }
+        Behavior on opacity { AnimEmph { duration: Theme.durPop } }
 
-        Behavior on x {
-            NumberAnimation {
-                duration: Theme.durPop
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasizedDecelerate
-            }
-        }
+        Behavior on x { Anim { duration: Theme.durPop } }
     }
 
     // One settings row. The label wraps instead of being squeezed under the
@@ -1790,13 +1320,7 @@ PanelWindow {
         border.width: seg.selected ? 0 : 1
         border.color: Theme.outline
 
-        Behavior on color {
-            ColorAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasized
-            }
-        }
+        Behavior on color { ColorAnim {} }
 
         StateLayer {
             hovered: segHover.hovered
@@ -1819,13 +1343,7 @@ PanelWindow {
             font.pixelSize: Theme.fontSizeLabelLarge
             font.weight: seg.selected ? Font.Medium : Font.Normal
 
-            Behavior on color {
-                ColorAnimation {
-                    duration: Theme.durShort
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curveEmphasized
-                }
-            }
+            Behavior on color { ColorAnim {} }
         }
 
         MouseArea {
@@ -1838,6 +1356,176 @@ PanelWindow {
 
         HoverHandler {
             id: segHover
+        }
+    }
+
+    // One labelled integer slider: the number follows the drag, the value is
+    // committed once on release.
+    component SliderRow: SettingRow {
+        id: sliderRow
+
+        property int minimum: 0
+        property int maximum: 100
+        property int current: 0
+
+        signal committed(int value)
+
+        IntSlider {
+            id: slider
+
+            minimum: sliderRow.minimum
+            maximum: sliderRow.maximum
+            current: sliderRow.current
+            onChangedValue: value => sliderRow.committed(value)
+        }
+
+        Item {
+            implicitWidth: 32
+            implicitHeight: 40
+
+            Text {
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                text: slider.shown
+                color: Theme.surfaceText
+                font.family: Theme.fontFamily
+                font.pixelSize: Theme.fontSizeLabelLarge
+                font.weight: Font.Medium
+            }
+        }
+    }
+
+    // The seven style packs; the minimal view keeps the first three.
+    component StyleRow: SettingRow {
+        id: styleRow
+
+        property bool compact: false
+
+        readonly property var modes: [
+            { label: "M3 Inspired", mode: "m3" },
+            { label: "M3 Blur", mode: "blur" },
+            { label: "New", mode: "new" },
+            { label: "Nothing", mode: "nothing" },
+            { label: "New Nothing", mode: "newNothing" },
+            { label: "Old", mode: "old" },
+            { label: "Custom", mode: "custom" }
+        ]
+
+        label: I18n.t("Стиль")
+
+        Repeater {
+            model: styleRow.modes
+
+            delegate: SettingSegment {
+                required property int index
+                required property var modelData
+
+                visible: !styleRow.compact || index < 3
+                label: modelData.label
+                selected: ShellState.styleMode === modelData.mode
+                onClicked: ShellState.setStyleMode(modelData.mode)
+            }
+        }
+    }
+
+    // Dark/light switch; Custom owns both modes.
+    component ThemeRow: SettingRow {
+        label: I18n.t("Тема")
+        visible: !Theme.custom
+
+        SettingSegment {
+            label: I18n.t("Тёмная")
+            selected: !Theme.light
+            onClicked: ShellState.setThemeMode("dark")
+        }
+
+        SettingSegment {
+            label: I18n.t("Светлая")
+            selected: Theme.light
+            onClicked: ShellState.setThemeMode("light")
+        }
+    }
+
+    component LanguageRow: SettingRow {
+        label: I18n.t("Язык")
+
+        SettingSegment {
+            label: "Русский"
+            selected: ShellState.language === "ru"
+            onClicked: ShellState.setLanguage("ru")
+        }
+
+        SettingSegment {
+            label: "English"
+            selected: ShellState.language === "en"
+            onClicked: ShellState.setLanguage("en")
+        }
+
+        SettingSegment {
+            label: "Deutsch"
+            selected: ShellState.language === "de"
+            onClicked: ShellState.setLanguage("de")
+        }
+    }
+
+    component PowerProfileRow: SettingRow {
+        label: I18n.t("Профиль питания")
+
+        SettingSegment {
+            label: I18n.t("Экономия")
+            selected: PowerProfiles.profile === PowerProfile.PowerSaver
+            onClicked: PowerProfiles.profile = PowerProfile.PowerSaver
+        }
+
+        SettingSegment {
+            label: I18n.t("Баланс")
+            selected: PowerProfiles.profile === PowerProfile.Balanced
+            onClicked: PowerProfiles.profile = PowerProfile.Balanced
+        }
+
+        SettingSegment {
+            label: I18n.t("Производительность")
+            visible: PowerProfiles.hasPerformanceProfile
+            selected: PowerProfiles.profile === PowerProfile.Performance
+            onClicked: PowerProfiles.profile = PowerProfile.Performance
+        }
+    }
+
+    component SettingsViewRow: SettingRow {
+        label: I18n.t("Вид настроек")
+
+        SettingSegment {
+            label: I18n.t("Полные")
+            selected: !root.minimal
+            onClicked: {
+                ShellState.setSettingsMinimal(false);
+                root.tabIndex = 3;
+            }
+        }
+
+        SettingSegment {
+            label: I18n.t("Минимал")
+            selected: root.minimal
+            onClicked: ShellState.setSettingsMinimal(true)
+        }
+    }
+
+    // One row of theme-target chips.
+    component AppRow: SettingRow {
+        id: appRow
+
+        property var apps: []
+
+        Repeater {
+            model: appRow.apps
+
+            delegate: SettingSegment {
+                required property var modelData
+
+                label: modelData.label
+                selected: ShellState.themeAppEnabled(modelData.key)
+                onClicked: ShellState.setThemeApp(modelData.key, !selected)
+            }
         }
     }
 }

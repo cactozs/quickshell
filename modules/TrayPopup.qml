@@ -78,17 +78,7 @@ PanelWindow {
         region: blurRegion
     }
 
-    Connections {
-        target: card
-
-        function onWidthChanged(): void {
-            blurKick.kick();
-        }
-
-        function onHeightChanged(): void {
-            blurKick.kick();
-        }
-    }
+    BlurTarget { item: card; kicker: blurKick }
 
     QsMenuOpener {
         id: menuOpener
@@ -148,13 +138,7 @@ PanelWindow {
         color: Theme.scrim
         opacity: root.shown ? Theme.scrimOpacity : 0
 
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasizedDecelerate
-            }
-        }
+        Behavior on opacity { Anim {} }
     }
 
     MouseArea {
@@ -175,16 +159,7 @@ PanelWindow {
         }
     }
 
-    RectangularShadow {
-        anchors.fill: card
-        radius: card.radius
-        blur: Theme.cardShadowBlur
-        offset.y: Theme.cardShadowOffset
-        color: Theme.cardShadow
-        visible: Theme.glass
-        opacity: card.opacity
-        scale: card.scale
-    }
+    CardShadow { target: card }
 
     Rectangle {
         id: card
@@ -202,21 +177,9 @@ PanelWindow {
         scale: root.shown ? 1 : 0.9
         opacity: root.shown ? 1 : 0
 
-        Behavior on scale {
-            NumberAnimation {
-                duration: Theme.durMedium
-                easing.type: Easing.OutBack
-                easing.overshoot: Theme.springOvershoot
-            }
-        }
+        Behavior on scale { SpringAnim {} }
 
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasizedDecelerate
-            }
-        }
+        Behavior on opacity { Anim {} }
 
         MouseArea {
             anchors.fill: parent
@@ -302,13 +265,7 @@ PanelWindow {
                         ? Math.min(itemList.contentHeight, Math.floor(root.height * 0.5))
                         : 72)
 
-                Behavior on height {
-                    NumberAnimation {
-                        duration: Theme.durMedium
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: Theme.curveEmphasizedDecelerate
-                    }
-                }
+                Behavior on height { Anim { duration: Theme.durMedium } }
 
                 ListView {
                     id: itemList
@@ -389,8 +346,6 @@ PanelWindow {
         }
 
         Text {
-            id: checkIcon
-
             anchors.left: parent.left
             anchors.leftMargin: 10
             anchors.verticalCenter: parent.verticalCenter

@@ -204,85 +204,13 @@ PanelWindow {
         region: blurRegion
     }
 
-    Connections {
-        target: leftAnchor
+    BlurTarget { item: leftAnchor; kicker: blurKick; position: true }
 
-        function onXChanged(): void {
-            blurKick.kick();
-        }
+    BlurTarget { item: centerAnchor; kicker: blurKick; position: true }
 
-        function onYChanged(): void {
-            blurKick.kick();
-        }
+    BlurTarget { item: rightAnchor; kicker: blurKick; position: true }
 
-        function onWidthChanged(): void {
-            blurKick.kick();
-        }
-
-        function onHeightChanged(): void {
-            blurKick.kick();
-        }
-    }
-
-    Connections {
-        target: centerAnchor
-
-        function onXChanged(): void {
-            blurKick.kick();
-        }
-
-        function onYChanged(): void {
-            blurKick.kick();
-        }
-
-        function onWidthChanged(): void {
-            blurKick.kick();
-        }
-
-        function onHeightChanged(): void {
-            blurKick.kick();
-        }
-    }
-
-    Connections {
-        target: rightAnchor
-
-        function onXChanged(): void {
-            blurKick.kick();
-        }
-
-        function onYChanged(): void {
-            blurKick.kick();
-        }
-
-        function onWidthChanged(): void {
-            blurKick.kick();
-        }
-
-        function onHeightChanged(): void {
-            blurKick.kick();
-        }
-    }
-
-    Connections {
-        target: plateAnchor
-
-        function onXChanged(): void {
-            blurKick.kick();
-        }
-
-        function onYChanged(): void {
-            blurKick.kick();
-        }
-
-        function onWidthChanged(): void {
-            blurKick.kick();
-        }
-
-        function onHeightChanged(): void {
-            blurKick.kick();
-        }
-    }
+    BlurTarget { item: plateAnchor; kicker: blurKick; position: true }
 
     readonly property bool shown: !ShellState.barHidden
 
@@ -301,43 +229,24 @@ PanelWindow {
             x: root.vertical ? (root.shown ? 0 : (root.flipped ? root.thickness : -root.thickness)) : 0
             y: root.vertical ? 0 : (root.shown ? 0 : (root.flipped ? root.thickness : -root.thickness))
 
-            Behavior on x {
-                NumberAnimation {
-                    duration: Theme.durMedium
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curveEmphasizedDecelerate
-                }
-            }
+            Behavior on x { Anim { duration: Theme.durMedium } }
 
-            Behavior on y {
-                NumberAnimation {
-                    duration: Theme.durMedium
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curveEmphasizedDecelerate
-                }
-            }
+            Behavior on y { Anim { duration: Theme.durMedium } }
         }
 
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasizedDecelerate
-            }
-        }
+        Behavior on opacity { Anim {} }
 
         // Single plate behind the clusters ("island" and "panel"). Hidden while
         // the three islands carry their own surfaces; the island rectangles then
         // turn into transparent content slots (see their color/radius below).
-        RectangularShadow {
-            anchors.fill: barPlate
-            radius: barPlate.radius
-            blur: Theme.cardShadowBlur
+        // A flush panel has no room for a shadow: its docked edge is clipped.
+        CardShadow {
+            target: barPlate
+            shown: Theme.glass && !root.islandsMode && !root.flushPanel
+            followOpacity: false
+            followScale: false
             offset.x: root.vertical ? root.shadowSign * Theme.cardShadowOffset : 0
             offset.y: root.vertical ? 0 : root.shadowSign * Theme.cardShadowOffset
-            color: Theme.cardShadow
-            // A flush panel has no room for a shadow: its docked edge is clipped.
-            visible: Theme.glass && !root.islandsMode && !root.flushPanel
         }
 
         Rectangle {
@@ -366,14 +275,13 @@ PanelWindow {
 
         // first island: workspaces + focused window title (the marquee has no
         // room in a rail, so the title is left out there)
-        RectangularShadow {
-            anchors.fill: leftIsland
-            radius: leftIsland.radius
-            blur: Theme.cardShadowBlur
+        CardShadow {
+            target: leftIsland
+            shown: Theme.glass && root.islandsMode
+            followOpacity: false
+            followScale: false
             offset.x: root.vertical ? root.shadowSign * Theme.cardShadowOffset : 0
             offset.y: root.vertical ? 0 : root.shadowSign * Theme.cardShadowOffset
-            color: Theme.cardShadow
-            visible: Theme.glass && root.islandsMode
         }
 
         Rectangle {
@@ -397,29 +305,11 @@ PanelWindow {
 
             clip: true
 
-            Behavior on width {
-                NumberAnimation {
-                    duration: Theme.dur(100)
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curveEmphasizedDecelerate
-                }
-            }
+            Behavior on width { Anim { duration: Theme.dur(100) } }
 
-            Behavior on height {
-                NumberAnimation {
-                    duration: Theme.dur(100)
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curveEmphasizedDecelerate
-                }
-            }
+            Behavior on height { Anim { duration: Theme.dur(100) } }
 
-            Behavior on color {
-                ColorAnimation {
-                    duration: Theme.durLong
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curveEmphasized
-                }
-            }
+            Behavior on color { ColorAnim { duration: Theme.durLong } }
 
             Grid {
                 id: leftRow
@@ -456,14 +346,13 @@ PanelWindow {
         }
 
         // center island: clock hero, same surface as the sides
-        RectangularShadow {
-            anchors.fill: centerIsland
-            radius: centerIsland.radius
-            blur: Theme.cardShadowBlur
+        CardShadow {
+            target: centerIsland
+            shown: Theme.glass && root.islandsMode
+            followOpacity: false
+            followScale: false
             offset.x: root.vertical ? root.shadowSign * Theme.cardShadowOffset : 0
             offset.y: root.vertical ? 0 : root.shadowSign * Theme.cardShadowOffset
-            color: Theme.cardShadow
-            visible: Theme.glass && root.islandsMode
         }
 
         Rectangle {
@@ -486,13 +375,7 @@ PanelWindow {
                 visible: root.islandsMode
             }
 
-            Behavior on color {
-                ColorAnimation {
-                    duration: Theme.durLong
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curveEmphasized
-                }
-            }
+            Behavior on color { ColorAnim { duration: Theme.durLong } }
 
             Grid {
                 id: centerRow
@@ -521,14 +404,13 @@ PanelWindow {
         }
 
         // last island: status cluster + notification + power FAB
-        RectangularShadow {
-            anchors.fill: rightIsland
-            radius: rightIsland.radius
-            blur: Theme.cardShadowBlur
+        CardShadow {
+            target: rightIsland
+            shown: Theme.glass && root.islandsMode
+            followOpacity: false
+            followScale: false
             offset.x: root.vertical ? root.shadowSign * Theme.cardShadowOffset : 0
             offset.y: root.vertical ? 0 : root.shadowSign * Theme.cardShadowOffset
-            color: Theme.cardShadow
-            visible: Theme.glass && root.islandsMode
         }
 
         Rectangle {
@@ -549,13 +431,7 @@ PanelWindow {
                 visible: root.islandsMode
             }
 
-            Behavior on color {
-                ColorAnimation {
-                    duration: Theme.durLong
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curveEmphasized
-                }
-            }
+            Behavior on color { ColorAnim { duration: Theme.durLong } }
 
             Grid {
                 id: rightRow

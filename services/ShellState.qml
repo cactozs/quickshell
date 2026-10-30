@@ -40,8 +40,6 @@ Singleton {
     // synchronous so the adapter holds the stored values before Theme and I18n
     // read them, otherwise the first frame is the default theme.
     FileView {
-        id: stateFile
-
         path: Qt.resolvedUrl("../shell-state.json")
         preload: false
         blockAllReads: true
@@ -87,28 +85,14 @@ Singleton {
         target: Quickshell
 
         function onScreensChanged(): void {
-            if (root.quickSettingsScreen !== "" && !root.screenKnown(root.quickSettingsScreen))
-                root.quickSettingsScreen = "";
-            if (root.launcherScreen !== "" && !root.screenKnown(root.launcherScreen))
-                root.launcherScreen = "";
-            if (root.clipboardScreen !== "" && !root.screenKnown(root.clipboardScreen))
-                root.clipboardScreen = "";
-            if (root.notificationScreen !== "" && !root.screenKnown(root.notificationScreen))
-                root.notificationScreen = "";
-            if (root.weatherScreen !== "" && !root.screenKnown(root.weatherScreen))
-                root.weatherScreen = "";
-            if (root.clockScreen !== "" && !root.screenKnown(root.clockScreen))
-                root.clockScreen = "";
-            if (root.systemScreen !== "" && !root.screenKnown(root.systemScreen))
-                root.systemScreen = "";
-            if (root.settingsScreen !== "" && !root.screenKnown(root.settingsScreen))
-                root.settingsScreen = "";
-            if (root.wallpaperScreen !== "" && !root.screenKnown(root.wallpaperScreen))
-                root.wallpaperScreen = "";
-            if (root.trayScreen !== "" && !root.screenKnown(root.trayScreen))
-                root.trayScreen = "";
-            if (root.petScreen !== "" && !root.screenKnown(root.petScreen))
-                root.petScreen = "";
+            const names = ["quickSettingsScreen", "launcherScreen", "clipboardScreen",
+                "notificationScreen", "weatherScreen", "clockScreen", "systemScreen",
+                "settingsScreen", "wallpaperScreen", "trayScreen", "petScreen"];
+            for (let i = 0; i < names.length; ++i) {
+                const name = names[i];
+                if (root[name] !== "" && !root.screenKnown(root[name]))
+                    root[name] = "";
+            }
         }
     }
 
@@ -579,22 +563,15 @@ Singleton {
         props.barHidden = !props.barHidden;
     }
 
+    // Overlay IPC surface: `toggle` opens on the first screen (scripts and
+    // tests), `toggleOn` on a specific one (niri keybinds pass the focused
+    // output), `close` dismisses it.
     IpcHandler {
         target: "settings"
 
-        // Opens on the first screen; useful for testing and scripted use.
-        function toggle(): void {
-            root.toggleSettings(root.resolveScreen(""));
-        }
-
-        // Toggles on a specific screen; niri keybinds pass the focused output.
-        function toggleOn(screenName: string): void {
-            root.toggleSettings(root.resolveScreen(screenName));
-        }
-
-        function close(): void {
-            root.closeSettings();
-        }
+        function toggle(): void { root.toggleSettings(root.resolveScreen("")); }
+        function toggleOn(screenName: string): void { root.toggleSettings(root.resolveScreen(screenName)); }
+        function close(): void { root.closeSettings(); }
 
         // Launcher view, so scripts can flip it: `qs ipc call settings launcherView true`.
         function launcherView(fullscreen: bool): void {
@@ -682,19 +659,9 @@ Singleton {
     IpcHandler {
         target: "wallpaper"
 
-        // Opens on the first screen; useful for testing and scripted use.
-        function toggle(): void {
-            root.toggleWallpaper(root.resolveScreen(""));
-        }
-
-        // Toggles on a specific screen; niri keybinds pass the focused output.
-        function toggleOn(screenName: string): void {
-            root.toggleWallpaper(root.resolveScreen(screenName));
-        }
-
-        function close(): void {
-            root.closeWallpaper();
-        }
+        function toggle(): void { root.toggleWallpaper(root.resolveScreen("")); }
+        function toggleOn(screenName: string): void { root.toggleWallpaper(root.resolveScreen(screenName)); }
+        function close(): void { root.closeWallpaper(); }
 
         // Applies a random wallpaper without opening the manager, so it can be
         // bound to a niri keybind: `qs ipc call wallpaper random`.
@@ -710,153 +677,71 @@ Singleton {
     IpcHandler {
         target: "launcher"
 
-        // Opens on the first screen; useful for testing and scripted use.
-        function toggle(): void {
-            root.toggleLauncher(root.resolveScreen(""));
-        }
-
-        // Toggles on a specific screen; niri keybinds pass the focused output.
-        function toggleOn(screenName: string): void {
-            root.toggleLauncher(root.resolveScreen(screenName));
-        }
-
-        function close(): void {
-            root.closeLauncher();
-        }
+        function toggle(): void { root.toggleLauncher(root.resolveScreen("")); }
+        function toggleOn(screenName: string): void { root.toggleLauncher(root.resolveScreen(screenName)); }
+        function close(): void { root.closeLauncher(); }
     }
 
     IpcHandler {
         target: "clipboard"
 
-        // Opens on the first screen; useful for testing and scripted use.
-        function toggle(): void {
-            root.toggleClipboard(root.resolveScreen(""));
-        }
-
-        // Toggles on a specific screen; niri keybinds pass the focused output.
-        function toggleOn(screenName: string): void {
-            root.toggleClipboard(root.resolveScreen(screenName));
-        }
-
-        function close(): void {
-            root.closeClipboard();
-        }
+        function toggle(): void { root.toggleClipboard(root.resolveScreen("")); }
+        function toggleOn(screenName: string): void { root.toggleClipboard(root.resolveScreen(screenName)); }
+        function close(): void { root.closeClipboard(); }
     }
 
     IpcHandler {
         target: "center"
 
-        // Opens on the first screen; useful for testing and scripted use.
-        function toggle(): void {
-            root.toggleNotificationCenter(root.resolveScreen(""));
-        }
-
-        // Toggles on a specific screen; niri keybinds pass the focused output.
-        function toggleOn(screenName: string): void {
-            root.toggleNotificationCenter(root.resolveScreen(screenName));
-        }
-
-        function close(): void {
-            root.closeNotificationCenter();
-        }
+        function toggle(): void { root.toggleNotificationCenter(root.resolveScreen("")); }
+        function toggleOn(screenName: string): void { root.toggleNotificationCenter(root.resolveScreen(screenName)); }
+        function close(): void { root.closeNotificationCenter(); }
     }
 
     IpcHandler {
         target: "weather"
 
-        // Opens on the first screen; useful for testing and scripted use.
-        function toggle(): void {
-            root.toggleWeather(root.resolveScreen(""));
-        }
-
-        // Toggles on a specific screen; niri keybinds pass the focused output.
-        function toggleOn(screenName: string): void {
-            root.toggleWeather(root.resolveScreen(screenName));
-        }
-
-        function close(): void {
-            root.closeWeather();
-        }
+        function toggle(): void { root.toggleWeather(root.resolveScreen("")); }
+        function toggleOn(screenName: string): void { root.toggleWeather(root.resolveScreen(screenName)); }
+        function close(): void { root.closeWeather(); }
     }
 
     IpcHandler {
         target: "clock"
 
-        // Opens on the first screen; useful for testing and scripted use.
-        function toggle(): void {
-            root.toggleClock(root.resolveScreen(""));
-        }
-
-        // Toggles on a specific screen; niri keybinds pass the focused output.
-        function toggleOn(screenName: string): void {
-            root.toggleClock(root.resolveScreen(screenName));
-        }
-
-        function close(): void {
-            root.closeClock();
-        }
+        function toggle(): void { root.toggleClock(root.resolveScreen("")); }
+        function toggleOn(screenName: string): void { root.toggleClock(root.resolveScreen(screenName)); }
+        function close(): void { root.closeClock(); }
     }
 
     IpcHandler {
         target: "system"
 
-        // Opens on the first screen; useful for testing and scripted use.
-        function toggle(): void {
-            root.toggleSystem(root.resolveScreen(""));
-        }
-
-        // Toggles on a specific screen; niri keybinds pass the focused output.
-        function toggleOn(screenName: string): void {
-            root.toggleSystem(root.resolveScreen(screenName));
-        }
-
-        function close(): void {
-            root.closeSystem();
-        }
+        function toggle(): void { root.toggleSystem(root.resolveScreen("")); }
+        function toggleOn(screenName: string): void { root.toggleSystem(root.resolveScreen(screenName)); }
+        function close(): void { root.closeSystem(); }
     }
 
     IpcHandler {
         target: "tray"
 
-        // Opens on the first screen; useful for testing and scripted use.
-        function toggle(): void {
-            root.toggleTray(root.resolveScreen(""));
-        }
-
-        // Toggles on a specific screen; niri keybinds pass the focused output.
-        function toggleOn(screenName: string): void {
-            root.toggleTray(root.resolveScreen(screenName));
-        }
-
-        function close(): void {
-            root.closeTray();
-        }
+        function toggle(): void { root.toggleTray(root.resolveScreen("")); }
+        function toggleOn(screenName: string): void { root.toggleTray(root.resolveScreen(screenName)); }
+        function close(): void { root.closeTray(); }
     }
 
     IpcHandler {
         target: "pet"
 
-        // Opens on the first screen; useful for testing and scripted use.
-        function toggle(): void {
-            root.togglePet(root.resolveScreen(""));
-        }
-
-        // Toggles on a specific screen; niri keybinds pass the focused output.
-        function toggleOn(screenName: string): void {
-            root.togglePet(root.resolveScreen(screenName));
-        }
-
-        function close(): void {
-            root.closePet();
-        }
+        function toggle(): void { root.togglePet(root.resolveScreen("")); }
+        function toggleOn(screenName: string): void { root.togglePet(root.resolveScreen(screenName)); }
+        function close(): void { root.closePet(); }
     }
 
     IpcHandler {
         target: "bar"
 
         // Mod+P: hides or shows the bar on every screen.
-        function toggle(): void {
-            root.toggleBar();
-        }
+        function toggle(): void { root.toggleBar(); }
     }
 }

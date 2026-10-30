@@ -85,30 +85,11 @@ PanelWindow {
         region: blurRegion
     }
 
-    Connections {
-        target: pill
-
-        function onWidthChanged(): void {
-            blurKick.kick();
-        }
-
-        function onHeightChanged(): void {
-            blurKick.kick();
-        }
-    }
+    BlurTarget { item: pill; kicker: blurKick }
 
     // Ambient shadow under the pill (New style only); follows the pill's
     // entrance fade/scale.
-    RectangularShadow {
-        anchors.fill: pill
-        radius: pill.radius
-        blur: Theme.cardShadowBlur
-        offset.y: Theme.cardShadowOffset
-        color: Theme.cardShadow
-        visible: Theme.glass
-        opacity: pill.opacity
-        scale: pill.scale
-    }
+    CardShadow { target: pill }
 
     Rectangle {
         id: pill
@@ -136,31 +117,13 @@ PanelWindow {
         transform: Translate {
             y: root.shown ? 0 : -8
 
-            Behavior on y {
-                NumberAnimation {
-                    duration: Theme.durShort
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curveEmphasizedDecelerate
-                }
-            }
+            Behavior on y { Anim {} }
         }
 
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.durShort
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curveEmphasizedDecelerate
-            }
-        }
+        Behavior on opacity { Anim {} }
 
         // Expressive pop-in; on hide the same spring reads as a light shrink.
-        Behavior on scale {
-            NumberAnimation {
-                duration: Theme.dur(100)
-                easing.type: Easing.OutBack
-                easing.overshoot: Theme.springOvershoot
-            }
-        }
+        Behavior on scale { SpringAnim { duration: Theme.dur(100) } }
 
         // Shared sliding highlight: x glides, width overshoots = stretch.
         Rectangle {
@@ -175,21 +138,9 @@ PanelWindow {
             radius: Theme.shapeFull
             color: Theme.secondaryContainer
 
-            Behavior on x {
-                NumberAnimation {
-                    duration: Theme.dur(100)
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curveEmphasizedDecelerate
-                }
-            }
+            Behavior on x { Anim { duration: Theme.dur(100) } }
 
-            Behavior on width {
-                NumberAnimation {
-                    duration: Theme.dur(100)
-                    easing.type: Easing.OutBack
-                    easing.overshoot: Theme.springOvershoot
-                }
-            }
+            Behavior on width { SpringAnim { duration: Theme.dur(100) } }
         }
 
         Row {
@@ -228,13 +179,7 @@ PanelWindow {
                             && segment.index !== root.activeIdx
                             && segment.index - 1 !== root.activeIdx ? 1 : 0
 
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: Theme.durShort
-                                easing.type: Easing.BezierSpline
-                                easing.bezierCurve: Theme.curveEmphasized
-                            }
-                        }
+                        Behavior on opacity { AnimEmph {} }
                     }
 
                     Text {
@@ -248,13 +193,7 @@ PanelWindow {
                         font.pixelSize: Theme.fontSizeTitleLarge
                         font.weight: Font.Medium
 
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: Theme.durShort
-                                easing.type: Easing.BezierSpline
-                                easing.bezierCurve: Theme.curveEmphasized
-                            }
-                        }
+                        Behavior on color { ColorAnim {} }
                     }
                 }
             }

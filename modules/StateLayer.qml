@@ -22,11 +22,5 @@ Rectangle {
     opacity: root.pressed ? Theme.statePressed : (root.hovered ? Theme.stateHover : (root.focused ? Theme.stateFocus : (root.dragged ? Theme.stateDragged : 0)))
     visible: opacity > 0
 
-    Behavior on opacity {
-        NumberAnimation {
-            duration: Theme.durShort
-            easing.type: Easing.BezierSpline
-            easing.bezierCurve: Theme.curveEmphasized
-        }
-    }
+    Behavior on opacity { AnimEmph {} }
 }
