@@ -21,10 +21,6 @@ Rectangle {
         anchors.fill: parent
         anchors.margins: 6
         source: root.source
-        // A notification `image` can be a full-res screenshot; decode it at
-        // the circle's size instead (2x for HiDPI).
-        sourceSize.width: 56
-        sourceSize.height: 56
         // Only a loaded image draws; a failed source would otherwise paint a
         // broken frame over the glyph.
         visible: root.source !== "" && status === Image.Ready
