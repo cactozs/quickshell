@@ -320,11 +320,12 @@ Singleton {
     // wallpaper (default), "oled" = strict black/white, "gruvbox" = Gruvbox
     // dark (see style/Theme.qml). Normalized like styleMode.
     readonly property string colorScheme: props.colorScheme === "oled" || props.colorScheme === "gruvbox"
+        || props.colorScheme === "custom"
         ? props.colorScheme
         : "matugen"
 
     function setColorScheme(name: string): void {
-        props.colorScheme = name === "oled" || name === "gruvbox" ? name : "matugen";
+        props.colorScheme = name === "oled" || name === "gruvbox" || name === "custom" ? name : "matugen";
     }
 
     // Theme mode for the whole shell: "dark" (default) or "light". Picks the

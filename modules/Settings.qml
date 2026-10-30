@@ -545,9 +545,6 @@ PanelWindow {
 
                     SettingRow {
                         label: I18n.t("Цвета")
-                        // The custom palette owns every role, so the scheme below
-                        // would have nothing left to color.
-                        visible: !Theme.custom
 
                         SettingSegment {
                             label: "Matugen"
@@ -565,6 +562,12 @@ PanelWindow {
                             label: "Gruvbox"
                             selected: ShellState.colorScheme === "gruvbox"
                             onClicked: ShellState.setColorScheme("gruvbox")
+                        }
+
+                        SettingSegment {
+                            label: "Custom"
+                            selected: ShellState.colorScheme === "custom"
+                            onClicked: ShellState.setColorScheme("custom")
                         }
                     }
 

@@ -93,7 +93,7 @@ Singleton {
     // ShellState.themeMode for the fixed packs. Custom has one palette for both
     // modes, so its own surface decides which side of the light derivations
     // (terminal, GTK/Qt/ghostty, snow) applies.
-    readonly property bool light: root.custom
+    readonly property bool light: ShellState.colorScheme === "custom"
         ? root.isLightColor(root.customPalette.surface)
         : ShellState.themeMode === "light"
 
@@ -571,7 +571,7 @@ Singleton {
     // the baseline of the current mode, so roles they do not list keep sane
     // defaults (inverse surfaces, fixed accents) instead of the other mode's.
     // The style packs own the matugen slots: a picked color scheme still wins.
-    readonly property var activeScheme: root.custom
+    readonly property var activeScheme: ShellState.colorScheme === "custom"
         ? root.customPalette
         : ShellState.colorScheme === "oled"
         ? Object.assign({}, root.activeBaseline, root.light ? root.oledLightScheme : root.oledScheme)
@@ -596,7 +596,7 @@ Singleton {
     // alpha is applied here (and they take no accent tint: Nothing's palette is
     // fixed).
     readonly property var scheme: {
-        if (root.custom) {
+        if (ShellState.colorScheme === "custom") {
             const base = Object.assign({}, root.customPalette);
             if (!root.blur)
                 return base;
