@@ -595,7 +595,7 @@ PanelWindow {
                 sourceSize.height: 2 * plate.height
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
-                cache: true
+                cache: false
             }
 
             StateLayer {

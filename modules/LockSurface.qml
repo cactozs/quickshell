@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Window
 import "../services"
 import "../style"
 
@@ -21,6 +22,9 @@ Item {
     Image {
         anchors.fill: parent
         source: root.wallpaper === "" ? "" : "file://" + root.wallpaper
+        // A 6K source decodes to ~97 MB; bound it to the physical screen size.
+        sourceSize.width: root.width * Screen.devicePixelRatio
+        sourceSize.height: root.height * Screen.devicePixelRatio
         fillMode: Image.PreserveAspectCrop
         asynchronous: true
         cache: false
