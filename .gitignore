@@ -4,3 +4,11 @@ notifications.json
 wallpaper-favorites.json
 shell-state.json
 
+# Generated palettes (matugen): machine-specific, rebuilt on every wallpaper
+# change. Without them the shell falls back to the built-in baseline scheme.
+style/Colors.json
+style/ColorsLight.json
+
+# Local scratch
+.zcode/
+temp
