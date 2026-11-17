@@ -49,7 +49,7 @@ English (except for the Russian README).
 - **OSD and system popup** — volume/brightness overlay (also for changes made
   with `wpctl`/`brightnessctl`), CPU, RAM, temperature and GPU rows (AMD via
   sysfs, `nvidia-smi` fallback).
-- **Seven style packs** — `M3 Inspired`, `M3 Blur`, `New` (graphite acrylic),
+- **Seven style packs** — `M3 Expressive`, `M3 Expressive Blur`, `New` (graphite acrylic),
   `Nothing` (opaque graphite, hard corners), `New Nothing` (the same graphite
   with the acrylic dressing and blur), `Old` (retro gray/charcoal chrome with
   square corners and bevels) and `Custom` (your own palette and knobs: corner
@@ -488,16 +488,17 @@ so your own `window-rules.kdl` keeps its radius; the first slide takes over and
 clips the windows to the rounded geometry too.
 
 **Style packs** are switched in the settings menu or with
-`qs ipc call settings style …`. `M3 Inspired` is the matugen palette with the
-M3 shape scale, `M3 Blur` adds acrylic plates and compositor blur, `New` is
-graphite acrylic, `Nothing` is opaque graphite with hard corners, and
-`New Nothing` is that graphite and those corners with the New acrylic dressing —
-rim, specular, drop shadow and blur. `Old` is the retro pack: gray/charcoal
-plates with light and dark twins, square corners, a black hairline and
-raised/sunken bevels, no blur, shadow or motion. The accent roles come from the
-current matugen palette and the plates take a faint tint of its primary, so a
-wallpaper change recolors the selection and buttons while the chrome stays gray.
-It keeps the current font; pick **Old** for the Courier look.
+`qs ipc call settings style …`. `M3 Expressive` is the Material 3 Expressive
+matugen palette with its expressive shape scale and motion, `M3 Expressive Blur`
+adds acrylic plates and compositor blur to that same pack, `New` is graphite
+acrylic, `Nothing` is opaque graphite with hard corners, and `New Nothing` is
+that graphite and those corners with the New acrylic dressing — rim, specular,
+drop shadow and blur. `Old` is the retro pack: gray/charcoal plates with light
+and dark twins, square corners, a black hairline and raised/sunken bevels, no
+blur, shadow or motion. The accent roles come from the current matugen palette
+and the plates take a faint tint of its primary, so a wallpaper change recolors
+the selection and buttons while the chrome stays gray. It keeps the current
+font; pick **Old** for the Courier look.
 
 `Custom` is the hand-built pack: the **Custom** settings tab edits one M3
 palette for both light and dark (click a role to open an HSV picker; **Готово**
@@ -576,7 +577,7 @@ NVIDIA. Without a key the pet still answers the local questions.
 | wallpaper changes, colors do not | the `awww` shim is missing or shadowed | `command -v awww` must print `/usr/local/bin/awww`; reinstall the shim |
 | `awww img` does nothing | `awww-daemon` is not running | add `spawn-at-startup "awww-daemon"` |
 | a panel opens on the wrong monitor | the bind uses `toggle` | use `toggleOn $(niri msg --json focused-output \| jq -r .name)` |
-| blur does nothing | missing niri include, or the style paints no acrylic | step 6; try `M3 Blur` and «Окна» |
+| blur does nothing | missing niri include, or the style paints no acrylic | step 6; try `M3 Expressive Blur` and «Окна» |
 | Qt apps keep old colors | Qt reads the palette at startup | restart them |
 | light mode does not update | `light.toml` missing or `ColorsLight.json` stale | rerun `./install.sh`, then change the wallpaper |
 | `qs ipc` cannot connect | shell is not running, or the checkout is elsewhere | `qs ipc show`; run `./install.sh --link` or `quickshell -p <path>` |

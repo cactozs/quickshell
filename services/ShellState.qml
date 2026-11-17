@@ -156,13 +156,13 @@ Singleton {
         props.ambient = name === "xmas" ? "xmas" : "off";
     }
 
-    // Style pack for the whole shell: "m3" = M3 Expressive with the matugen
-    // palette (default), "blur" = that pack with acrylic backdrops and the
-    // compositor blur behind them, "new" = graphite acrylic, "nothing" =
-    // opaque graphite with hairline edges and one red accent, "newNothing" =
-    // that graphite with the New acrylic dressing, "old" = retro gray/charcoal
-    // chrome with square corners and bevels, "custom" = the hand-built pack
-    // below (see style/Theme.qml).
+    // Style pack for the whole shell: "m3" = Material 3 Expressive with the
+    // matugen palette (default), "blur" = that same Material 3 Expressive pack
+    // with acrylic backdrops and compositor blur behind them, "new" = graphite
+    // acrylic, "nothing" = opaque graphite with hairline edges and one red
+    // accent, "newNothing" = that graphite with the New acrylic dressing, "old"
+    // = retro gray/charcoal chrome with square corners and bevels, "custom" =
+    // the hand-built pack below (see style/Theme.qml).
     // Normalized, so a fresh install or a stale value reads as "m3".
     readonly property string styleMode: props.styleMode === "new" || props.styleMode === "blur"
         || props.styleMode === "nothing" || props.styleMode === "newNothing" || props.styleMode === "old"

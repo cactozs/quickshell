@@ -22,9 +22,10 @@ import "../services"
 // feeds the tokens.
 //
 // Seven style packs share these tokens (ShellState.styleMode, switched in the
-// settings menu): "m3" is the wallpaper palette above; "blur" keeps that
-// palette and the M3 shape scale but turns the backdrops acrylic and asks the
-// compositor to blur behind them; "new" swaps in fixed graphite surfaces with
+// settings menu): "m3" is the Material 3 Expressive pack with the wallpaper
+// palette above; "blur" keeps that same Material 3 Expressive palette and shape
+// scale but turns the backdrops acrylic and asks the compositor to blur behind
+// them; "new" swaps in fixed graphite surfaces with
 // the same acrylic alpha, flat text tones, a hairline edge with an inner rim
 // and a neutral drop shadow, while the accents stay wallpaper-derived;
 // "nothing" is opaque graphite with a hairline edge, hard corners and a single

@@ -418,7 +418,7 @@ PanelWindow {
                     // ---- blur source ----------------------------------------------------
 
                     // Only the blur styles have anything to blur, so the row is hidden
-                    // under M3 Inspired, Nothing and Old: their surfaces are opaque and
+                    // under M3 Expressive, Nothing and Old: their surfaces are opaque and
                     // no window requests a background effect (the niri rule stays inert
                     // by itself). Theme.blur is exactly that set.
                     SettingRow {
@@ -1414,8 +1414,8 @@ PanelWindow {
         property bool compact: false
 
         readonly property var modes: [
-            { label: "M3 Inspired", mode: "m3" },
-            { label: "M3 Blur", mode: "blur" },
+            { label: "M3 Expressive", mode: "m3" },
+            { label: "M3 Expressive Blur", mode: "blur" },
             { label: "New", mode: "new" },
             { label: "Nothing", mode: "nothing" },
             { label: "New Nothing", mode: "newNothing" },
